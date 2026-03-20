@@ -544,28 +544,6 @@ export default function SettingsPage() {
           </form>
         </CardContent>
       </Card>
-
-
-      {/* GHL */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">GoHighLevel</CardTitle>
-            <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
-              Connected
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="text-sm text-gray-600 space-y-1">
-          <p>OAuth connected — contacts sync automatically via webhooks.</p>
-          <p className="text-xs text-gray-400">
-            Webhook URL:{" "}
-            <code className="bg-gray-100 px-1 rounded">
-              {process.env.NEXT_PUBLIC_APP_URL ?? "https://yourapp.com"}/api/ghl/webhook
-            </code>
-          </p>
-        </CardContent>
-      </Card>
     </div>
   );
 }
