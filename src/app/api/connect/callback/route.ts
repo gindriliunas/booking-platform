@@ -68,7 +68,7 @@ export async function GET(req: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
     return NextResponse.redirect(`${appUrl}/dashboard?locationId=${ghlLocationId}`);
   } catch (err) {
-    console.error("GHL OAuth callback error:", err);
+    console.error("OAuth callback error:", err);
     return NextResponse.json(
       { error: "OAuth callback failed", details: String(err) },
       { status: 500 }

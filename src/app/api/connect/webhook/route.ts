@@ -3,13 +3,6 @@ import { db } from "@/lib/db";
 import { clients, installations, providers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 
-/**
- * GHL Webhook receiver
- * Configure in GHL app settings to receive:
- *   - contact.created
- *   - contact.updated
- *   - contact.deleted
- */
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const { type, locationId, contact } = body;
@@ -32,7 +25,7 @@ export async function POST(req: NextRequest) {
   if (!provider) return NextResponse.json({ ok: true });
 
   if (type === "contact.created" || type === "ContactCreate") {
-    // Sync new GHL contact as client
+    // Sync new contact as client
     const existing = await db
       .select()
       .from(clients)
