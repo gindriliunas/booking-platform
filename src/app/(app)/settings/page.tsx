@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, Check, Eye, EyeOff, ExternalLink, Clock, Link as LinkIcon, Users } from "lucide-react";
+import { Settings, Check, Eye, EyeOff, ExternalLink, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -70,8 +70,6 @@ interface Provider {
   stripeConfigured: boolean;
   stripeSecretKeyMasked?: string | null;
   stripeWebhookSecretMasked?: string | null;
-  allowIndividualSelfBook: boolean;
-  allowGroupSelfBook: boolean;
 }
 
 export default function SettingsPage() {
@@ -100,12 +98,6 @@ export default function SettingsPage() {
   const [stripeSaved, setStripeSaved] = useState(false);
   const [stripeError, setStripeError] = useState("");
 
-  // Self-booking permissions
-  const [allowIndividualSelfBook, setAllowIndividualSelfBook] = useState(true);
-  const [allowGroupSelfBook, setAllowGroupSelfBook] = useState(true);
-  const [bookingSaving, setBookingSaving] = useState(false);
-  const [bookingSaved, setBookingSaved] = useState(false);
-
   // Availability
   type DaySlot = { enabled: boolean; startTime: string; endTime: string };
   const [availSlots, setAvailSlots] = useState<DaySlot[]>(
@@ -113,8 +105,6 @@ export default function SettingsPage() {
   );
   const [availSaving, setAvailSaving] = useState(false);
   const [availSaved, setAvailSaved] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
-
   async function fetchProvider() {
     try {
       const [provRes, availRes] = await Promise.all([
@@ -131,9 +121,6 @@ export default function SettingsPage() {
       setTimezone(p.timezone);
       setSessionDurationMins(String(p.sessionDurationMins));
       setCurrency(p.currency ?? "usd");
-      setAllowIndividualSelfBook(p.allowIndividualSelfBook ?? true);
-      setAllowGroupSelfBook(p.allowGroupSelfBook ?? true);
-
       const availData = await availRes.json();
       const rows: { dayOfWeek: number; startTime: string; endTime: string }[] = availData.availability ?? [];
       setAvailSlots(DAYS.map((_, i) => {
@@ -218,26 +205,6 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleBookingPermissionsSave() {
-    if (!provider) return;
-    setBookingSaving(true);
-    setBookingSaved(false);
-    try {
-      const res = await fetch(`/api/providers/${provider.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ allowIndividualSelfBook, allowGroupSelfBook }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Save failed");
-      setBookingSaved(true);
-      setTimeout(() => setBookingSaved(false), 3000);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setBookingSaving(false);
-    }
-  }
-
   async function handleAvailabilitySave(e: React.FormEvent) {
     e.preventDefault();
     if (!provider) return;
@@ -265,14 +232,6 @@ export default function SettingsPage() {
     } finally {
       setAvailSaving(false);
     }
-  }
-
-  function copyBookingLink() {
-    const url = `${process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin}/book/${PROVIDER_ID}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
-    });
   }
 
   if (loading) return <div className="text-sm text-gray-500 py-8 text-center">Loading settings…</div>;
@@ -586,87 +545,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      {/* Self-Booking Permissions */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Users className="h-4 w-4 text-gray-500" />
-            Client Self-Booking
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-gray-500">
-            Control which session types clients can book themselves via your booking link.
-          </p>
-          <div className="space-y-3">
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <div className="mt-0.5">
-                <input
-                  type="checkbox"
-                  checked={allowIndividualSelfBook}
-                  onChange={(e) => setAllowIndividualSelfBook(e.target.checked)}
-                  className="rounded"
-                />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">Allow 1-to-1 session bookings</p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Clients can browse your availability and book individual sessions directly.
-                </p>
-              </div>
-            </label>
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <div className="mt-0.5">
-                <input
-                  type="checkbox"
-                  checked={allowGroupSelfBook}
-                  onChange={(e) => setAllowGroupSelfBook(e.target.checked)}
-                  className="rounded"
-                />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">Allow group session bookings</p>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Clients can view and join upcoming group sessions from your booking link.
-                </p>
-              </div>
-            </label>
-          </div>
-          <div className="flex items-center gap-3 pt-1">
-            <Button onClick={handleBookingPermissionsSave} disabled={bookingSaving || !provider}>
-              {bookingSaving ? "Saving…" : "Save"}
-            </Button>
-            {bookingSaved && (
-              <span className="flex items-center gap-1.5 text-sm text-green-600">
-                <Check className="h-4 w-4" /> Saved
-              </span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Booking Link */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <LinkIcon className="h-4 w-4 text-gray-500" />
-            Client Booking Link
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-gray-500">
-            Share this link with clients so they can self-book sessions based on your availability.
-          </p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-xs text-gray-700 truncate">
-              {process.env.NEXT_PUBLIC_APP_URL ?? typeof window !== "undefined" ? `${typeof window !== "undefined" ? window.location.origin : ""}/book/${PROVIDER_ID}` : `/book/${PROVIDER_ID}`}
-            </code>
-            <Button size="sm" variant="outline" onClick={copyBookingLink}>
-              {copiedLink ? <Check className="h-4 w-4 text-green-600" /> : "Copy"}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* GHL */}
       <Card>
