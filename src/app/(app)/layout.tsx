@@ -1,15 +1,20 @@
-"use client";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { db } from "@/lib/db";
+import { providers } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
+import { DashboardShell } from "./dashboard-shell";
 
-import { ProviderProvider } from "@/components/provider-context";
-import { Sidebar } from "@/components/layout/sidebar";
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
+  const { userId } = await auth();
+  if (!userId) redirect("/portal/sign-in");
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <ProviderProvider>
-      <div className="flex h-screen overflow-hidden">
-        <Sidebar />
-        <main className="flex-1 overflow-y-auto p-8">{children}</main>
-      </div>
-    </ProviderProvider>
-  );
+  const [provider] = await db
+    .select({ id: providers.id })
+    .from(providers)
+    .where(eq(providers.clerkUserId, userId));
+
+  if (!provider) redirect("/portal");
+
+  return <DashboardShell>{children}</DashboardShell>;
 }
