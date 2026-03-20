@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { clients, questionnaires, clientQuestionnaires } from "@/lib/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
-import { requireAdminProvider } from "@/lib/auth-provider";
+import { requireAdminProvider, getAdminProviderId } from "@/lib/auth-provider";
 
 export async function GET(req: NextRequest) {
   const providerId = req.nextUrl.searchParams.get("providerId");
@@ -38,15 +38,15 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const providerId = await getAdminProviderId();
+  if (!providerId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
   const body = await req.json();
-  const { providerId, name, email, phone, notes, ghlContactId } = body;
+  const { name, email, phone, notes, ghlContactId } = body;
 
-  if (!providerId || !name) {
-    return NextResponse.json({ error: "providerId and name required" }, { status: 400 });
+  if (!name) {
+    return NextResponse.json({ error: "name required" }, { status: 400 });
   }
-
-  const authError = await requireAdminProvider(providerId);
-  if (authError) return authError;
 
   const [client] = await db
     .insert(clients)
