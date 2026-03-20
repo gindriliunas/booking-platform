@@ -244,44 +244,46 @@ export default function ClientDetailPage() {
       )}
 
       {/* Header */}
-      <div className="flex items-start gap-4">
-        <Link href="/clients" className="mt-1 text-gray-400 hover:text-gray-600">
+      <div className="flex items-start gap-3">
+        <Link href="/clients" className="mt-1 text-gray-400 hover:text-gray-600 shrink-0">
           <ArrowLeft className="h-5 w-5" />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-bold text-gray-900 truncate">{client.name}</h1>
-          <div className="flex flex-wrap gap-4 mt-1">
+          <div className="flex items-start justify-between gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 truncate">{client.name}</h1>
+            <div className="flex items-center gap-2 shrink-0">
+              {client.email && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSendInvite}
+                  disabled={inviting}
+                  className={inviteSent ? "text-green-600 border-green-300 text-xs" : "text-xs"}
+                >
+                  <Send className="h-3.5 w-3.5 sm:mr-1.5" />
+                  <span className="hidden sm:inline">{inviting ? "Sending…" : inviteSent ? "Invite sent!" : "Send Invite"}</span>
+                </Button>
+              )}
+              <Button variant="outline" size="sm" onClick={() => setEditOpen(true)} className="text-xs">
+                Edit
+              </Button>
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-3 mt-1">
             {client.email && (
-              <span className="flex items-center gap-1.5 text-sm text-gray-500">
-                <Mail className="h-3.5 w-3.5" /> {client.email}
+              <span className="flex items-center gap-1.5 text-sm text-gray-500 min-w-0">
+                <Mail className="h-3.5 w-3.5 shrink-0" /> <span className="truncate">{client.email}</span>
               </span>
             )}
             {client.phone && (
               <span className="flex items-center gap-1.5 text-sm text-gray-500">
-                <Phone className="h-3.5 w-3.5" /> {client.phone}
+                <Phone className="h-3.5 w-3.5 shrink-0" /> {client.phone}
               </span>
             )}
           </div>
           {client.notes && (
             <p className="mt-2 text-sm text-gray-600 italic">{client.notes}</p>
           )}
-        </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {client.email && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSendInvite}
-              disabled={inviting}
-              className={inviteSent ? "text-green-600 border-green-300" : ""}
-            >
-              <Send className="h-3.5 w-3.5 mr-1.5" />
-              {inviting ? "Sending…" : inviteSent ? "Invite sent!" : "Send Invite"}
-            </Button>
-          )}
-          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-            Edit
-          </Button>
         </div>
       </div>
 
@@ -410,9 +412,9 @@ export default function ClientDetailPage() {
                       {s.price && s.currency && ` · ${formatCurrency(s.price, s.currency)}/${s.billingPeriod.replace("ly", "")}`}
                     </p>
                   </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                  <div className="flex flex-wrap items-center gap-2 shrink-0 justify-end">
                     {s.paymentMethod && (
-                      <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600 capitalize">
+                      <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600 capitalize hidden sm:inline">
                         {s.paymentMethod === "bank" ? "Bank transfer" : s.paymentMethod}
                       </span>
                     )}
@@ -446,18 +448,16 @@ export default function ClientDetailPage() {
               Questionnaires
             </CardTitle>
             {availableQuestionnaires.length > 0 && (
-              <div className="flex items-center gap-2">
-                <select
-                  className="text-xs rounded-md border border-gray-200 px-2 py-1.5 text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  defaultValue=""
-                  onChange={(e) => { if (e.target.value) { handleAssignQuestionnaire(e.target.value); e.target.value = ""; } }}
-                >
-                  <option value="" disabled>Assign questionnaire…</option>
-                  {availableQuestionnaires.map((q) => (
-                    <option key={q.id} value={q.id}>{q.title}</option>
-                  ))}
-                </select>
-              </div>
+              <select
+                className="text-xs rounded-md border border-gray-200 px-2 py-1.5 text-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 max-w-[160px] sm:max-w-none"
+                defaultValue=""
+                onChange={(e) => { if (e.target.value) { handleAssignQuestionnaire(e.target.value); e.target.value = ""; } }}
+              >
+                <option value="" disabled>Assign…</option>
+                {availableQuestionnaires.map((q) => (
+                  <option key={q.id} value={q.id}>{q.title}</option>
+                ))}
+              </select>
             )}
           </div>
         </CardHeader>

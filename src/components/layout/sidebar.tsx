@@ -62,7 +62,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
       <aside className="hidden lg:flex w-60 flex-col border-r border-gray-200 bg-white shrink-0">
         <div className="flex h-16 items-center gap-2 px-6 border-b border-gray-200">
           <CalendarDays className="h-6 w-6 text-indigo-600" />
-          <span className="text-lg font-bold text-gray-900">VIV-B</span>
+          <span className="text-lg font-bold text-gray-900">VIV-Z</span>
         </div>
         <NavLinks />
       </aside>
@@ -85,7 +85,7 @@ export function Sidebar({ mobileOpen, onClose }: SidebarProps) {
         <div className="flex h-16 items-center justify-between px-6 border-b border-gray-200">
           <div className="flex items-center gap-2">
             <CalendarDays className="h-6 w-6 text-indigo-600" />
-            <span className="text-lg font-bold text-gray-900">VIV-B</span>
+            <span className="text-lg font-bold text-gray-900">VIV-Z</span>
           </div>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
             <X className="h-5 w-5" />

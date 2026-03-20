@@ -24,7 +24,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             </button>
             <div className="flex items-center gap-2">
               <CalendarDays className="h-5 w-5 text-indigo-600" />
-              <span className="text-base font-bold text-gray-900">VIV-B</span>
+              <span className="text-base font-bold text-gray-900">VIV-Z</span>
             </div>
           </header>
 

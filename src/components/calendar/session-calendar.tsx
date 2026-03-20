@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Calendar, dateFnsLocalizer, Views, type View } from "react-big-calendar";
 import {
   format,
@@ -116,6 +116,9 @@ export function SessionCalendar({
     ? parseTime(availability.reduce((a, b) => (a.endTime > b.endTime ? a : b)).endTime)
     : parseTime("22:00");
   const [view, setView] = useState<View>(Views.WEEK);
+  useEffect(() => {
+    if (window.innerWidth < 768) setView(Views.DAY);
+  }, []);
   const [date, setDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState<{
     start: Date;
@@ -147,7 +150,7 @@ export function SessionCalendar({
   return (
     <div className="space-y-4">
       {/* Toolbar extras */}
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           size="sm"
           onClick={() => {
@@ -185,8 +188,8 @@ export function SessionCalendar({
         >
           Block Time
         </Button>
-        {/* Legend */}
-        <div className="ml-auto flex items-center gap-3 text-xs text-gray-500">
+        {/* Legend — hidden on mobile */}
+        <div className="hidden sm:flex ml-auto items-center gap-3 text-xs text-gray-500">
           <span className="flex items-center gap-1">
             <span className="h-3 w-3 rounded-sm bg-indigo-100 border border-indigo-400" /> Scheduled
           </span>
@@ -209,7 +212,7 @@ export function SessionCalendar({
       </div>
 
       {/* Calendar */}
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden" style={{ height: 680 }}>
+      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden" style={{ height: "min(680px, calc(100vh - 200px))" }}>
         <Calendar
           localizer={localizer}
           events={events}
