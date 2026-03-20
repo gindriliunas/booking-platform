@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import {
-  ArrowLeft, Mail, Phone, Package, Repeat, CalendarDays, ExternalLink, Trash2, ClipboardList, CheckCircle2, Circle,
+  ArrowLeft, Mail, Phone, Package, Repeat, CalendarDays, ExternalLink, Trash2, ClipboardList, CheckCircle2, Circle, Send,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -103,6 +103,8 @@ export default function ClientDetailPage() {
   const [responseDialogId, setResponseDialogId] = useState<string | null>(null);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [deletingPkg, setDeletingPkg] = useState<string | null>(null);
+  const [inviting, setInviting] = useState(false);
+  const [inviteSent, setInviteSent] = useState(false);
   const [onboarding, setOnboarding] = useState<Onboarding | null>(null);
 
   // Available package templates and plans for selling
@@ -199,6 +201,20 @@ export default function ClientDetailPage() {
     }
   }
 
+  async function handleSendInvite() {
+    setInviting(true);
+    try {
+      const res = await fetch(`/api/clients/${id}/invite`, { method: "POST" });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Failed");
+      setInviteSent(true);
+      setTimeout(() => setInviteSent(false), 4000);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to send invite");
+    } finally {
+      setInviting(false);
+    }
+  }
+
   async function handleSellSubscription(planId: string) {
     setCheckoutLoading(planId);
     try {
@@ -250,9 +266,23 @@ export default function ClientDetailPage() {
             <p className="mt-2 text-sm text-gray-600 italic">{client.notes}</p>
           )}
         </div>
-        <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-          Edit
-        </Button>
+        <div className="flex items-center gap-2 shrink-0">
+          {client.email && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSendInvite}
+              disabled={inviting}
+              className={inviteSent ? "text-green-600 border-green-300" : ""}
+            >
+              <Send className="h-3.5 w-3.5 mr-1.5" />
+              {inviting ? "Sending…" : inviteSent ? "Invite sent!" : "Send Invite"}
+            </Button>
+          )}
+          <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+            Edit
+          </Button>
+        </div>
       </div>
 
       {/* Onboarding checklist — hidden once complete */}
