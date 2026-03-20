@@ -1,8 +1,24 @@
 import Stripe from "stripe";
 
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: "2026-02-25.clover",
-  typescript: true,
+// Lazy singleton — only instantiated when actually called, so missing env var
+// doesn't crash the build. Each provider uses their own key stored in the DB;
+// this global instance is only used as a fallback / for platform-level calls.
+let _stripe: Stripe | null = null;
+export function getStripe(): Stripe {
+  if (!_stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) throw new Error("STRIPE_SECRET_KEY is not configured");
+    _stripe = new Stripe(key, { apiVersion: "2026-02-25.clover", typescript: true });
+  }
+  return _stripe;
+}
+
+// Keep a named export for backwards compatibility — callers that do
+// `stripe.products.create(...)` will now call the getter on first access.
+export const stripe = new Proxy({} as Stripe, {
+  get(_target, prop) {
+    return (getStripe() as any)[prop];
+  },
 });
 
 // Create a Stripe product + price for a session package
