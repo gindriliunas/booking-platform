@@ -1,0 +1,59 @@
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
+import { db } from "@/lib/db";
+import { bookings, clientPackages } from "@/lib/db/schema";
+import { eq, and } from "drizzle-orm";
+import { getPortalClient } from "@/lib/portal";
+
+export async function POST(req: NextRequest) {
+  try {
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const client = await getPortalClient(userId);
+    if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
+
+    const { startTime, endTime } = await req.json();
+    if (!startTime || !endTime) {
+      return NextResponse.json({ error: "startTime and endTime required" }, { status: 400 });
+    }
+
+    // Deduct from active package if available
+    const [activePkg] = await db
+      .select()
+      .from(clientPackages)
+      .where(and(eq(clientPackages.clientId, client.id), eq(clientPackages.status, "active")));
+
+    const [booking] = await db
+      .insert(bookings)
+      .values({
+        providerId: client.providerId,
+        clientId: client.id,
+        title: "Session",
+        startTime: new Date(startTime),
+        endTime: new Date(endTime),
+        status: "scheduled",
+        sessionSource: activePkg ? "package" : "single",
+        clientPackageId: activePkg?.id ?? null,
+      })
+      .returning();
+
+    if (activePkg) {
+      const newUsed = activePkg.sessionsUsed + 1;
+      const newRemaining = activePkg.sessionsRemaining - 1;
+      await db
+        .update(clientPackages)
+        .set({
+          sessionsUsed: newUsed,
+          sessionsRemaining: newRemaining,
+          status: newRemaining <= 0 ? "exhausted" : "active",
+        })
+        .where(eq(clientPackages.id, activePkg.id));
+    }
+
+    return NextResponse.json({ booking }, { status: 201 });
+  } catch (err) {
+    console.error("POST /api/portal/book error:", err);
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
+  }
+}
