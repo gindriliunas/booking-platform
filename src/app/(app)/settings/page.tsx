@@ -70,6 +70,8 @@ interface Provider {
   stripeConfigured: boolean;
   stripeSecretKeyMasked?: string | null;
   stripeWebhookSecretMasked?: string | null;
+  allowIndividualSelfBook: boolean;
+  allowGroupSelfBook: boolean;
 }
 
 export default function SettingsPage() {
@@ -86,6 +88,8 @@ export default function SettingsPage() {
   const [timezone, setTimezone] = useState("UTC");
   const [sessionDurationMins, setSessionDurationMins] = useState("60");
   const [currency, setCurrency] = useState("usd");
+  const [allowIndividualSelfBook, setAllowIndividualSelfBook] = useState(true);
+  const [allowGroupSelfBook, setAllowGroupSelfBook] = useState(true);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
 
@@ -121,6 +125,8 @@ export default function SettingsPage() {
       setTimezone(p.timezone);
       setSessionDurationMins(String(p.sessionDurationMins));
       setCurrency(p.currency ?? "usd");
+      setAllowIndividualSelfBook(p.allowIndividualSelfBook ?? true);
+      setAllowGroupSelfBook(p.allowGroupSelfBook ?? true);
       const availData = await availRes.json();
       const rows: { dayOfWeek: number; startTime: string; endTime: string }[] = availData.availability ?? [];
       setAvailSlots(DAYS.map((_, i) => {
@@ -149,7 +155,7 @@ export default function SettingsPage() {
       const res = await fetch(`/api/providers/${provider.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, serviceType, timezone, sessionDurationMins, currency }),
+        body: JSON.stringify({ name, email, phone, serviceType, timezone, sessionDurationMins, currency, allowIndividualSelfBook, allowGroupSelfBook }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Save failed");
       setProfileSaved(true);
@@ -333,6 +339,34 @@ export default function SettingsPage() {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
+            <hr className="border-gray-100" />
+            <div className="space-y-3">
+              <Label>Client Self-Booking</Label>
+              <label className="flex items-center justify-between gap-3 cursor-pointer">
+                <div>
+                  <p className="text-sm text-gray-700">Allow 1-to-1 self-booking</p>
+                  <p className="text-xs text-gray-400">Clients can book individual sessions themselves</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={allowIndividualSelfBook}
+                  onChange={(e) => setAllowIndividualSelfBook(e.target.checked)}
+                  className="h-4 w-4 rounded"
+                />
+              </label>
+              <label className="flex items-center justify-between gap-3 cursor-pointer">
+                <div>
+                  <p className="text-sm text-gray-700">Allow group self-booking</p>
+                  <p className="text-xs text-gray-400">Clients can book group sessions themselves</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={allowGroupSelfBook}
+                  onChange={(e) => setAllowGroupSelfBook(e.target.checked)}
+                  className="h-4 w-4 rounded"
+                />
+              </label>
             </div>
             <div className="flex items-center gap-3 pt-2">
               <Button type="submit" disabled={profileSaving || !provider}>
