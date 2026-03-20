@@ -7,11 +7,12 @@ import { getAdminProviderId } from "@/lib/auth-provider";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const providerId = await getAdminProviderId();
   if (!providerId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [client] = await db.select().from(clients).where(eq(clients.id, params.id));
+  const [client] = await db.select().from(clients).where(eq(clients.id, id));
   if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
   if (!client.email) return NextResponse.json({ error: "Client has no email address" }, { status: 400 });
 
