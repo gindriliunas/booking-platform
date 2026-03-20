@@ -35,8 +35,8 @@ export async function POST(req: NextRequest) {
       line_items: [{ price: pkg.stripePriceId, quantity: 1 }],
       customer: client.stripeCustomerId ?? undefined,
       customer_email: client.stripeCustomerId ? undefined : (client.email ?? undefined),
-      success_url: successUrl ?? `${base}/clients/${clientId}?payment=success`,
-      cancel_url: cancelUrl ?? `${base}/clients/${clientId}`,
+      success_url: successUrl ?? `${base}/pay/success`,
+      cancel_url: cancelUrl ?? `${base}/pay/cancelled`,
       metadata,
     });
     return NextResponse.json({ url: session.url });
@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
       line_items: [{ price: plan.stripePriceId, quantity: 1 }],
       customer: client.stripeCustomerId ?? undefined,
       customer_email: client.stripeCustomerId ? undefined : (client.email ?? undefined),
-      success_url: successUrl ?? `${base}/clients/${clientId}?payment=success`,
-      cancel_url: cancelUrl ?? `${base}/clients/${clientId}`,
+      success_url: successUrl ?? `${base}/pay/success`,
+      cancel_url: cancelUrl ?? `${base}/pay/cancelled`,
       subscription_data: { metadata },
     });
     return NextResponse.json({ url: session.url });

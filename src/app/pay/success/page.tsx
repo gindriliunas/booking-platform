@@ -1,33 +1,19 @@
-import { Check } from "lucide-react";
-import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
+import { CheckCircle } from "lucide-react";
 
-export default function PaySuccessPage() {
+export default function PaymentSuccessPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <Card>
-          <CardContent className="pt-8 pb-8 text-center space-y-4">
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-green-100">
-              <Check className="h-7 w-7 text-green-600" />
-            </div>
-            <div className="space-y-1">
-              <h1 className="text-xl font-bold text-gray-900">Payment received</h1>
-              <p className="text-sm text-gray-500">
-                You&apos;re all set. Your sessions have been activated.
-              </p>
-            </div>
-            <p className="text-xs text-gray-400">
-              Check your email for a receipt from Stripe.
-            </p>
-            <Link
-              href="/portal"
-              className="inline-block text-sm text-indigo-600 hover:underline"
-            >
-              View your sessions in your client portal →
-            </Link>
-          </CardContent>
-        </Card>
+      <div className="max-w-sm w-full text-center space-y-4">
+        <div className="flex justify-center">
+          <div className="rounded-full bg-green-100 p-4">
+            <CheckCircle className="h-10 w-10 text-green-600" />
+          </div>
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900">Payment complete!</h1>
+        <p className="text-gray-500 text-sm">
+          Thank you — your payment was successful. Your sessions have been added to your account.
+          You can now close this page.
+        </p>
       </div>
     </div>
   );

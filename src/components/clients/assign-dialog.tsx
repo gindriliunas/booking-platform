@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
+import { Check, Copy } from "lucide-react";
 
 interface PackageOption {
   id: string;
@@ -55,12 +56,16 @@ export function AssignDialog({ open, onOpenChange, clientId, packages, plans, on
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [generatedLink, setGeneratedLink] = useState("");
+  const [copied, setCopied] = useState(false);
 
   function reset() {
     setSelectedPackageId("");
     setSelectedPlanId("");
     setPaymentMethod("cash");
     setError("");
+    setGeneratedLink("");
+    setCopied(false);
   }
 
   const selectedPkg = packages.find((p) => p.id === selectedPackageId);
@@ -85,7 +90,6 @@ export function AssignDialog({ open, onOpenChange, clientId, packages, plans, on
     setError("");
     try {
       if (paymentMethod === "stripe") {
-        // Redirect to Stripe checkout
         const itemId = tab === "package" ? selectedPackageId : selectedPlanId;
         if (!itemId) { setError("Select a package or plan"); setLoading(false); return; }
         const res = await fetch("/api/stripe/checkout", {
@@ -95,7 +99,8 @@ export function AssignDialog({ open, onOpenChange, clientId, packages, plans, on
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error ?? "Failed to create checkout");
-        window.location.href = data.url;
+        setGeneratedLink(data.url ?? "");
+        setLoading(false);
         return;
       }
 
@@ -191,7 +196,7 @@ export function AssignDialog({ open, onOpenChange, clientId, packages, plans, on
             </div>
             <p className="text-xs text-gray-500">
               {paymentMethod === "stripe"
-                ? "Client will be redirected to a Stripe checkout page to complete payment."
+                ? "A payment link will be generated for you to copy and send to the client."
                 : "Sessions will be added to the client's account immediately."}
             </p>
           </div>
@@ -238,11 +243,42 @@ export function AssignDialog({ open, onOpenChange, clientId, packages, plans, on
           </div>
         )}
 
+        {generatedLink && (
+          <div className="rounded-lg border border-green-200 bg-green-50 p-3 space-y-2">
+            <p className="text-xs font-medium text-green-800">Payment link generated — copy and send to client:</p>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 text-xs text-green-900 bg-white border border-green-200 rounded px-2 py-1.5 truncate">
+                {generatedLink}
+              </code>
+              <Button
+                size="sm"
+                variant="outline"
+                className="shrink-0"
+                onClick={() => {
+                  navigator.clipboard.writeText(generatedLink);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+              >
+                {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
+              </Button>
+            </div>
+            <p className="text-xs text-green-700">Once the client pays, their account will update automatically.</p>
+          </div>
+        )}
+
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        <Button onClick={handleAssign} disabled={loading} className="w-full">
-          {loading ? (paymentMethod === "stripe" ? "Redirecting…" : "Assigning…") : paymentMethod === "stripe" ? "Send Stripe Link" : "Assign"}
-        </Button>
+        {!generatedLink && (
+          <Button onClick={handleAssign} disabled={loading} className="w-full">
+            {loading ? "Generating…" : paymentMethod === "stripe" ? "Generate Payment Link" : "Assign"}
+          </Button>
+        )}
+        {generatedLink && (
+          <Button variant="outline" onClick={reset} className="w-full">
+            Generate new link
+          </Button>
+        )}
       </DialogContent>
     </Dialog>
   );
