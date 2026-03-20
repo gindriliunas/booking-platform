@@ -17,7 +17,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider afterSignOutUrl="/portal/sign-in">
       <html lang="en" className="h-full antialiased">
         <body className={`${inter.className} min-h-full bg-gray-50 text-gray-900`}>
           {children}

@@ -36,7 +36,7 @@ export default async function PortalLayout({ children }: { children: React.React
           ))}
         </nav>
         <div className="border-t border-gray-200 p-4 flex items-center gap-3">
-          <UserButton afterSignOutUrl="/portal/sign-in" />
+          <UserButton />
           <span className="text-xs text-gray-500">Account</span>
         </div>
       </aside>

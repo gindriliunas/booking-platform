@@ -11,8 +11,6 @@ import {
 import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
 
-// Must use raw body for Stripe signature verification
-export const config = { api: { bodyParser: false } };
 
 export async function POST(req: NextRequest) {
   const rawBody = await req.text();
