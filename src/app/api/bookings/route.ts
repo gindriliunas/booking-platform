@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { bookings, blockedTimes, clients, clientPackages, clientSubscriptions } from "@/lib/db/schema";
+import { bookings, blockedTimes, clients, clientPackages, clientSubscriptions, providers } from "@/lib/db/schema";
 import { eq, and, gte } from "drizzle-orm";
 import { requireAdminProvider } from "@/lib/auth-provider";
+import {
+  TRIGGERS,
+  fireGhlTrigger,
+  fireSessionsUpdatedTrigger,
+  getClientTriggerContext,
+} from "@/lib/ghl/triggers";
 
 export async function GET(req: NextRequest) {
   const providerId = req.nextUrl.searchParams.get("providerId");
@@ -87,6 +93,43 @@ export async function POST(req: NextRequest) {
       maxParticipants: sessionType === "group" ? parseInt(maxParticipants) : null,
     })
     .returning();
+
+  // Fire GHL triggers (non-blocking — never delays the response)
+  if (clientId && sessionType !== "group") {
+    (async () => {
+      try {
+        const ctx = await getClientTriggerContext(clientId);
+        if (!ctx) return;
+
+        const durationMins = Math.round(
+          (new Date(endTime).getTime() - new Date(startTime).getTime()) / 60000
+        );
+
+        const [provider] = await db
+          .select({ name: providers.name })
+          .from(providers)
+          .where(eq(providers.id, providerId));
+
+        await fireGhlTrigger(ctx.locationId, ctx.contactId, TRIGGERS.SESSION_BOOKED, {
+          bookingId: booking.id,
+          sessionDate: booking.startTime.toISOString(),
+          sessionTime: booking.startTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          sessionDurationMins: durationMins,
+          providerName: provider?.name ?? "",
+        });
+
+        if (clientPackageId) {
+          await fireSessionsUpdatedTrigger(clientPackageId);
+        }
+      } catch (err) {
+        console.error("[GHL Trigger] session_booked failed:", err);
+      }
+    })();
+  }
 
   return NextResponse.json({ booking }, { status: 201 });
 }

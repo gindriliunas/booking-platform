@@ -7,6 +7,7 @@ import {
   decimal,
   uuid,
   pgEnum,
+  unique,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -316,6 +317,22 @@ export const blockedTimes = pgTable("blocked_times", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
+export const reminderTypeEnum = pgEnum("reminder_type", ["24h", "1h"]);
+
+// Reminder deduplication log — prevents cron from double-firing session reminders
+export const reminderLogs = pgTable(
+  "reminder_logs",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bookingId: uuid("booking_id")
+      .notNull()
+      .references(() => bookings.id, { onDelete: "cascade" }),
+    reminderType: reminderTypeEnum("reminder_type").notNull(),
+    firedAt: timestamp("fired_at").defaultNow().notNull(),
+  },
+  (t) => [unique().on(t.bookingId, t.reminderType)]
+);
+
 // Relations
 export const installationsRelations = relations(installations, ({ one }) => ({
   provider: one(providers, {
@@ -432,5 +449,34 @@ export const bookingParticipantsRelations = relations(bookingParticipants, ({ on
   clientSubscription: one(clientSubscriptions, {
     fields: [bookingParticipants.clientSubscriptionId],
     references: [clientSubscriptions.id],
+  }),
+}));
+
+export const clientPackagesRelations = relations(clientPackages, ({ one }) => ({
+  client: one(clients, {
+    fields: [clientPackages.clientId],
+    references: [clients.id],
+  }),
+  package: one(packages, {
+    fields: [clientPackages.packageId],
+    references: [packages.id],
+  }),
+}));
+
+export const clientSubscriptionsRelations = relations(clientSubscriptions, ({ one }) => ({
+  client: one(clients, {
+    fields: [clientSubscriptions.clientId],
+    references: [clients.id],
+  }),
+  plan: one(subscriptionPlans, {
+    fields: [clientSubscriptions.planId],
+    references: [subscriptionPlans.id],
+  }),
+}));
+
+export const reminderLogsRelations = relations(reminderLogs, ({ one }) => ({
+  booking: one(bookings, {
+    fields: [reminderLogs.bookingId],
+    references: [bookings.id],
   }),
 }));

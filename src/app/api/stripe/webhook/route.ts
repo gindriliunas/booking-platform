@@ -10,6 +10,11 @@ import {
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import type Stripe from "stripe";
+import {
+  TRIGGERS,
+  fireGhlTrigger,
+  getClientTriggerContext,
+} from "@/lib/ghl/triggers";
 
 
 export async function POST(req: NextRequest) {
@@ -59,6 +64,21 @@ export async function POST(req: NextRequest) {
             stripePaymentIntentId: String(session.payment_intent ?? ""),
             expiresAt,
           });
+
+          // Fire package_purchased trigger (non-blocking)
+          (async () => {
+            try {
+              const ctx = await getClientTriggerContext(clientId);
+              if (!ctx) return;
+              await fireGhlTrigger(ctx.locationId, ctx.contactId, TRIGGERS.PACKAGE_PURCHASED, {
+                packageName: pkg.name,
+                sessionsTotal: pkg.sessionCount,
+                expiresAt: expiresAt?.toISOString() ?? null,
+              });
+            } catch (err) {
+              console.error("[GHL Trigger] package_purchased failed:", err);
+            }
+          })();
         }
       }
 
@@ -113,7 +133,7 @@ export async function POST(req: NextRequest) {
       const periodStart = item ? new Date(item.current_period_start * 1000) : null;
       const periodEnd = item ? new Date(item.current_period_end * 1000) : null;
 
-      await db
+      const [updatedSub] = await db
         .update(clientSubscriptions)
         .set({
           sessionsUsedThisPeriod: 0,
@@ -121,7 +141,29 @@ export async function POST(req: NextRequest) {
           currentPeriodEnd: periodEnd,
           status: "active",
         })
-        .where(eq(clientSubscriptions.stripeSubscriptionId, stripeSubId));
+        .where(eq(clientSubscriptions.stripeSubscriptionId, stripeSubId))
+        .returning();
+
+      // Fire subscription_renewed trigger (non-blocking)
+      if (updatedSub) {
+        (async () => {
+          try {
+            const ctx = await getClientTriggerContext(updatedSub.clientId);
+            if (!ctx) return;
+            const [plan] = await db
+              .select({ name: subscriptionPlans.name })
+              .from(subscriptionPlans)
+              .where(eq(subscriptionPlans.id, updatedSub.planId));
+            await fireGhlTrigger(ctx.locationId, ctx.contactId, TRIGGERS.SUBSCRIPTION_RENEWED, {
+              planName: plan?.name ?? "Subscription",
+              sessionsPerPeriod: updatedSub.sessionsPerPeriod,
+              periodEnd: periodEnd?.toISOString() ?? "",
+            });
+          } catch (err) {
+            console.error("[GHL Trigger] subscription_renewed failed:", err);
+          }
+        })();
+      }
       break;
     }
 

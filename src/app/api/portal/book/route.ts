@@ -4,6 +4,13 @@ import { db } from "@/lib/db";
 import { bookings, clientPackages } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getPortalClient } from "@/lib/portal";
+import {
+  TRIGGERS,
+  fireGhlTrigger,
+  fireSessionsUpdatedTrigger,
+  getClientTriggerContext,
+  getLocationIdForProvider,
+} from "@/lib/ghl/triggers";
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,6 +57,39 @@ export async function POST(req: NextRequest) {
         })
         .where(eq(clientPackages.id, activePkg.id));
     }
+
+    // Fire GHL triggers (non-blocking)
+    (async () => {
+      try {
+        const ctx = await getClientTriggerContext(client.id);
+        if (!ctx) return;
+
+        const locationId = ctx.locationId ?? await getLocationIdForProvider(client.providerId);
+        if (!locationId) return;
+
+        const durationMins = Math.round(
+          (new Date(endTime).getTime() - new Date(startTime).getTime()) / 60000
+        );
+
+        await fireGhlTrigger(locationId, ctx.contactId, TRIGGERS.SESSION_BOOKED, {
+          bookingId: booking.id,
+          sessionDate: booking.startTime.toISOString(),
+          sessionTime: booking.startTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }),
+          sessionDurationMins: durationMins,
+          providerName: "",
+        });
+
+        if (activePkg) {
+          await fireSessionsUpdatedTrigger(activePkg.id);
+        }
+      } catch (err) {
+        console.error("[GHL Trigger] portal session_booked failed:", err);
+      }
+    })();
 
     return NextResponse.json({ booking }, { status: 201 });
   } catch (err) {

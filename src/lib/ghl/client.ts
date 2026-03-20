@@ -15,6 +15,7 @@ export const GHL_SCOPES = [
   "calendars/events.write",
   "locations.readonly",
   "locations/customValues.readonly",
+  "custom-providers/notifications.write",
 ].join(" ");
 
 // Build the GHL OAuth authorization URL for the install flow
