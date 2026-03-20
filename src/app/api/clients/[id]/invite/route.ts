@@ -3,7 +3,7 @@ import { Resend } from "resend";
 import { db } from "@/lib/db";
 import { clients, providers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { getAdminProviderId } from "@/lib/auth";
+import { getAdminProviderId } from "@/lib/auth-provider";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
