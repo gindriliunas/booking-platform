@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { clients, questionnaires, clientQuestionnaires } from "@/lib/db/schema";
 import { eq, and, inArray } from "drizzle-orm";
+import { requireAdminProvider } from "@/lib/auth-provider";
 
 export async function GET(req: NextRequest) {
   const providerId = req.nextUrl.searchParams.get("providerId");
   if (!providerId) return NextResponse.json({ error: "providerId required" }, { status: 400 });
+
+  const authError = await requireAdminProvider(providerId);
+  if (authError) return authError;
 
   const rows = await db
     .select()
@@ -40,6 +44,9 @@ export async function POST(req: NextRequest) {
   if (!providerId || !name) {
     return NextResponse.json({ error: "providerId and name required" }, { status: 400 });
   }
+
+  const authError = await requireAdminProvider(providerId);
+  if (authError) return authError;
 
   const [client] = await db
     .insert(clients)

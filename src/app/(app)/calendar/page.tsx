@@ -2,15 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { SessionCalendar, type CalendarEvent } from "@/components/calendar/session-calendar";
-
-const PROVIDER_ID = process.env.NEXT_PUBLIC_DEMO_PROVIDER_ID ?? "";
+import { useProvider } from "@/components/provider-context";
 
 export default function CalendarPage() {
+  const { providerId: PROVIDER_ID } = useProvider();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [clients, setClients] = useState<{ id: string; name: string; email?: string | null }[]>([]);
   const [availability, setAvailability] = useState<{ dayOfWeek: number; startTime: string; endTime: string }[]>([]);
 
   const loadData = useCallback(async () => {
+    if (!PROVIDER_ID) return;
     const [evtRes, clientRes, availRes] = await Promise.all([
       fetch(`/api/bookings?providerId=${PROVIDER_ID}`),
       fetch(`/api/clients?providerId=${PROVIDER_ID}`),
@@ -46,7 +47,7 @@ export default function CalendarPage() {
 
     setEvents([...bookingEvents, ...blockedEvents]);
     setClients(clientData.clients ?? []);
-  }, []);
+  }, [PROVIDER_ID]);
 
   useEffect(() => { loadData(); }, [loadData]);
 

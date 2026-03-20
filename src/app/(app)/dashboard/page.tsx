@@ -1,13 +1,12 @@
 import { db } from "@/lib/db";
 import { bookings, clientPackages, clientSubscriptions, clients } from "@/lib/db/schema";
-import { eq, count, gte, and, sql } from "drizzle-orm";
+import { eq, count, gte, and } from "drizzle-orm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalendarDays, Users, Package, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
-
-// Replace with real provider lookup once auth is wired up
-const DEMO_PROVIDER_ID = process.env.DEMO_PROVIDER_ID ?? "";
+import { getAdminProviderId } from "@/lib/auth-provider";
+import { redirect } from "next/navigation";
 
 async function getDashboardStats(providerId: string) {
   const now = new Date();
@@ -68,7 +67,10 @@ async function getDashboardStats(providerId: string) {
 }
 
 export default async function DashboardPage() {
-  const stats = await getDashboardStats(DEMO_PROVIDER_ID);
+  const providerId = await getAdminProviderId();
+  if (!providerId) redirect("/setup");
+
+  const stats = await getDashboardStats(providerId);
 
   return (
     <div className="space-y-8">

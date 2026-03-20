@@ -7,8 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { QuestionnaireDialog } from "@/components/questionnaires/questionnaire-dialog";
 import { QUESTIONNAIRE_TEMPLATES, type QuestionnaireTemplate } from "@/lib/questionnaire-templates";
-
-const PROVIDER_ID = process.env.NEXT_PUBLIC_DEMO_PROVIDER_ID ?? "";
+import { useProvider } from "@/components/provider-context";
 
 const TEMPLATE_ICONS: Record<string, React.ReactNode> = {
   "Personal Training": <Dumbbell className="h-5 w-5 text-orange-500" />,
@@ -39,6 +38,7 @@ interface Questionnaire {
 }
 
 export default function QuestionnairesPage() {
+  const { providerId: PROVIDER_ID } = useProvider();
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -46,6 +46,7 @@ export default function QuestionnairesPage() {
   const [addingTemplate, setAddingTemplate] = useState<string | null>(null);
 
   const fetchQuestionnaires = useCallback(async () => {
+    if (!PROVIDER_ID) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/questionnaires?providerId=${PROVIDER_ID}`);
@@ -54,7 +55,7 @@ export default function QuestionnairesPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [PROVIDER_ID]);
 
   useEffect(() => { fetchQuestionnaires(); }, [fetchQuestionnaires]);
 

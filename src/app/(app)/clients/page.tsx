@@ -7,8 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClientDialog } from "@/components/clients/client-dialog";
-
-const PROVIDER_ID = process.env.NEXT_PUBLIC_DEMO_PROVIDER_ID ?? "";
+import { useProvider } from "@/components/provider-context";
 
 interface Client {
   id: string;
@@ -21,6 +20,7 @@ interface Client {
 }
 
 export default function ClientsPage() {
+  const { providerId: PROVIDER_ID } = useProvider();
   const [clients, setClients] = useState<Client[]>([]);
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -28,6 +28,7 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true);
 
   const fetchClients = useCallback(async () => {
+    if (!PROVIDER_ID) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/clients?providerId=${PROVIDER_ID}`);
@@ -36,7 +37,7 @@ export default function ClientsPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [PROVIDER_ID]);
 
   useEffect(() => { fetchClients(); }, [fetchClients]);
 

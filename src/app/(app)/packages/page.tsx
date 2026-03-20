@@ -8,8 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PackageDialog } from "@/components/packages/package-dialog";
 import { CopyLinkButton } from "@/components/ui/copy-link-button";
 import { formatCurrency } from "@/lib/utils";
-
-const PROVIDER_ID = process.env.NEXT_PUBLIC_DEMO_PROVIDER_ID ?? "";
+import { useProvider } from "@/components/provider-context";
 
 interface Package {
   id: string;
@@ -28,20 +27,15 @@ interface Package {
 }
 
 export default function PackagesPage() {
+  const { providerId: PROVIDER_ID, provider } = useProvider();
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editPkg, setEditPkg] = useState<Package | null>(null);
-  const [providerCurrency, setProviderCurrency] = useState("usd");
-
-  useEffect(() => {
-    fetch(`/api/providers?providerId=${PROVIDER_ID}`)
-      .then((r) => r.json())
-      .then((d) => { if (d.provider?.currency) setProviderCurrency(d.provider.currency); })
-      .catch(() => {});
-  }, []);
+  const providerCurrency = provider?.currency ?? "usd";
 
   const fetchPackages = useCallback(async () => {
+    if (!PROVIDER_ID) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/packages?providerId=${PROVIDER_ID}`);
@@ -50,7 +44,7 @@ export default function PackagesPage() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [PROVIDER_ID]);
 
   useEffect(() => { fetchPackages(); }, [fetchPackages]);
 

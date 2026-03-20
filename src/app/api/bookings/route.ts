@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { bookings, blockedTimes, clients, clientPackages, clientSubscriptions } from "@/lib/db/schema";
 import { eq, and, gte } from "drizzle-orm";
+import { requireAdminProvider } from "@/lib/auth-provider";
 
 export async function GET(req: NextRequest) {
   const providerId = req.nextUrl.searchParams.get("providerId");
   if (!providerId) return NextResponse.json({ error: "providerId required" }, { status: 400 });
+
+  const authError = await requireAdminProvider(providerId);
+  if (authError) return authError;
 
   const [bookingRows, blockedRows] = await Promise.all([
     db.query.bookings.findMany({
@@ -35,6 +39,9 @@ export async function POST(req: NextRequest) {
   if (!providerId || !startTime || !endTime) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
+
+  const authError = await requireAdminProvider(providerId);
+  if (authError) return authError;
 
   // Group session validation
   if (sessionType === "group") {

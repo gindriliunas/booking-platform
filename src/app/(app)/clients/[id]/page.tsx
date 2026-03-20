@@ -13,8 +13,7 @@ import { ClientDialog } from "@/components/clients/client-dialog";
 import { AssignDialog } from "@/components/clients/assign-dialog";
 import { ResponseDialog } from "@/components/questionnaires/response-dialog";
 import { formatDate, formatCurrency, formatDateOnly } from "@/lib/utils";
-
-const PROVIDER_ID = process.env.NEXT_PUBLIC_DEMO_PROVIDER_ID ?? "";
+import { useProvider } from "@/components/provider-context";
 
 interface Client {
   id: string;
@@ -86,6 +85,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function ClientDetailPage() {
+  const { providerId: PROVIDER_ID } = useProvider();
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -110,6 +110,7 @@ export default function ClientDetailPage() {
   const [availablePlans, setAvailablePlans] = useState<{ id: string; name: string; price: string; currency: string; sessionsPerPeriod: number; billingPeriod: string; sessionType?: "individual" | "group"; stripePriceId?: string | null }[]>([]);
 
   const fetchData = useCallback(async () => {
+    if (!PROVIDER_ID) return;
     setLoading(true);
     try {
       const [clientRes, pkgRes, planRes, formsRes, availFormsRes] = await Promise.all([
@@ -137,7 +138,7 @@ export default function ClientDetailPage() {
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, PROVIDER_ID]);
 
   async function handleAssignQuestionnaire(questionnaireId: string) {
     await fetch("/api/client-questionnaires", {

@@ -2,12 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { providers, packages, subscriptionPlans } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { requireAdminProvider } from "@/lib/auth-provider";
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  const authError = await requireAdminProvider(id);
+  if (authError) return authError;
+
   const body = await req.json();
   const {
     name, email, phone, serviceType, timezone, sessionDurationMins,

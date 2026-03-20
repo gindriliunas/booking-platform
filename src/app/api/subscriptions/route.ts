@@ -3,12 +3,16 @@ import { db } from "@/lib/db";
 import { subscriptionPlans } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getStripeForProvider } from "@/lib/stripe/provider";
+import { requireAdminProvider } from "@/lib/auth-provider";
 
 const intervalMap = { weekly: "week", monthly: "month", yearly: "year" } as const;
 
 export async function GET(req: NextRequest) {
   const providerId = req.nextUrl.searchParams.get("providerId");
   if (!providerId) return NextResponse.json({ error: "providerId required" }, { status: 400 });
+
+  const authError = await requireAdminProvider(providerId);
+  if (authError) return authError;
 
   try {
     const rows = await db
@@ -30,6 +34,9 @@ export async function POST(req: NextRequest) {
   if (!providerId || !name || !sessionsPerPeriod || !price || !billingPeriod) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
+
+  const authError = await requireAdminProvider(providerId);
+  if (authError) return authError;
 
   let stripePriceId: string | null = null;
   let stripeProductId: string | null = null;

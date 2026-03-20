@@ -77,7 +77,6 @@ export const installations = pgTable("installations", {
 export const providers = pgTable("providers", {
   id: uuid("id").primaryKey().defaultRandom(),
   installationId: uuid("installation_id")
-    .notNull()
     .references(() => installations.id, { onDelete: "cascade" })
     .unique(),
   name: text("name").notNull(),
@@ -95,6 +94,7 @@ export const providers = pgTable("providers", {
   allowGroupSelfBook: boolean("allow_group_self_book").notNull().default(true),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  clerkUserId: text("clerk_user_id"),
 });
 
 // Session packages — e.g. "10 sessions for $500"

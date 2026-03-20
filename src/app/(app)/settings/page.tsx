@@ -13,8 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-const PROVIDER_ID = process.env.NEXT_PUBLIC_DEMO_PROVIDER_ID ?? "";
+import { useProvider } from "@/components/provider-context";
 
 const CURRENCIES = [
   { code: "usd", label: "USD — US Dollar" },
@@ -76,6 +75,7 @@ interface Provider {
 }
 
 export default function SettingsPage() {
+  const { providerId: PROVIDER_ID } = useProvider();
   const [provider, setProvider] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -151,11 +151,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     if (PROVIDER_ID) fetchProvider();
-    else {
-      setError("No provider ID configured (NEXT_PUBLIC_DEMO_PROVIDER_ID).");
-      setLoading(false);
-    }
-  }, []);
+  }, [PROVIDER_ID]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleProfileSave(e: React.FormEvent) {
     e.preventDefault();
