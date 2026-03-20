@@ -342,27 +342,6 @@ export default function ClientDetailPage() {
             </div>
           )}
 
-          {/* Stripe checkout option (only if Stripe is configured) */}
-          {availablePackages.some((p) => p.stripePriceId) && (
-            <div className="pt-2 border-t border-gray-100">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Collect Payment via Stripe</p>
-              <div className="flex flex-wrap gap-2">
-                {availablePackages.filter((p) => p.stripePriceId).map((pkg) => (
-                  <Button
-                    key={pkg.id}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSellPackage(pkg.id)}
-                    disabled={checkoutLoading === pkg.id}
-                    className="text-xs"
-                  >
-                    {checkoutLoading === pkg.id ? "Loading…" : `${pkg.name} — ${formatCurrency(pkg.price, pkg.currency)} · ${pkg.sessionType === "group" ? "Group" : "1-to-1"}`}
-                    <ExternalLink className="h-3 w-3 ml-1" />
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 
@@ -425,29 +404,6 @@ export default function ClientDetailPage() {
             </div>
           )}
 
-          {/* Stripe checkout option (only if Stripe is configured) */}
-          {availablePlans.some((p) => p.stripePriceId) && (
-            <div className="pt-2 border-t border-gray-100">
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Collect Payment via Stripe</p>
-              <div className="flex flex-wrap gap-2">
-                {availablePlans.filter((p) => p.stripePriceId).map((plan) => (
-                  <Button
-                    key={plan.id}
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleSellSubscription(plan.id)}
-                    disabled={checkoutLoading === plan.id}
-                    className="text-xs"
-                  >
-                    {checkoutLoading === plan.id
-                      ? "Loading…"
-                      : `${plan.name} — ${formatCurrency(plan.price, plan.currency)}/${plan.billingPeriod.replace("ly", "")} · ${plan.sessionType === "group" ? "Group" : "1-to-1"}`}
-                    <ExternalLink className="h-3 w-3 ml-1" />
-                  </Button>
-                ))}
-              </div>
-            </div>
-          )}
         </CardContent>
       </Card>
 

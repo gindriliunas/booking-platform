@@ -132,7 +132,7 @@ export function AssignDialog({ open, onOpenChange, clientId, packages, plans, on
 
   return (
     <Dialog open={open} onOpenChange={(o) => { onOpenChange(o); if (!o) reset(); }}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-sm w-full overflow-hidden">
         <DialogHeader>
           <DialogTitle>Assign Package / Subscription</DialogTitle>
         </DialogHeader>
@@ -244,10 +244,10 @@ export function AssignDialog({ open, onOpenChange, clientId, packages, plans, on
         )}
 
         {generatedLink && (
-          <div className="rounded-lg border border-green-200 bg-green-50 p-3 space-y-2">
+          <div className="rounded-lg border border-green-200 bg-green-50 p-3 space-y-2 overflow-hidden">
             <p className="text-xs font-medium text-green-800">Payment link generated — copy and send to client:</p>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 text-xs text-green-900 bg-white border border-green-200 rounded px-2 py-1.5 truncate">
+            <div className="flex items-center gap-2 min-w-0">
+              <code className="flex-1 min-w-0 text-xs text-green-900 bg-white border border-green-200 rounded px-2 py-1.5 block overflow-hidden text-ellipsis whitespace-nowrap">
                 {generatedLink}
               </code>
               <Button
