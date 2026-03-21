@@ -38,13 +38,13 @@ const features = [
     icon: "🔔",
     title: "Automated Reminders",
     description:
-      "Cron-based SMS and email reminders fire 24 hours before each session — reducing no-shows without manual effort.",
+      "Email reminders fire 24 hours before each session — reducing no-shows without manual effort.",
   },
   {
     icon: "🔗",
-    title: "GoHighLevel Integration",
+    title: "Web Builder Integration",
     description:
-      "Native GHL marketplace app. Contacts, tags, and workflow triggers sync in real time with your GHL sub-account.",
+      "Connects seamlessly with your existing web builder. Contacts, tags, and workflow triggers sync in real time.",
   },
   {
     icon: "📱",
@@ -70,9 +70,9 @@ const benefits = [
     statLabel: "avg. revenue per client",
   },
   {
-    title: "Lives inside your GHL",
+    title: "Works with your tools",
     description:
-      "VIV-Z is a certified GoHighLevel marketplace app. Installation takes two clicks — no third-party login or CRM migration needed.",
+      "VIV-Z plugs into your existing web builder and workflows. Installation takes two clicks — no CRM migration needed.",
     stat: "2 clicks",
     statLabel: "to install",
   },
@@ -96,19 +96,19 @@ export default function LandingPage() {
           <h1 className="mb-6 text-4xl font-black leading-tight tracking-tight md:text-6xl">
             Session & Booking Management
             <br />
-            <span className="text-violet-300">Powered by GoHighLevel</span>
+            <span className="text-violet-300">Integrated with your web builder</span>
           </h1>
           <p className="mx-auto mb-10 max-w-2xl text-lg text-violet-200 md:text-xl">
             The all-in-one platform for personal trainers, therapists, and
             service professionals. Manage bookings, packages, payments, and
-            clients — all inside your existing GHL workflow.
+            clients — all connected to your existing workflow.
           </p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/install"
               className="rounded-xl bg-white px-8 py-4 text-base font-bold text-violet-800 shadow-lg transition hover:bg-violet-50"
             >
-              Install on GoHighLevel →
+              Get Started →
             </Link>
             <Link
               href="/getting-started"
@@ -128,7 +128,7 @@ export default function LandingPage() {
               Why VIV-Z?
             </h2>
             <p className="text-lg text-gray-500">
-              Built specifically for GHL users who want more from their booking
+              Built for service professionals who want more from their booking
               workflow.
             </p>
           </div>
@@ -179,31 +179,31 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* GHL Integration */}
+      {/* Integration */}
       <section className="bg-gradient-to-br from-gray-900 to-violet-950 px-6 py-20 text-white">
         <div className="mx-auto max-w-6xl">
           <div className="grid items-center gap-12 md:grid-cols-2">
             <div>
               <span className="mb-4 inline-block rounded-full bg-violet-500/20 px-4 py-1 text-sm font-semibold text-violet-300">
-                Native GHL Integration
+                Seamless Integration
               </span>
               <h2 className="mb-6 text-3xl font-black leading-tight md:text-4xl">
-                Works inside GoHighLevel.
+                Works inside your web builder.
                 <br />
                 <span className="text-violet-300">Not alongside it.</span>
               </h2>
               <p className="mb-8 text-gray-300">
-                VIV-Z is available on the GoHighLevel Marketplace. Install it
-                directly from your GHL sub-account. Your contacts, workflows,
-                and automations stay in sync automatically.
+                VIV-Z connects directly to your existing web builder. Install it
+                in two clicks and your contacts, workflows, and automations stay
+                in sync automatically.
               </p>
               <ul className="space-y-3 text-sm text-gray-300">
                 {[
-                  "OAuth connection — no passwords shared",
-                  "Contact data synced to GHL on booking",
-                  "Trigger GHL workflows on session events",
-                  "Works in every GHL sub-account",
+                  "Secure OAuth connection — no passwords shared",
+                  "Contact data synced on every booking",
+                  "Trigger automations on session events",
                   "Webhook-driven — always up to date",
+                  "No CRM migration required",
                 ].map((item) => (
                   <li key={item} className="flex items-start gap-2">
                     <span className="mt-0.5 text-violet-400">✓</span>
@@ -214,7 +214,7 @@ export default function LandingPage() {
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur">
               <div className="mb-4 text-sm font-semibold uppercase tracking-wider text-violet-400">
-                Workflow trigger example
+                Automation example
               </div>
               <div className="space-y-3 text-sm">
                 {[
@@ -250,15 +250,15 @@ export default function LandingPage() {
             Ready to streamline your sessions?
           </h2>
           <p className="mb-8 text-lg text-gray-500">
-            Install VIV-Z from the GoHighLevel Marketplace in under 2 minutes.
-            No credit card required to get started.
+            Get started with VIV-Z in under 2 minutes.
+            No credit card required.
           </p>
           <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
             <Link
               href="/install"
               className="rounded-xl bg-violet-700 px-8 py-4 text-base font-bold text-white shadow-lg transition hover:bg-violet-800"
             >
-              Install on GoHighLevel →
+              Get Started →
             </Link>
             <Link
               href="/docs"

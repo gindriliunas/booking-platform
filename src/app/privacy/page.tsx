@@ -88,8 +88,8 @@ export default function PrivacyPage() {
             </p>
             <ul className="mt-2 list-disc space-y-1 pl-6">
               <li>
-                <strong>GoHighLevel:</strong> Contact data is synced to the
-                Provider's GHL sub-account as part of the core integration.
+                <strong>Web builder:</strong> Contact data is synced to the
+                Provider's web builder account as part of the core integration.
               </li>
               <li>
                 <strong>Stripe:</strong> Payment data is processed by Stripe

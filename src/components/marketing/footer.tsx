@@ -10,7 +10,7 @@ export function MarketingFooter() {
             <VivZLogo size="sm" />
             <p className="mt-3 text-sm text-gray-500">
               Booking & session management built for service professionals.
-              Powered by GoHighLevel.
+              Integrates with your web builder.
             </p>
           </div>
 

@@ -5,9 +5,9 @@ import { MarketingFooter } from "@/components/marketing/footer";
 const steps = [
   {
     step: 1,
-    title: "Install VIV-Z from the GHL Marketplace",
+    title: "Install VIV-Z from your web builder's marketplace",
     description:
-      "Open your GoHighLevel account and navigate to the Marketplace. Search for 'VIV-Z' and click Install. You will be prompted to authorize the OAuth connection.",
+      "Open your web builder account and navigate to the Marketplace. Search for 'VIV-Z' and click Install. You will be prompted to authorize the OAuth connection.",
     note: "VIV-Z only requests the permissions it needs: read/write contacts, triggers, and custom fields. No billing or account-level access is requested.",
     cta: { label: "Go to install page →", href: "/install" },
   },
@@ -50,7 +50,7 @@ const steps = [
     step: 7,
     title: "(Optional) Set up GHL workflow triggers",
     description:
-      "In GoHighLevel, create a workflow that listens for VIV-Z custom webhook events (e.g. booking_created, session_completed). Use these triggers to send follow-up messages, apply tags, or enroll clients in nurture sequences.",
+      "In your web builder, create a workflow that listens for VIV-Z custom webhook events (e.g. booking_created, session_completed). Use these triggers to send follow-up messages, apply tags, or enroll clients in nurture sequences.",
     note: "The available trigger events are documented in the Docs page. You can combine multiple triggers to build powerful automated follow-up sequences.",
     cta: { label: "Read the full docs →", href: "/docs#ghl-sync" },
   },
@@ -76,8 +76,8 @@ export default function GettingStartedPage() {
             Set up VIV-Z in 7 steps
           </h1>
           <p className="text-lg text-gray-500">
-            From a fresh GHL account to taking client bookings — this guide
-            walks you through every step. Most users are live within 15 minutes.
+            From a fresh install to taking client bookings — this guide walks
+            you through every step. Most users are live within 15 minutes.
           </p>
           <div className="mt-6 flex gap-3">
             <Link

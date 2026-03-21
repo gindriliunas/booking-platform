@@ -4,11 +4,11 @@ import { MarketingFooter } from "@/components/marketing/footer";
 
 const faqs = [
   {
-    q: "How do I install VIV-Z on my GoHighLevel account?",
-    a: "Go to the GoHighLevel Marketplace, search for VIV-Z, and click Install. You will be taken through a short OAuth authorization flow. The whole process takes about 2 minutes.",
+    q: "How do I install VIV-Z?",
+    a: "Go to your web builder's Marketplace, search for VIV-Z, and click Install. You will be taken through a short OAuth authorization flow. The whole process takes about 2 minutes.",
   },
   {
-    q: "Do my clients need a GoHighLevel account?",
+    q: "Do my clients need an account with my web builder?",
     a: "No. Clients use VIV-Z's own client portal. They sign in with their email address and a one-time passcode — no third-party account needed.",
   },
   {
@@ -32,8 +32,8 @@ const faqs = [
     a: "Yes. When creating a booking, select the Group Session type and set a maximum number of participants. Clients can join the session from the portal until it is full.",
   },
   {
-    q: "How do GHL workflow triggers work?",
-    a: "After installing VIV-Z, you can configure GHL workflows to fire on VIV-Z events (booking created, session completed, etc.). VIV-Z sends a webhook to GHL when these events occur, which your GHL workflows can listen for.",
+    q: "How do workflow triggers work?",
+    a: "After installing VIV-Z, you can configure workflows in your web builder to fire on VIV-Z events (booking created, session completed, etc.). VIV-Z sends a webhook when these events occur, which your workflows can listen for.",
   },
 ];
 

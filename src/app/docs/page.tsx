@@ -6,12 +6,12 @@ const sections = [
   {
     id: "overview",
     title: "Overview",
-    content: `VIV-Z is a GoHighLevel Marketplace app that adds full-featured session and booking management to your GHL sub-account. It is built on Next.js, uses Stripe for payments, and syncs contacts and workflow triggers with GHL in real time.`,
+    content: `VIV-Z is a booking and session management app that integrates with your web builder. It is built on Next.js, uses Stripe for payments, and syncs contacts and workflow triggers in real time.`,
   },
   {
     id: "architecture",
     title: "Architecture",
-    content: `VIV-Z is a multi-tenant SaaS app. Each GHL sub-account that installs VIV-Z becomes an independent tenant (called a "provider"). Provider data, client records, bookings, packages, and subscriptions are all isolated per tenant.`,
+    content: `VIV-Z is a multi-tenant SaaS app. Each account that installs VIV-Z becomes an independent tenant (called a "provider"). Provider data, client records, bookings, packages, and subscriptions are all isolated per tenant.`,
     bullets: [
       "Authentication: Clerk (provider dashboard) + custom auth (client portal)",
       "Database: PostgreSQL via Neon Serverless",
@@ -24,9 +24,9 @@ const sections = [
   {
     id: "installation",
     title: "Installing VIV-Z",
-    content: `Install VIV-Z directly from the GoHighLevel Marketplace. The OAuth flow connects your GHL sub-account to VIV-Z automatically.`,
+    content: `Install VIV-Z directly from your web builder's marketplace. The OAuth flow connects your account to VIV-Z automatically.`,
     steps: [
-      "Open GoHighLevel and navigate to the Marketplace.",
+      "Open your web builder and navigate to the Marketplace.",
       'Search for "VIV-Z" and click Install.',
       "Authorize the OAuth connection when prompted.",
       "You will be redirected to the VIV-Z setup wizard.",
@@ -63,14 +63,14 @@ const sections = [
   },
   {
     id: "ghl-sync",
-    title: "GoHighLevel Sync",
+    title: "Web Builder Sync",
     content:
-      "VIV-Z connects to GHL via OAuth and keeps contact data and custom field values in sync.",
+      "VIV-Z connects to your web builder via OAuth and keeps contact data and custom field values in sync.",
     bullets: [
-      "When a client books their first session, VIV-Z creates or updates the corresponding GHL contact",
+      "When a client books their first session, VIV-Z creates or updates the corresponding contact in your web builder",
       "Tags are applied based on booking status (e.g. active-client, completed)",
-      "You can configure GHL workflow triggers to fire on booking events (created, completed, cancelled)",
-      "Webhook events from GHL (contact updates, tag changes) are received and processed in real time",
+      "You can configure workflow triggers to fire on booking events (created, completed, cancelled)",
+      "Webhook events (contact updates, tag changes) are received and processed in real time",
     ],
   },
   {

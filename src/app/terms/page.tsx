@@ -41,10 +41,10 @@ export default function TermsPage() {
             <h2 className="text-xl font-black text-gray-900">2. Description of Service</h2>
             <p className="mt-2 leading-relaxed">
               VIV-Z is a booking and session management platform designed to
-              integrate with GoHighLevel. The Service allows Providers to
+              integrate with your web builder. The Service allows Providers to
               manage client appointments, sell packages and subscriptions,
-              process payments via Stripe, and sync data with their GoHighLevel
-              sub-account.
+              process payments via Stripe, and sync data with their web builder
+              account.
             </p>
           </section>
 
@@ -81,10 +81,10 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-black text-gray-900">5. GoHighLevel Integration</h2>
             <p className="mt-2 leading-relaxed">
-              VIV-Z integrates with GoHighLevel via OAuth. By authorizing this
-              connection, you grant VIV-Z permission to read and write contact
-              data, custom fields, and trigger workflows within your GoHighLevel
-              sub-account. VIV-Z only accesses data necessary to provide the
+              VIV-Z integrates with your web builder via OAuth. By authorizing
+              this connection, you grant VIV-Z permission to read and write
+              contact data, custom fields, and trigger workflows within your
+              account. VIV-Z only accesses data necessary to provide the
               Service.
             </p>
           </section>
