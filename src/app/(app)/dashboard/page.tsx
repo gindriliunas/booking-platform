@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { bookings, clientPackages, clients, packages } from "@/lib/db/schema";
+import { bookings, clientPackages, clients, packages, providers } from "@/lib/db/schema";
 import { eq, count, gte, and, lt, sql } from "drizzle-orm";
 import Link from "next/link";
 import { getAdminProviderId } from "@/lib/auth-provider";
@@ -19,18 +19,48 @@ const DOT_COLORS = [
 
 async function getDashboardStats(providerId: string) {
   const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const todayStart      = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const todayEnd        = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+  const yesterdayStart  = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  const weekAgo         = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+  const monthStart      = new Date(now.getFullYear(), now.getMonth(), 1);
+  const lastMonthStart  = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  const lastMonthEnd    = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const revenueQuery = (from: Date, to?: Date) =>
+    db
+      .select({ total: sql<string>`COALESCE(SUM(${packages.price}::numeric), 0)` })
+      .from(clientPackages)
+      .innerJoin(clients, eq(clientPackages.clientId, clients.id))
+      .innerJoin(packages, eq(clientPackages.packageId, packages.id))
+      .where(
+        and(
+          eq(clients.providerId, providerId),
+          gte(clientPackages.purchasedAt, from),
+          ...(to ? [lt(clientPackages.purchasedAt, to)] : [])
+        )
+      );
 
   const [
+    provider,
     todayCount,
+    yesterdayCount,
     upcomingBookings,
     totalClients,
+    newClientsThisWeek,
     sessionsThisMonth,
+    sessionsLastMonth,
     revenueMTD,
+    revenueLastMonth,
     todaySessions,
   ] = await Promise.all([
+    db
+      .select({ currency: providers.currency })
+      .from(providers)
+      .where(eq(providers.id, providerId))
+      .then((r) => r[0]),
+
     db
       .select({ count: count() })
       .from(bookings)
@@ -39,6 +69,17 @@ async function getDashboardStats(providerId: string) {
           eq(bookings.providerId, providerId),
           gte(bookings.startTime, todayStart),
           lt(bookings.startTime, todayEnd)
+        )
+      ),
+
+    db
+      .select({ count: count() })
+      .from(bookings)
+      .where(
+        and(
+          eq(bookings.providerId, providerId),
+          gte(bookings.startTime, yesterdayStart),
+          lt(bookings.startTime, todayStart)
         )
       ),
 
@@ -70,6 +111,16 @@ async function getDashboardStats(providerId: string) {
 
     db
       .select({ count: count() })
+      .from(clients)
+      .where(
+        and(
+          eq(clients.providerId, providerId),
+          gte(clients.createdAt, weekAgo)
+        )
+      ),
+
+    db
+      .select({ count: count() })
       .from(bookings)
       .where(
         and(
@@ -79,18 +130,18 @@ async function getDashboardStats(providerId: string) {
       ),
 
     db
-      .select({
-        total: sql<string>`COALESCE(SUM(${packages.price}::numeric), 0)`,
-      })
-      .from(clientPackages)
-      .innerJoin(clients, eq(clientPackages.clientId, clients.id))
-      .innerJoin(packages, eq(clientPackages.packageId, packages.id))
+      .select({ count: count() })
+      .from(bookings)
       .where(
         and(
-          eq(clients.providerId, providerId),
-          gte(clientPackages.purchasedAt, monthStart)
+          eq(bookings.providerId, providerId),
+          gte(bookings.startTime, lastMonthStart),
+          lt(bookings.startTime, lastMonthEnd)
         )
       ),
+
+    revenueQuery(monthStart),
+    revenueQuery(lastMonthStart, lastMonthEnd),
 
     db
       .select({ startTime: bookings.startTime, endTime: bookings.endTime })
@@ -105,14 +156,55 @@ async function getDashboardStats(providerId: string) {
       .orderBy(bookings.startTime),
   ]);
 
+  const currency = provider?.currency ?? "usd";
+
+  const todayN     = todayCount[0]?.count ?? 0;
+  const yesterdayN = yesterdayCount[0]?.count ?? 0;
+  const totalC     = totalClients[0]?.count ?? 0;
+  const newThisWeek = newClientsThisWeek[0]?.count ?? 0;
+  const sessionsNow  = sessionsThisMonth[0]?.count ?? 0;
+  const sessionsLast = sessionsLastMonth[0]?.count ?? 0;
+  const revNow  = parseFloat(revenueMTD[0]?.total ?? "0");
+  const revLast = parseFloat(revenueLastMonth[0]?.total ?? "0");
+
+  function diffLabel(now: number, prev: number, unit: string, suffix: string): string {
+    const diff = now - prev;
+    if (diff === 0) return `Same as ${suffix}`;
+    return `${diff > 0 ? "↑" : "↓"} ${Math.abs(diff)} ${unit} vs ${suffix}`;
+  }
+
+  function pctLabel(now: number, prev: number, suffix: string): string {
+    if (prev === 0 && now === 0) return `Same as ${suffix}`;
+    if (prev === 0) return `↑ ${now} vs ${suffix}`;
+    const pct = Math.round(((now - prev) / prev) * 100);
+    if (pct === 0) return `Same as ${suffix}`;
+    return `${pct > 0 ? "↑" : "↓"} ${Math.abs(pct)}% vs ${suffix}`;
+  }
+
+  function revLabel(now: number, prev: number, cur: string, suffix: string): string {
+    const diff = now - prev;
+    if (diff === 0) return `Same as ${suffix}`;
+    const abs = formatCurrency(Math.abs(diff), cur);
+    return `${diff > 0 ? "↑" : "↓"} ${abs} vs ${suffix}`;
+  }
+
   return {
-    todayCount: todayCount[0]?.count ?? 0,
+    currency,
+    todayCount:       todayN,
     upcomingBookings,
-    totalClients: totalClients[0]?.count ?? 0,
-    sessionsThisMonth: sessionsThisMonth[0]?.count ?? 0,
-    revenueMTD: parseFloat(revenueMTD[0]?.total ?? "0"),
+    totalClients:     totalC,
+    sessionsThisMonth: sessionsNow,
+    revenueMTD:        revNow,
     todayFirst: todaySessions[0] ?? null,
-    todayLast: todaySessions[todaySessions.length - 1] ?? null,
+    todayLast:  todaySessions[todaySessions.length - 1] ?? null,
+    trends: {
+      today:    diffLabel(todayN,    yesterdayN,  "session",  "yesterday"),
+      clients:  newThisWeek === 0
+        ? "No new clients this week"
+        : `+${newThisWeek} new this week`,
+      sessions: pctLabel(sessionsNow, sessionsLast, "last month"),
+      revenue:  revLabel(revNow, revLast, currency, "last month"),
+    },
   };
 }
 
@@ -126,7 +218,7 @@ function fmtTime(date: Date) {
 
 function sessionLabel(startTime: Date): string {
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const today    = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
   const d = new Date(startTime.getFullYear(), startTime.getMonth(), startTime.getDate());
   if (d.getTime() === today.getTime()) return "Today";
@@ -171,22 +263,22 @@ export default async function DashboardPage() {
         <StatCard
           title="Today's Sessions"
           value={String(stats.todayCount)}
-          trend="↑ 2 vs yesterday"
+          trend={stats.trends.today}
         />
         <StatCard
           title="Active Clients"
           value={String(stats.totalClients)}
-          trend="↑ 3 this week"
+          trend={stats.trends.clients}
         />
         <StatCard
           title="Sessions This Month"
           value={String(stats.sessionsThisMonth)}
-          trend="↑ 12% vs last month"
+          trend={stats.trends.sessions}
         />
         <StatCard
           title="Revenue (MTD)"
-          value={formatCurrency(stats.revenueMTD)}
-          trend="↑ $480 vs last month"
+          value={formatCurrency(stats.revenueMTD, stats.currency)}
+          trend={stats.trends.revenue}
         />
       </div>
 
@@ -208,29 +300,22 @@ export default async function DashboardPage() {
             <ul className="divide-y divide-gray-100 mt-2">
               {stats.upcomingBookings.map((b, i) => {
                 const start = new Date(b.startTime);
-                const end = new Date(b.endTime);
+                const end   = new Date(b.endTime);
                 const durationMins = Math.round(
                   (end.getTime() - start.getTime()) / 60000
                 );
-                const label = sessionLabel(start);
-                const timeStr = fmtTime(start);
                 const dot = DOT_COLORS[i % DOT_COLORS.length];
 
                 return (
-                  <li
-                    key={b.id}
-                    className="flex items-center justify-between py-3.5"
-                  >
+                  <li key={b.id} className="flex items-center justify-between py-3.5">
                     <div className="flex items-center gap-3 min-w-0">
-                      <span
-                        className={`h-2.5 w-2.5 rounded-full ${dot} shrink-0`}
-                      />
+                      <span className={`h-2.5 w-2.5 rounded-full ${dot} shrink-0`} />
                       <div className="min-w-0">
                         <p className="text-sm font-semibold text-gray-900 truncate">
                           {b.clientName ?? b.title ?? "Session"}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {label} · {timeStr} · {durationMins} min
+                          {sessionLabel(start)} · {fmtTime(start)} · {durationMins} min
                         </p>
                       </div>
                     </div>
@@ -252,7 +337,6 @@ export default async function DashboardPage() {
 
         {/* Right panel */}
         <div className="space-y-4">
-          {/* Mini Calendar */}
           <MiniCalendar />
 
           {/* Today's Load */}
@@ -292,11 +376,19 @@ function StatCard({
   value: string;
   trend: string;
 }) {
+  const isUp   = trend.startsWith("↑");
+  const isDown = trend.startsWith("↓");
   return (
     <div className="rounded-2xl bg-white shadow-sm p-6">
       <p className="text-sm text-gray-500">{title}</p>
       <p className="mt-2 text-3xl font-bold text-gray-900">{value}</p>
-      <p className="mt-1.5 text-xs font-medium text-green-600">{trend}</p>
+      <p
+        className={`mt-1.5 text-xs font-medium ${
+          isUp ? "text-green-600" : isDown ? "text-red-500" : "text-gray-400"
+        }`}
+      >
+        {trend}
+      </p>
     </div>
   );
 }
