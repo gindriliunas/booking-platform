@@ -5,7 +5,6 @@
  * Run: npx tsx scripts/seed-demo.ts
  */
 
-import { config } from "fs";
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
 import { eq } from "drizzle-orm";
