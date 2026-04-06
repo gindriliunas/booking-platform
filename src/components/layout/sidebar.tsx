@@ -7,7 +7,6 @@ import {
   Settings,
   LayoutDashboard,
   CalendarCheck,
-  Repeat,
   ClipboardList,
   X,
 } from "lucide-react";
@@ -18,7 +17,6 @@ const navItems = [
   { href: "/calendar", label: "Bookings", icon: CalendarCheck },
   { href: "/clients", label: "Clients", icon: Users },
   { href: "/packages", label: "Packages", icon: Package },
-  { href: "/subscriptions", label: "Subscriptions", icon: Repeat },
   { href: "/questionnaires", label: "Questionnaires", icon: ClipboardList },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
