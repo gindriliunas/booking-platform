@@ -141,19 +141,27 @@ function WeekDayHeader({ date }: { date: Date }) {
   const isToday =
     format(date, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
   return (
-    <div className="flex flex-col items-center pt-2 pb-1 gap-0.5">
-      <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wide leading-none">
+    <div style={{ textAlign: "center", padding: "3px 0 2px" }}>
+      <div style={{ fontSize: 10, color: "#9ca3af", lineHeight: 1, marginBottom: 2 }}>
         {initial}
-      </span>
-      <span
-        className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium leading-none ${
-          isToday
-            ? "bg-blue-600 text-white"
-            : "text-gray-700"
-        }`}
+      </div>
+      <div
+        style={{
+          display: "inline-flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: 20,
+          height: 20,
+          borderRadius: "50%",
+          fontSize: 11,
+          fontWeight: 500,
+          lineHeight: 1,
+          background: isToday ? "#2563eb" : "transparent",
+          color: isToday ? "#fff" : "#374151",
+        }}
       >
         {day}
-      </span>
+      </div>
     </div>
   );
 }
