@@ -141,7 +141,7 @@ function WeekDayHeader({ date }: { date: Date }) {
   const isToday =
     format(date, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
   return (
-    <div className="flex flex-col items-center pt-1 pb-0 gap-0">
+    <div className="flex flex-col items-center pt-2 pb-1 gap-0.5">
       <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wide leading-none">
         {initial}
       </span>

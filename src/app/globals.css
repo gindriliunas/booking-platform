@@ -41,14 +41,21 @@ body {
   overflow: visible !important;
   white-space: normal !important;
   padding: 0 !important;
-  min-height: 52px !important;
 }
 
+/* Unclip every ancestor of the header cells */
+.rbc-time-view,
 .rbc-time-header,
 .rbc-time-header-content,
 .rbc-time-header-content > .rbc-row,
 .rbc-row.rbc-month-header {
   overflow: visible !important;
+}
+
+/* Force events to span the full column width (no gap reserved for overlaps) */
+.rbc-day-slot .rbc-event {
+  width: calc(100% - 2px) !important;
+  left: 0 !important;
 }
 
 /* Ensure event text is not clipped by the event wrapper */
