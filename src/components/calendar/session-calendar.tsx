@@ -11,6 +11,7 @@ import {
   startOfHour,
 } from "date-fns";
 import { enUS } from "date-fns/locale";
+import { Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { BookingDialog } from "./booking-dialog";
@@ -95,6 +96,41 @@ const eventStyleGetter = (event: CalendarEvent) => {
   };
 };
 
+function CustomEvent({ event }: { event: CalendarEvent }) {
+  if (event.type === "blocked") {
+    return (
+      <div className="h-full flex flex-col justify-start overflow-hidden px-1 py-0.5">
+        <span className="text-xs font-medium leading-tight truncate opacity-80">{event.title}</span>
+      </div>
+    );
+  }
+
+  const timeStr = format(event.start, "h:mma").toLowerCase();
+
+  if (event.sessionType === "group") {
+    const count = event.participantCount ?? 0;
+    const max = event.maxParticipants ?? "?";
+    return (
+      <div className="h-full flex flex-col justify-start overflow-hidden px-1.5 py-1 gap-0.5">
+        <div className="flex items-center gap-1 min-w-0">
+          <Users className="h-3 w-3 shrink-0 opacity-70" />
+          <span className="text-xs font-semibold leading-tight truncate">{event.title}</span>
+        </div>
+        <span className="text-[10px] leading-tight opacity-75">{timeStr} · {count}/{max}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col justify-start overflow-hidden px-1.5 py-1 gap-0.5">
+      <span className="text-xs font-semibold leading-tight truncate">
+        {event.clientName ?? event.title}
+      </span>
+      <span className="text-[10px] leading-tight opacity-75">{timeStr}</span>
+    </div>
+  );
+}
+
 function parseTime(t: string): Date {
   const [h, m] = t.split(":").map(Number);
   const d = new Date();
@@ -116,9 +152,12 @@ export function SessionCalendar({
   const calMax = availability.length
     ? parseTime(availability.reduce((a, b) => (a.endTime > b.endTime ? a : b)).endTime)
     : parseTime("22:00");
+  const [isMobile, setIsMobile] = useState(false);
   const [view, setView] = useState<View>(Views.WEEK);
   useEffect(() => {
-    if (window.innerWidth < 768) setView(Views.DAY);
+    const mobile = window.innerWidth < 768;
+    setIsMobile(mobile);
+    if (mobile) setView(Views.DAY);
   }, []);
   const [date, setDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState<{
@@ -162,7 +201,7 @@ export function SessionCalendar({
             setBookingOpen(true);
           }}
         >
-          + Book Session
+          + Book
         </Button>
         <Button
           size="sm"
@@ -176,7 +215,7 @@ export function SessionCalendar({
             setBookingOpen(true);
           }}
         >
-          + Group Session
+          + Group
         </Button>
         <Button
           size="sm"
@@ -187,9 +226,25 @@ export function SessionCalendar({
             setBlockOpen(true);
           }}
         >
-          Block Time
+          Block
         </Button>
-        {/* Legend — hidden on mobile */}
+
+        {/* Mobile view switcher */}
+        {isMobile && (
+          <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium ml-auto">
+            {([Views.DAY, Views.AGENDA] as View[]).map((v) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={`px-3 py-1.5 capitalize transition ${view === v ? "bg-indigo-600 text-white" : "bg-white text-gray-600 hover:bg-gray-50"}`}
+              >
+                {v}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Legend — desktop only */}
         <div className="hidden sm:flex ml-auto items-center gap-3 text-xs text-gray-500">
           <span className="flex items-center gap-1">
             <span className="h-3 w-3 rounded-sm bg-indigo-100 border border-indigo-400" /> Scheduled
@@ -213,7 +268,10 @@ export function SessionCalendar({
       </div>
 
       {/* Calendar */}
-      <div className="rounded-xl border border-gray-200 bg-white overflow-hidden" style={{ height: "min(680px, calc(100vh - 200px))" }}>
+      <div
+        className="rounded-xl border border-gray-200 bg-white overflow-hidden"
+        style={{ height: isMobile ? "calc(100dvh - 180px)" : "min(680px, calc(100vh - 200px))" }}
+      >
         <Calendar
           localizer={localizer}
           events={events}
@@ -227,20 +285,13 @@ export function SessionCalendar({
           eventPropGetter={eventStyleGetter}
           startAccessor="start"
           endAccessor="end"
-          titleAccessor={(e) => {
-            if (e.sessionType === "group") {
-              const count = e.participantCount ?? 0;
-              const max = e.maxParticipants ?? "?";
-              return `${e.title ?? "Group Session"} — ${count}/${max}`;
-            }
-            return e.clientName ? `${e.title ?? "Session"} — ${e.clientName}` : (e.title ?? "Session");
-          }}
-          views={[Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+          components={{ event: CustomEvent }}
+          views={isMobile ? [Views.DAY, Views.AGENDA] : [Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
           step={30}
           timeslots={2}
           min={calMin}
           max={calMax}
-          className="p-2"
+          className="p-1"
         />
       </div>
 

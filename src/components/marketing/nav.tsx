@@ -32,8 +32,8 @@ export function MarketingNav() {
             Client portal
           </Link>
           <Link
-            href="/dashboard"
-            className="hidden text-sm font-medium text-gray-600 transition hover:text-violet-700 md:block"
+            href="/sign-in"
+            className="text-sm font-medium text-gray-600 transition hover:text-violet-700"
           >
             Sign In
           </Link>

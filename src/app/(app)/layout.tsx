@@ -7,7 +7,7 @@ import { DashboardShell } from "./dashboard-shell";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { userId } = await auth();
-  if (!userId) redirect("/portal/sign-in");
+  if (!userId) redirect("/sign-in");
 
   const [provider] = await db
     .select({ id: providers.id })
