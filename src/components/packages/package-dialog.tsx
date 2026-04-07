@@ -31,7 +31,7 @@ interface Package {
   currency: string;
   validityDays?: number | null;
   isActive: boolean;
-  isPublic: boolean;
+  isPublic?: boolean;
   sessionType?: "individual" | "group";
 }
 
@@ -68,7 +68,7 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
       setPrice(pkg.price);
       setCurrency(pkg.currency);
       setValidityDays(pkg.validityDays ? String(pkg.validityDays) : "");
-      setIsPublic(pkg.isPublic);
+      setIsPublic(pkg.isPublic ?? true);
     } else {
       setSessionType("individual");
       setName("");

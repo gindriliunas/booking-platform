@@ -24,7 +24,7 @@ interface Package {
   stripePriceId?: string | null;
   stripeProductId?: string | null;
   isActive: boolean;
-  isPublic: boolean;
+  isPublic?: boolean;
   sessionType?: "individual" | "group";
   createdAt: string;
 }
@@ -41,7 +41,7 @@ interface Plan {
   stripePriceId?: string | null;
   stripeProductId?: string | null;
   isActive: boolean;
-  isPublic: boolean;
+  isPublic?: boolean;
   sessionType?: "individual" | "group";
   createdAt: string;
 }

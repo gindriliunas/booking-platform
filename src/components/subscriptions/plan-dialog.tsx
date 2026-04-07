@@ -28,7 +28,7 @@ interface Plan {
   price: string;
   currency: string;
   isActive: boolean;
-  isPublic: boolean;
+  isPublic?: boolean;
   sessionType?: "individual" | "group";
 }
 
@@ -69,7 +69,7 @@ export function PlanDialog({ open, onOpenChange, providerId, defaultCurrency = "
       setBillingPeriod(plan.billingPeriod);
       setPrice(plan.price);
       setCurrency(plan.currency);
-      setIsPublic(plan.isPublic);
+      setIsPublic(plan.isPublic ?? true);
     } else {
       setSessionType("individual");
       setName("");
