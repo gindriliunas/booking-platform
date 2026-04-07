@@ -1,6 +1,7 @@
 import { UserButton } from "@clerk/nextjs";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { CalendarDays, Package, LayoutDashboard, UserCircle, CalendarPlus, ClipboardList } from "lucide-react";
 
@@ -14,7 +15,13 @@ const navItems = [
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
   const { userId } = await auth();
-  if (!userId) redirect("/portal/sign-in");
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") ?? "";
+  const isAuthPage =
+    pathname.startsWith("/portal/sign-in") || pathname.startsWith("/portal/sign-up");
+
+  if (!userId && !isAuthPage) redirect("/portal/sign-in");
+  if (isAuthPage) return <>{children}</>;
 
   return (
     <div className="flex h-screen overflow-hidden">

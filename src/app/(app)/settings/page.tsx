@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { useProvider } from "@/components/provider-context";
 
 const CURRENCIES = [
@@ -402,696 +403,694 @@ export default function SettingsPage() {
         <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-800">{error}</div>
       )}
 
-      {/* Profile */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Settings className="h-4 w-4 text-gray-500" />
-            Provider Profile
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleProfileSave} className="space-y-5">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="space-y-1">
-                <Label htmlFor="settingName">Display Name *</Label>
-                <Input
-                  id="settingName"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name or business name"
-                  required
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="settingServiceType">Service Type</Label>
-                <Input
-                  id="settingServiceType"
-                  value={serviceType}
-                  onChange={(e) => setServiceType(e.target.value)}
-                  placeholder="e.g. Personal Trainer, Therapist"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="settingEmail">Email</Label>
-                <Input
-                  id="settingEmail"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                />
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="settingPhone">Phone</Label>
-                <Input
-                  id="settingPhone"
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+1 (555) 000-0000"
-                />
-              </div>
-            </div>
-            <hr className="border-gray-100" />
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="space-y-1">
-                <Label>Timezone</Label>
-                <Select value={timezone} onValueChange={setTimezone}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {TIMEZONES.map((tz) => (
-                      <SelectItem key={tz} value={tz}>{tz}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label>Default Session Duration</Label>
-                <Select value={sessionDurationMins} onValueChange={setSessionDurationMins}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {SESSION_DURATIONS.map((d) => (
-                      <SelectItem key={d} value={String(d)}>{d} minutes</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1">
-                <Label>Currency</Label>
-                <Select value={currency} onValueChange={setCurrency}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {CURRENCIES.map((c) => (
-                      <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <hr className="border-gray-100" />
-            <div className="space-y-3">
-              <Label>Client Self-Booking</Label>
-              <label className="flex items-center justify-between gap-3 cursor-pointer">
-                <div>
-                  <p className="text-sm text-gray-700">Allow 1-to-1 self-booking</p>
-                  <p className="text-xs text-gray-400">Clients can book individual sessions themselves</p>
+      <Tabs defaultValue="profile">
+        <TabsList className="w-full justify-start">
+          <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="finance">Finance</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar</TabsTrigger>
+          <TabsTrigger value="portal">Portal</TabsTrigger>
+        </TabsList>
+
+        {/* ── Profile ── */}
+        <TabsContent value="profile" className="mt-6 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Settings className="h-4 w-4 text-gray-500" />
+                Provider Profile
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleProfileSave} className="space-y-5">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="settingName">Display Name *</Label>
+                    <Input
+                      id="settingName"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Your name or business name"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="settingServiceType">Service Type</Label>
+                    <Input
+                      id="settingServiceType"
+                      value={serviceType}
+                      onChange={(e) => setServiceType(e.target.value)}
+                      placeholder="e.g. Personal Trainer, Therapist"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="settingEmail">Email</Label>
+                    <Input
+                      id="settingEmail"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="settingPhone">Phone</Label>
+                    <Input
+                      id="settingPhone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="+1 (555) 000-0000"
+                    />
+                  </div>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={allowIndividualSelfBook}
-                  onChange={(e) => setAllowIndividualSelfBook(e.target.checked)}
-                  className="h-4 w-4 rounded"
-                />
-              </label>
-              <label className="flex items-center justify-between gap-3 cursor-pointer">
-                <div>
-                  <p className="text-sm text-gray-700">Allow group self-booking</p>
-                  <p className="text-xs text-gray-400">Clients can book group sessions themselves</p>
+                <hr className="border-gray-100" />
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label>Timezone</Label>
+                    <Select value={timezone} onValueChange={setTimezone}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {TIMEZONES.map((tz) => (
+                          <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Default Session Duration</Label>
+                    <Select value={sessionDurationMins} onValueChange={setSessionDurationMins}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {SESSION_DURATIONS.map((d) => (
+                          <SelectItem key={d} value={String(d)}>{d} minutes</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1">
+                    <Label>Currency</Label>
+                    <Select value={currency} onValueChange={setCurrency}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {CURRENCIES.map((c) => (
+                          <SelectItem key={c.code} value={c.code}>{c.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={allowGroupSelfBook}
-                  onChange={(e) => setAllowGroupSelfBook(e.target.checked)}
-                  className="h-4 w-4 rounded"
-                />
-              </label>
-              <label className="flex items-center justify-between gap-3 cursor-pointer">
-                <div>
-                  <p className="text-sm text-gray-700">Enable waitlist for group sessions</p>
-                  <p className="text-xs text-gray-400">When a group session is full, clients can join a waitlist and are notified when a spot opens</p>
+                <hr className="border-gray-100" />
+                <div className="space-y-3">
+                  <Label>Client Self-Booking</Label>
+                  <label className="flex items-center justify-between gap-3 cursor-pointer">
+                    <div>
+                      <p className="text-sm text-gray-700">Allow 1-to-1 self-booking</p>
+                      <p className="text-xs text-gray-400">Clients can book individual sessions themselves</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={allowIndividualSelfBook}
+                      onChange={(e) => setAllowIndividualSelfBook(e.target.checked)}
+                      className="h-4 w-4 rounded"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-3 cursor-pointer">
+                    <div>
+                      <p className="text-sm text-gray-700">Allow group self-booking</p>
+                      <p className="text-xs text-gray-400">Clients can book group sessions themselves</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={allowGroupSelfBook}
+                      onChange={(e) => setAllowGroupSelfBook(e.target.checked)}
+                      className="h-4 w-4 rounded"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-3 cursor-pointer">
+                    <div>
+                      <p className="text-sm text-gray-700">Enable waitlist for group sessions</p>
+                      <p className="text-xs text-gray-400">When a group session is full, clients can join a waitlist and are notified when a spot opens</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={enableWaitlist}
+                      onChange={(e) => setEnableWaitlist(e.target.checked)}
+                      className="h-4 w-4 rounded"
+                    />
+                  </label>
                 </div>
-                <input
-                  type="checkbox"
-                  checked={enableWaitlist}
-                  onChange={(e) => setEnableWaitlist(e.target.checked)}
-                  className="h-4 w-4 rounded"
-                />
-              </label>
-            </div>
-            <div className="flex items-center gap-3 pt-2">
-              <Button type="submit" disabled={profileSaving || !provider}>
-                {profileSaving ? "Saving…" : "Save Profile"}
-              </Button>
-              {profileSaved && (
-                <span className="flex items-center gap-1.5 text-sm text-green-600">
-                  <Check className="h-4 w-4" /> Saved
-                </span>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Stripe */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base">Stripe</CardTitle>
-            <div className="flex items-center gap-2">
-              {provider?.stripeConfigured ? (
-                <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
-                  Connected
-                </span>
-              ) : (
-                <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
-                  Not connected
-                </span>
-              )}
-              <a
-                href="https://dashboard.stripe.com/apikeys"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
-              >
-                Stripe Dashboard <ExternalLink className="h-3 w-3" />
-              </a>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {provider?.stripeConfigured && (
-            <div className="mb-4 rounded-lg bg-gray-50 border border-gray-200 p-3 text-sm space-y-1">
-              <div className="flex justify-between text-gray-700">
-                <span className="text-gray-500">Secret key</span>
-                <code className="font-mono">{provider.stripeSecretKeyMasked}</code>
-              </div>
-              {provider.stripeWebhookSecretMasked && (
-                <div className="flex justify-between text-gray-700">
-                  <span className="text-gray-500">Webhook secret</span>
-                  <code className="font-mono">{provider.stripeWebhookSecretMasked}</code>
+                <div className="flex items-center gap-3 pt-2">
+                  <Button type="submit" disabled={profileSaving || !provider}>
+                    {profileSaving ? "Saving…" : "Save Profile"}
+                  </Button>
+                  {profileSaved && (
+                    <span className="flex items-center gap-1.5 text-sm text-green-600">
+                      <Check className="h-4 w-4" /> Saved
+                    </span>
+                  )}
                 </div>
-              )}
-            </div>
-          )}
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
 
-          <form onSubmit={handleStripeSave} className="space-y-4">
-            <div className="space-y-1">
-              <Label htmlFor="stripeSecretKey">
-                {provider?.stripeConfigured ? "Replace Secret Key" : "Secret Key"}
-              </Label>
-              <div className="relative">
-                <Input
-                  id="stripeSecretKey"
-                  type={showSecretKey ? "text" : "password"}
-                  value={stripeSecretKey}
-                  onChange={(e) => setStripeSecretKey(e.target.value)}
-                  placeholder="sk_live_… or sk_test_…"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowSecretKey((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showSecretKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
+        {/* ── Finance ── */}
+        <TabsContent value="finance" className="mt-6 space-y-6">
+          {/* Stripe */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Stripe</CardTitle>
+                <div className="flex items-center gap-2">
+                  {provider?.stripeConfigured ? (
+                    <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                      Connected
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
+                      Not connected
+                    </span>
+                  )}
+                  <a
+                    href="https://dashboard.stripe.com/apikeys"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
+                  >
+                    Stripe Dashboard <ExternalLink className="h-3 w-3" />
+                  </a>
+                </div>
               </div>
-              <p className="text-xs text-gray-500">
-                Found in Stripe Dashboard → Developers → API keys. Use a restricted key with Products, Prices, and Checkout Sessions write access.
-              </p>
-            </div>
-
-            <div className="space-y-1">
-              <Label htmlFor="stripeWebhookSecret">
-                {provider?.stripeWebhookSecretMasked ? "Replace Webhook Secret" : "Webhook Secret"}{" "}
-                <span className="text-gray-400">(optional)</span>
-              </Label>
-              <div className="relative">
-                <Input
-                  id="stripeWebhookSecret"
-                  type={showWebhookSecret ? "text" : "password"}
-                  value={stripeWebhookSecret}
-                  onChange={(e) => setStripeWebhookSecret(e.target.value)}
-                  placeholder="whsec_…"
-                  className="pr-10"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowWebhookSecret((v) => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  {showWebhookSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <p className="text-xs text-gray-500">
-                Required to verify Stripe webhook events. Set your webhook endpoint to{" "}
-                <code className="bg-gray-100 px-1 rounded text-xs">
-                  {process.env.NEXT_PUBLIC_APP_URL ?? "https://yourapp.com"}/api/stripe/webhook
-                </code>
-              </p>
-            </div>
-
-            {stripeError && <p className="text-sm text-red-600">{stripeError}</p>}
-
-            <div className="flex items-center gap-3">
-              <Button
-                type="submit"
-                disabled={stripeSaving || (!stripeSecretKey && !stripeWebhookSecret)}
-              >
-                {stripeSaving ? "Saving…" : provider?.stripeConfigured ? "Update Keys" : "Connect Stripe"}
-              </Button>
-              {stripeSaved && (
-                <span className="flex items-center gap-1.5 text-sm text-green-600">
-                  <Check className="h-4 w-4" /> Saved
-                </span>
-              )}
+            </CardHeader>
+            <CardContent>
               {provider?.stripeConfigured && (
+                <div className="mb-4 rounded-lg bg-gray-50 border border-gray-200 p-3 text-sm space-y-1">
+                  <div className="flex justify-between text-gray-700">
+                    <span className="text-gray-500">Secret key</span>
+                    <code className="font-mono">{provider.stripeSecretKeyMasked}</code>
+                  </div>
+                  {provider.stripeWebhookSecretMasked && (
+                    <div className="flex justify-between text-gray-700">
+                      <span className="text-gray-500">Webhook secret</span>
+                      <code className="font-mono">{provider.stripeWebhookSecretMasked}</code>
+                    </div>
+                  )}
+                </div>
+              )}
+              <form onSubmit={handleStripeSave} className="space-y-4">
+                <div className="space-y-1">
+                  <Label htmlFor="stripeSecretKey">
+                    {provider?.stripeConfigured ? "Replace Secret Key" : "Secret Key"}
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="stripeSecretKey"
+                      type={showSecretKey ? "text" : "password"}
+                      value={stripeSecretKey}
+                      onChange={(e) => setStripeSecretKey(e.target.value)}
+                      placeholder="sk_live_… or sk_test_…"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSecretKey((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showSecretKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Found in Stripe Dashboard → Developers → API keys. Use a restricted key with Products, Prices, and Checkout Sessions write access.
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="stripeWebhookSecret">
+                    {provider?.stripeWebhookSecretMasked ? "Replace Webhook Secret" : "Webhook Secret"}{" "}
+                    <span className="text-gray-400">(optional)</span>
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="stripeWebhookSecret"
+                      type={showWebhookSecret ? "text" : "password"}
+                      value={stripeWebhookSecret}
+                      onChange={(e) => setStripeWebhookSecret(e.target.value)}
+                      placeholder="whsec_…"
+                      className="pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowWebhookSecret((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showWebhookSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    Required to verify Stripe webhook events. Set your webhook endpoint to{" "}
+                    <code className="bg-gray-100 px-1 rounded text-xs">
+                      {process.env.NEXT_PUBLIC_APP_URL ?? "https://yourapp.com"}/api/stripe/webhook
+                    </code>
+                  </p>
+                </div>
+                {stripeError && <p className="text-sm text-red-600">{stripeError}</p>}
+                <div className="flex items-center gap-3">
+                  <Button
+                    type="submit"
+                    disabled={stripeSaving || (!stripeSecretKey && !stripeWebhookSecret)}
+                  >
+                    {stripeSaving ? "Saving…" : provider?.stripeConfigured ? "Update Keys" : "Connect Stripe"}
+                  </Button>
+                  {stripeSaved && (
+                    <span className="flex items-center gap-1.5 text-sm text-green-600">
+                      <Check className="h-4 w-4" /> Saved
+                    </span>
+                  )}
+                  {provider?.stripeConfigured && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={handleStripeDisconnect}
+                      disabled={stripeSaving}
+                      className="ml-auto text-red-600 border-red-200 hover:bg-red-50"
+                    >
+                      Disconnect
+                    </Button>
+                  )}
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Cancellation Policy */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Clock className="h-4 w-4 text-gray-500" />
+                Cancellation Policy
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleCancelPolicySave} className="space-y-4">
+                <label className="flex items-center justify-between gap-3 cursor-pointer">
+                  <div>
+                    <p className="text-sm text-gray-700">Enable late cancellation policy</p>
+                    <p className="text-xs text-gray-400">Apply a penalty when clients cancel within a set window</p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={cancelEnabled}
+                    onChange={(e) => setCancelEnabled(e.target.checked)}
+                    className="h-4 w-4 rounded"
+                  />
+                </label>
+                {cancelEnabled && (
+                  <div className="space-y-4 border-t border-gray-100 pt-4">
+                    <div className="space-y-1">
+                      <Label htmlFor="cancelWindow">Cancellation window (hours)</Label>
+                      <Input
+                        id="cancelWindow"
+                        type="number"
+                        min="1"
+                        max="168"
+                        value={cancelWindowHours}
+                        onChange={(e) => setCancelWindowHours(e.target.value)}
+                        className="w-32"
+                      />
+                      <p className="text-xs text-gray-400">Cancellations within this many hours of the session start are considered late</p>
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Late cancellation penalty</Label>
+                      <Select value={cancelAction} onValueChange={(v) => setCancelAction(v as "deduct_session" | "charge")}>
+                        <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="deduct_session">Deduct session credit</SelectItem>
+                          <SelectItem value="charge">Charge a fee</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {cancelAction === "charge" && (
+                      <div className="space-y-1">
+                        <Label htmlFor="cancelCharge">Charge amount ({currency.toUpperCase()})</Label>
+                        <Input
+                          id="cancelCharge"
+                          type="number"
+                          min="1"
+                          step="0.01"
+                          value={cancelChargeAmount}
+                          onChange={(e) => setCancelChargeAmount(e.target.value)}
+                          placeholder="e.g. 25.00"
+                          className="w-40"
+                        />
+                        <p className="text-xs text-gray-400">Charged to the client&apos;s saved payment method. If no payment method is on file, a manual collection notice is logged.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+                <div className="flex items-center gap-3 pt-1">
+                  <Button type="submit" disabled={cancelSaving || !provider}>
+                    {cancelSaving ? "Saving…" : "Save Policy"}
+                  </Button>
+                  {cancelSaved && (
+                    <span className="flex items-center gap-1.5 text-sm text-green-600">
+                      <Check className="h-4 w-4" /> Saved
+                    </span>
+                  )}
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Invoice Settings */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <FileText className="h-4 w-4 text-gray-500" />
+                Invoice Settings
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleInvoiceSave} className="space-y-5">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                  <div className="space-y-1">
+                    <Label htmlFor="invoiceBusinessName">Business Name</Label>
+                    <Input
+                      id="invoiceBusinessName"
+                      value={invoiceBusinessName}
+                      onChange={(e) => setInvoiceBusinessName(e.target.value)}
+                      placeholder="Acme Fitness LLC"
+                    />
+                    <p className="text-xs text-gray-400">Appears on invoices instead of your display name</p>
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="invoiceTaxId">Tax ID / VAT Number</Label>
+                    <Input
+                      id="invoiceTaxId"
+                      value={invoiceTaxId}
+                      onChange={(e) => setInvoiceTaxId(e.target.value)}
+                      placeholder="e.g. US123456789"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="invoiceAddress">Business Address</Label>
+                  <textarea
+                    id="invoiceAddress"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    rows={2}
+                    value={invoiceAddress}
+                    onChange={(e) => setInvoiceAddress(e.target.value)}
+                    placeholder="123 Main St, New York, NY 10001"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label>Business Logo</Label>
+                  {invoiceLogoUrl ? (
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={invoiceLogoUrl}
+                        alt="Invoice logo"
+                        className="h-14 max-w-[180px] object-contain rounded border border-gray-200 bg-gray-50 p-1"
+                      />
+                      <div className="flex flex-col gap-1.5">
+                        <label htmlFor="logoUpload" className="cursor-pointer text-xs text-indigo-600 hover:underline">
+                          Replace image
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setInvoiceLogoUrl("")}
+                          className="text-xs text-red-500 hover:underline text-left"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <label
+                      htmlFor="logoUpload"
+                      className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-colors"
+                    >
+                      <svg className="h-6 w-6 text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                      </svg>
+                      <span className="text-sm text-gray-500">Click to upload logo</span>
+                      <span className="text-xs text-gray-400 mt-0.5">PNG, JPG, SVG — max 500 KB</span>
+                    </label>
+                  )}
+                  <input
+                    id="logoUpload"
+                    type="file"
+                    accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 500 * 1024) {
+                        alert("Image must be under 500 KB");
+                        e.target.value = "";
+                        return;
+                      }
+                      const reader = new FileReader();
+                      reader.onload = () => setInvoiceLogoUrl(reader.result as string);
+                      reader.readAsDataURL(file);
+                      e.target.value = "";
+                    }}
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label htmlFor="invoiceFooterNote">Footer Note</Label>
+                  <textarea
+                    id="invoiceFooterNote"
+                    className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    rows={2}
+                    value={invoiceFooterNote}
+                    onChange={(e) => setInvoiceFooterNote(e.target.value)}
+                    placeholder="Thank you for your business! Payment is due within 7 days."
+                  />
+                </div>
+                <hr className="border-gray-100" />
+                <div className="space-y-3">
+                  <Label>Auto-send invoices</Label>
+                  <label className="flex items-center justify-between gap-3 cursor-pointer">
+                    <div>
+                      <p className="text-sm text-gray-700">Send when a package is assigned</p>
+                      <p className="text-xs text-gray-400">Automatically email an invoice to the client when a package is manually assigned</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={autoSendInvoiceOnPackage}
+                      onChange={(e) => setAutoSendInvoiceOnPackage(e.target.checked)}
+                      className="h-4 w-4 rounded"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between gap-3 cursor-pointer">
+                    <div>
+                      <p className="text-sm text-gray-700">Send when a subscription is assigned</p>
+                      <p className="text-xs text-gray-400">Automatically email an invoice to the client when a subscription is manually assigned</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={autoSendInvoiceOnSubscription}
+                      onChange={(e) => setAutoSendInvoiceOnSubscription(e.target.checked)}
+                      className="h-4 w-4 rounded"
+                    />
+                  </label>
+                </div>
+                <div className="flex items-center gap-3 pt-1">
+                  <Button type="submit" disabled={invoiceSaving || !provider}>
+                    {invoiceSaving ? "Saving…" : "Save Invoice Settings"}
+                  </Button>
+                  {invoiceSaved && (
+                    <span className="flex items-center gap-1.5 text-sm text-green-600">
+                      <Check className="h-4 w-4" /> Saved
+                    </span>
+                  )}
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Calendar ── */}
+        <TabsContent value="calendar" className="mt-6 space-y-6">
+          {/* Google Calendar */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Calendar className="h-4 w-4 text-gray-500" />
+                  Google Calendar
+                </CardTitle>
+                {gcalConnected ? (
+                  <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                    Connected
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
+                    Not connected
+                  </span>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-gray-500">
+                Sync your bookings to Google Calendar so sessions appear alongside your other events.
+              </p>
+              {gcalConnected ? (
+                <div className="space-y-3">
+                  <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800">
+                    Google Calendar is connected. New bookings will sync automatically.
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleGcalDisconnect}
+                    disabled={gcalDisconnecting || !provider}
+                    className="text-red-600 border-red-200 hover:bg-red-50"
+                  >
+                    {gcalDisconnecting ? "Disconnecting…" : "Disconnect"}
+                  </Button>
+                </div>
+              ) : (
+                <Button type="button" asChild disabled={!provider}>
+                  <a href={`/api/google-calendar/connect?providerId=${provider?.id ?? ""}`}>
+                    Connect Google Calendar
+                  </a>
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Weekly Availability */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Clock className="h-4 w-4 text-gray-500" />
+                Weekly Availability
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleAvailabilitySave} className="space-y-3">
+                {DAYS.map((day, i) => (
+                  <div key={day} className="flex items-center gap-3">
+                    <label className="flex items-center gap-2 w-12 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={availSlots[i].enabled}
+                        onChange={(e) =>
+                          setAvailSlots((prev) =>
+                            prev.map((s, j) => j === i ? { ...s, enabled: e.target.checked } : s)
+                          )
+                        }
+                        className="rounded"
+                      />
+                      <span className="text-sm text-gray-700">{day}</span>
+                    </label>
+                    {availSlots[i].enabled ? (
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="time"
+                          value={availSlots[i].startTime}
+                          onChange={(e) =>
+                            setAvailSlots((prev) =>
+                              prev.map((s, j) => j === i ? { ...s, startTime: e.target.value } : s)
+                            )
+                          }
+                          className="w-32 text-sm"
+                        />
+                        <span className="text-gray-400 text-sm">to</span>
+                        <Input
+                          type="time"
+                          value={availSlots[i].endTime}
+                          onChange={(e) =>
+                            setAvailSlots((prev) =>
+                              prev.map((s, j) => j === i ? { ...s, endTime: e.target.value } : s)
+                            )
+                          }
+                          className="w-32 text-sm"
+                        />
+                      </div>
+                    ) : (
+                      <span className="text-sm text-gray-400">Unavailable</span>
+                    )}
+                  </div>
+                ))}
+                <div className="flex items-center gap-3 pt-2">
+                  <Button type="submit" disabled={availSaving}>
+                    {availSaving ? "Saving…" : "Save Availability"}
+                  </Button>
+                  {availSaved && (
+                    <span className="flex items-center gap-1.5 text-sm text-green-600">
+                      <Check className="h-4 w-4" /> Saved
+                    </span>
+                  )}
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* ── Portal ── */}
+        <TabsContent value="portal" className="mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Link2 className="h-4 w-4 text-gray-500" />
+                Client Portal
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              <p className="text-sm text-gray-500">
+                Share the portal link directly with your clients, or embed it on your own website so they can log in and manage their sessions without leaving your site.
+              </p>
+              <div className="space-y-1.5">
+                <Label>Portal link</Label>
+                <div className="flex items-center gap-2">
+                  <code className="flex-1 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-sm font-mono text-gray-700 truncate select-all">
+                    https://book.viv-z.com/portal
+                  </code>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0"
+                    onClick={() => copyToClipboard("https://book.viv-z.com/portal", "link")}
+                  >
+                    {copiedLink ? (
+                      <span className="flex items-center gap-1.5 text-green-600"><Check className="h-3.5 w-3.5" /> Copied</span>
+                    ) : (
+                      <span className="flex items-center gap-1.5"><Copy className="h-3.5 w-3.5" /> Copy</span>
+                    )}
+                  </Button>
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <Label>Embed on your website</Label>
+                <p className="text-xs text-gray-400">
+                  Paste this snippet into any page on your website. The portal will load inside an inline frame.
+                </p>
+                <pre className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-xs font-mono text-gray-700 overflow-x-auto whitespace-pre-wrap">{`<iframe\n  src="https://book.viv-z.com/portal"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border:none;border-radius:12px;"\n  allow="payment"\n></iframe>`}</pre>
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={handleStripeDisconnect}
-                  disabled={stripeSaving}
-                  className="ml-auto text-red-600 border-red-200 hover:bg-red-50"
-                >
-                  Disconnect
-                </Button>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Cancellation Policy */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Clock className="h-4 w-4 text-gray-500" />
-            Cancellation Policy
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleCancelPolicySave} className="space-y-4">
-            <label className="flex items-center justify-between gap-3 cursor-pointer">
-              <div>
-                <p className="text-sm text-gray-700">Enable late cancellation policy</p>
-                <p className="text-xs text-gray-400">Apply a penalty when clients cancel within a set window</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={cancelEnabled}
-                onChange={(e) => setCancelEnabled(e.target.checked)}
-                className="h-4 w-4 rounded"
-              />
-            </label>
-
-            {cancelEnabled && (
-              <div className="space-y-4 border-t border-gray-100 pt-4">
-                <div className="space-y-1">
-                  <Label htmlFor="cancelWindow">Cancellation window (hours)</Label>
-                  <Input
-                    id="cancelWindow"
-                    type="number"
-                    min="1"
-                    max="168"
-                    value={cancelWindowHours}
-                    onChange={(e) => setCancelWindowHours(e.target.value)}
-                    className="w-32"
-                  />
-                  <p className="text-xs text-gray-400">Cancellations within this many hours of the session start are considered late</p>
-                </div>
-
-                <div className="space-y-1">
-                  <Label>Late cancellation penalty</Label>
-                  <Select value={cancelAction} onValueChange={(v) => setCancelAction(v as "deduct_session" | "charge")}>
-                    <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="deduct_session">Deduct session credit</SelectItem>
-                      <SelectItem value="charge">Charge a fee</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {cancelAction === "charge" && (
-                  <div className="space-y-1">
-                    <Label htmlFor="cancelCharge">Charge amount ({currency.toUpperCase()})</Label>
-                    <Input
-                      id="cancelCharge"
-                      type="number"
-                      min="1"
-                      step="0.01"
-                      value={cancelChargeAmount}
-                      onChange={(e) => setCancelChargeAmount(e.target.value)}
-                      placeholder="e.g. 25.00"
-                      className="w-40"
-                    />
-                    <p className="text-xs text-gray-400">Charged to the client&apos;s saved payment method. If no payment method is on file, a manual collection notice is logged.</p>
-                  </div>
-                )}
-              </div>
-            )}
-
-            <div className="flex items-center gap-3 pt-1">
-              <Button type="submit" disabled={cancelSaving || !provider}>
-                {cancelSaving ? "Saving…" : "Save Policy"}
-              </Button>
-              {cancelSaved && (
-                <span className="flex items-center gap-1.5 text-sm text-green-600">
-                  <Check className="h-4 w-4" /> Saved
-                </span>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Invoice Settings */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <FileText className="h-4 w-4 text-gray-500" />
-            Invoice Settings
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleInvoiceSave} className="space-y-5">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div className="space-y-1">
-                <Label htmlFor="invoiceBusinessName">Business Name</Label>
-                <Input
-                  id="invoiceBusinessName"
-                  value={invoiceBusinessName}
-                  onChange={(e) => setInvoiceBusinessName(e.target.value)}
-                  placeholder="Acme Fitness LLC"
-                />
-                <p className="text-xs text-gray-400">Appears on invoices instead of your display name</p>
-              </div>
-              <div className="space-y-1">
-                <Label htmlFor="invoiceTaxId">Tax ID / VAT Number</Label>
-                <Input
-                  id="invoiceTaxId"
-                  value={invoiceTaxId}
-                  onChange={(e) => setInvoiceTaxId(e.target.value)}
-                  placeholder="e.g. US123456789"
-                />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="invoiceAddress">Business Address</Label>
-              <textarea
-                id="invoiceAddress"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows={2}
-                value={invoiceAddress}
-                onChange={(e) => setInvoiceAddress(e.target.value)}
-                placeholder="123 Main St, New York, NY 10001"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label>Business Logo</Label>
-              {invoiceLogoUrl ? (
-                <div className="flex items-center gap-4">
-                  <img
-                    src={invoiceLogoUrl}
-                    alt="Invoice logo"
-                    className="h-14 max-w-[180px] object-contain rounded border border-gray-200 bg-gray-50 p-1"
-                  />
-                  <div className="flex flex-col gap-1.5">
-                    <label
-                      htmlFor="logoUpload"
-                      className="cursor-pointer text-xs text-indigo-600 hover:underline"
-                    >
-                      Replace image
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setInvoiceLogoUrl("")}
-                      className="text-xs text-red-500 hover:underline text-left"
-                    >
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                <label
-                  htmlFor="logoUpload"
-                  className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-colors"
-                >
-                  <svg className="h-6 w-6 text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                  </svg>
-                  <span className="text-sm text-gray-500">Click to upload logo</span>
-                  <span className="text-xs text-gray-400 mt-0.5">PNG, JPG, SVG — max 500 KB</span>
-                </label>
-              )}
-              <input
-                id="logoUpload"
-                type="file"
-                accept="image/png,image/jpeg,image/svg+xml,image/webp"
-                className="hidden"
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) return;
-                  if (file.size > 500 * 1024) {
-                    alert("Image must be under 500 KB");
-                    e.target.value = "";
-                    return;
+                  size="sm"
+                  onClick={() =>
+                    copyToClipboard(
+                      `<iframe\n  src="https://book.viv-z.com/portal"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border:none;border-radius:12px;"\n  allow="payment"\n></iframe>`,
+                      "embed"
+                    )
                   }
-                  const reader = new FileReader();
-                  reader.onload = () => setInvoiceLogoUrl(reader.result as string);
-                  reader.readAsDataURL(file);
-                  e.target.value = "";
-                }}
-              />
-            </div>
-            <div className="space-y-1">
-              <Label htmlFor="invoiceFooterNote">Footer Note</Label>
-              <textarea
-                id="invoiceFooterNote"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                rows={2}
-                value={invoiceFooterNote}
-                onChange={(e) => setInvoiceFooterNote(e.target.value)}
-                placeholder="Thank you for your business! Payment is due within 7 days."
-              />
-            </div>
-            <hr className="border-gray-100" />
-            <div className="space-y-3">
-              <Label>Auto-send invoices</Label>
-              <label className="flex items-center justify-between gap-3 cursor-pointer">
-                <div>
-                  <p className="text-sm text-gray-700">Send when a package is assigned</p>
-                  <p className="text-xs text-gray-400">Automatically email an invoice to the client when a package is manually assigned</p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={autoSendInvoiceOnPackage}
-                  onChange={(e) => setAutoSendInvoiceOnPackage(e.target.checked)}
-                  className="h-4 w-4 rounded"
-                />
-              </label>
-              <label className="flex items-center justify-between gap-3 cursor-pointer">
-                <div>
-                  <p className="text-sm text-gray-700">Send when a subscription is assigned</p>
-                  <p className="text-xs text-gray-400">Automatically email an invoice to the client when a subscription is manually assigned</p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={autoSendInvoiceOnSubscription}
-                  onChange={(e) => setAutoSendInvoiceOnSubscription(e.target.checked)}
-                  className="h-4 w-4 rounded"
-                />
-              </label>
-            </div>
-            <div className="flex items-center gap-3 pt-1">
-              <Button type="submit" disabled={invoiceSaving || !provider}>
-                {invoiceSaving ? "Saving…" : "Save Invoice Settings"}
-              </Button>
-              {invoiceSaved && (
-                <span className="flex items-center gap-1.5 text-sm text-green-600">
-                  <Check className="h-4 w-4" /> Saved
-                </span>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Client Portal Embed */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Link2 className="h-4 w-4 text-gray-500" />
-            Client Portal
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <p className="text-sm text-gray-500">
-            Share the portal link directly with your clients, or embed it on your own website so they can log in and manage their sessions without leaving your site.
-          </p>
-
-          {/* Direct link */}
-          <div className="space-y-1.5">
-            <Label>Portal link</Label>
-            <div className="flex items-center gap-2">
-              <code className="flex-1 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-sm font-mono text-gray-700 truncate select-all">
-                https://book.viv-z.com/portal
-              </code>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="shrink-0"
-                onClick={() => copyToClipboard("https://book.viv-z.com/portal", "link")}
-              >
-                {copiedLink ? (
-                  <span className="flex items-center gap-1.5 text-green-600"><Check className="h-3.5 w-3.5" /> Copied</span>
-                ) : (
-                  <span className="flex items-center gap-1.5"><Copy className="h-3.5 w-3.5" /> Copy</span>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Embed snippet */}
-          <div className="space-y-1.5">
-            <Label>Embed on your website</Label>
-            <p className="text-xs text-gray-400">
-              Paste this snippet into any page on your website. The portal will load inside an inline frame.
-            </p>
-            <div className="relative">
-              <pre className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-xs font-mono text-gray-700 overflow-x-auto whitespace-pre-wrap">{`<iframe\n  src="https://book.viv-z.com/portal"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border:none;border-radius:12px;"\n  allow="payment"\n></iframe>`}</pre>
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() =>
-                copyToClipboard(
-                  `<iframe\n  src="https://book.viv-z.com/portal"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border:none;border-radius:12px;"\n  allow="payment"\n></iframe>`,
-                  "embed"
-                )
-              }
-            >
-              {copiedEmbed ? (
-                <span className="flex items-center gap-1.5 text-green-600"><Check className="h-3.5 w-3.5" /> Copied</span>
-              ) : (
-                <span className="flex items-center gap-1.5"><Copy className="h-3.5 w-3.5" /> Copy embed code</span>
-              )}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Google Calendar */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Calendar className="h-4 w-4 text-gray-500" />
-              Google Calendar
-            </CardTitle>
-            {gcalConnected ? (
-              <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
-                Connected
-              </span>
-            ) : (
-              <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
-                Not connected
-              </span>
-            )}
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-gray-500">
-            Sync your bookings to Google Calendar so sessions appear alongside your other events.
-          </p>
-          {gcalConnected ? (
-            <div className="space-y-3">
-              <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800">
-                Google Calendar is connected. New bookings will sync automatically.
+                >
+                  {copiedEmbed ? (
+                    <span className="flex items-center gap-1.5 text-green-600"><Check className="h-3.5 w-3.5" /> Copied</span>
+                  ) : (
+                    <span className="flex items-center gap-1.5"><Copy className="h-3.5 w-3.5" /> Copy embed code</span>
+                  )}
+                </Button>
               </div>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleGcalDisconnect}
-                disabled={gcalDisconnecting || !provider}
-                className="text-red-600 border-red-200 hover:bg-red-50"
-              >
-                {gcalDisconnecting ? "Disconnecting…" : "Disconnect"}
-              </Button>
-            </div>
-          ) : (
-            <Button
-              type="button"
-              asChild
-              disabled={!provider}
-            >
-              <a href={`/api/google-calendar/connect?providerId=${provider?.id ?? ""}`}>
-                Connect Google Calendar
-              </a>
-            </Button>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Availability */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Clock className="h-4 w-4 text-gray-500" />
-            Weekly Availability
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAvailabilitySave} className="space-y-3">
-            {DAYS.map((day, i) => (
-              <div key={day} className="flex items-center gap-3">
-                <label className="flex items-center gap-2 w-12 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={availSlots[i].enabled}
-                    onChange={(e) =>
-                      setAvailSlots((prev) =>
-                        prev.map((s, j) => j === i ? { ...s, enabled: e.target.checked } : s)
-                      )
-                    }
-                    className="rounded"
-                  />
-                  <span className="text-sm text-gray-700">{day}</span>
-                </label>
-                {availSlots[i].enabled ? (
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="time"
-                      value={availSlots[i].startTime}
-                      onChange={(e) =>
-                        setAvailSlots((prev) =>
-                          prev.map((s, j) => j === i ? { ...s, startTime: e.target.value } : s)
-                        )
-                      }
-                      className="w-32 text-sm"
-                    />
-                    <span className="text-gray-400 text-sm">to</span>
-                    <Input
-                      type="time"
-                      value={availSlots[i].endTime}
-                      onChange={(e) =>
-                        setAvailSlots((prev) =>
-                          prev.map((s, j) => j === i ? { ...s, endTime: e.target.value } : s)
-                        )
-                      }
-                      className="w-32 text-sm"
-                    />
-                  </div>
-                ) : (
-                  <span className="text-sm text-gray-400">Unavailable</span>
-                )}
-              </div>
-            ))}
-            <div className="flex items-center gap-3 pt-2">
-              <Button type="submit" disabled={availSaving}>
-                {availSaving ? "Saving…" : "Save Availability"}
-              </Button>
-              {availSaved && (
-                <span className="flex items-center gap-1.5 text-sm text-green-600">
-                  <Check className="h-4 w-4" /> Saved
-                </span>
-              )}
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

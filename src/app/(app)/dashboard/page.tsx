@@ -8,6 +8,7 @@ import { formatCurrency } from "@/lib/utils";
 import { MiniCalendar } from "./mini-calendar";
 import { UpcomingSessions, TodayLoad } from "./upcoming-sessions";
 import { Plus } from "lucide-react";
+import Link from "next/link";
 
 
 async function getDashboardStats(providerId: string) {
