@@ -35,6 +35,7 @@ export default function CalendarPage() {
       sessionType: b.sessionType ?? "individual",
       participantCount: b.participants?.length ?? 0,
       maxParticipants: b.maxParticipants ?? null,
+      bookingSeriesId: b.bookingSeriesId ?? null,
     }));
 
     const blockedEvents: CalendarEvent[] = (evtData.blockedTimes ?? []).map((bt: any) => ({

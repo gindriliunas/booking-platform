@@ -47,6 +47,7 @@ interface Props {
 }
 
 const STATUS_OPTIONS = ["scheduled", "completed", "cancelled", "no_show"] as const;
+type EditScope = "one" | "this_and_future" | "all";
 
 export function GroupSessionDialog({
   open,
@@ -68,6 +69,10 @@ export function GroupSessionDialog({
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
 
+  // Series edit/delete scope
+  const [editScope, setEditScope] = useState<EditScope>("one");
+  const [showScopeForDelete, setShowScopeForDelete] = useState(false);
+
   // Add participant
   const [addClientId, setAddClientId] = useState("none");
   const [addPackageId, setAddPackageId] = useState("none");
@@ -88,6 +93,8 @@ export function GroupSessionDialog({
     setAddError("");
     setAddClientId("none");
     setAddPackageId("none");
+    setEditScope("one");
+    setShowScopeForDelete(false);
     loadParticipants();
   }, [open, event]);
 
@@ -113,16 +120,20 @@ export function GroupSessionDialog({
     setAddPackageId("none");
   }, [addClientId]);
 
+  const isSeries = !!event?.bookingSeriesId;
+
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     if (!event) return;
     setSaving(true);
     setSaveError("");
     try {
+      const body: Record<string, unknown> = { title, startTime, endTime, maxParticipants, status, notes };
+      if (isSeries) body.editScope = editScope;
       const res = await fetch(`/api/group-sessions/${event.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title, startTime, endTime, maxParticipants, status, notes }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Request failed");
       onSuccess();
@@ -135,10 +146,21 @@ export function GroupSessionDialog({
 
   async function handleDelete() {
     if (!event) return;
-    if (!confirm("Delete this group session? All participants will be removed and sessions restored.")) return;
+    if (isSeries && !showScopeForDelete) {
+      setShowScopeForDelete(true);
+      return;
+    }
+    const scopeLabel =
+      editScope === "one"
+        ? "this session"
+        : editScope === "this_and_future"
+        ? "this and future sessions"
+        : "all sessions in this series";
+    if (!confirm(`Delete ${scopeLabel}? All participants will be removed and sessions restored.`)) return;
     setSaving(true);
     try {
-      await fetch(`/api/bookings/${event.id}`, { method: "DELETE" });
+      const deleteScope = isSeries ? editScope : "one";
+      await fetch(`/api/bookings/${event.id}?deleteScope=${deleteScope}`, { method: "DELETE" });
       onSuccess();
     } finally {
       setSaving(false);
@@ -150,10 +172,12 @@ export function GroupSessionDialog({
     if (!confirm("Mark all booked participants as completed?")) return;
     setSaving(true);
     try {
+      const body: Record<string, unknown> = { status: "completed" };
+      if (isSeries) body.editScope = editScope;
       const res = await fetch(`/api/group-sessions/${event.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "completed" }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Failed");
       setStatus("completed");
@@ -230,7 +254,14 @@ export function GroupSessionDialog({
       <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-start justify-between gap-2">
-            <DialogTitle className="text-lg">{title || "Group Session"}</DialogTitle>
+            <DialogTitle className="text-lg">
+              {title || "Group Session"}
+              {isSeries && (
+                <span className="ml-2 text-xs font-normal text-amber-600 bg-amber-50 rounded-full px-2 py-0.5">
+                  Recurring series
+                </span>
+              )}
+            </DialogTitle>
             <Badge
               className={
                 spotsLeft <= 0
@@ -322,6 +353,30 @@ export function GroupSessionDialog({
               placeholder="Optional notes..."
             />
           </div>
+
+          {/* Series edit scope */}
+          {isSeries && (
+            <div className="space-y-1 rounded-lg border border-amber-100 bg-amber-50 p-3">
+              <Label className="text-amber-800">Apply changes to</Label>
+              <div className="flex flex-col gap-1.5 mt-1">
+                {(["one", "this_and_future", "all"] as EditScope[]).map((scope) => (
+                  <label key={scope} className="flex items-center gap-2 cursor-pointer text-sm text-amber-900">
+                    <input
+                      type="radio"
+                      name="gsEditScope"
+                      value={scope}
+                      checked={editScope === scope}
+                      onChange={() => setEditScope(scope)}
+                      className="h-4 w-4"
+                    />
+                    {scope === "one" && "Just this session"}
+                    {scope === "this_and_future" && "This and future sessions"}
+                    {scope === "all" && "All sessions in series"}
+                  </label>
+                ))}
+              </div>
+            </div>
+          )}
 
           {saveError && <p className="text-sm text-red-600">{saveError}</p>}
 

@@ -18,6 +18,10 @@ export async function PATCH(
     name, email, phone, serviceType, timezone, sessionDurationMins,
     currency, stripeSecretKey, stripeWebhookSecret,
     allowIndividualSelfBook, allowGroupSelfBook,
+    enableWaitlist,
+    lateCancelWindowHours, lateCancelAction, lateCancelChargeAmount,
+    invoiceBusinessName, invoiceAddress, invoiceTaxId, invoiceLogoUrl,
+    invoiceFooterNote, autoSendInvoiceOnPackage, autoSendInvoiceOnSubscription,
   } = body;
 
   const updateData: Record<string, unknown> = { updatedAt: new Date() };
@@ -32,6 +36,18 @@ export async function PATCH(
 
   if (allowIndividualSelfBook !== undefined) updateData.allowIndividualSelfBook = allowIndividualSelfBook;
   if (allowGroupSelfBook !== undefined) updateData.allowGroupSelfBook = allowGroupSelfBook;
+  if (enableWaitlist !== undefined) updateData.enableWaitlist = enableWaitlist;
+  if (lateCancelWindowHours !== undefined) updateData.lateCancelWindowHours = lateCancelWindowHours ? parseInt(lateCancelWindowHours) : null;
+  if (lateCancelAction !== undefined) updateData.lateCancelAction = lateCancelAction || null;
+  if (lateCancelChargeAmount !== undefined) updateData.lateCancelChargeAmount = lateCancelChargeAmount || null;
+
+  if (invoiceBusinessName !== undefined) updateData.invoiceBusinessName = invoiceBusinessName || null;
+  if (invoiceAddress !== undefined) updateData.invoiceAddress = invoiceAddress || null;
+  if (invoiceTaxId !== undefined) updateData.invoiceTaxId = invoiceTaxId || null;
+  if (invoiceLogoUrl !== undefined) updateData.invoiceLogoUrl = invoiceLogoUrl || null;
+  if (invoiceFooterNote !== undefined) updateData.invoiceFooterNote = invoiceFooterNote || null;
+  if (autoSendInvoiceOnPackage !== undefined) updateData.autoSendInvoiceOnPackage = autoSendInvoiceOnPackage;
+  if (autoSendInvoiceOnSubscription !== undefined) updateData.autoSendInvoiceOnSubscription = autoSendInvoiceOnSubscription;
 
   // Allow clearing keys by passing empty string
   if (stripeSecretKey !== undefined) {

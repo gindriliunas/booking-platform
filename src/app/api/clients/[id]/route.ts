@@ -64,11 +64,18 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await req.json();
-  const { name, email, phone, notes } = body;
+  const { name, email, phone, notes, isActive } = body;
+
+  const updateData: Record<string, unknown> = { updatedAt: new Date() };
+  if (name !== undefined) updateData.name = name;
+  if (email !== undefined) updateData.email = email ?? null;
+  if (phone !== undefined) updateData.phone = phone ?? null;
+  if (notes !== undefined) updateData.notes = notes ?? null;
+  if (isActive !== undefined) updateData.isActive = isActive;
 
   const [updated] = await db
     .update(clients)
-    .set({ name, email: email ?? null, phone: phone ?? null, notes: notes ?? null, updatedAt: new Date() })
+    .set(updateData)
     .where(eq(clients.id, id))
     .returning();
 

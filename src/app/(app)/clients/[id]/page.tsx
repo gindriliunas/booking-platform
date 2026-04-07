@@ -105,6 +105,7 @@ export default function ClientDetailPage() {
   const [deletingPkg, setDeletingPkg] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
   const [inviteSent, setInviteSent] = useState(false);
+  const [sendingInvoice, setSendingInvoice] = useState<string | null>(null);
   const [onboarding, setOnboarding] = useState<Onboarding | null>(null);
 
   // Available package templates and plans for selling
@@ -212,6 +213,23 @@ export default function ClientDetailPage() {
       alert(err instanceof Error ? err.message : "Failed to send invite");
     } finally {
       setInviting(false);
+    }
+  }
+
+  async function handleSendInvoice(type: "package" | "subscription", assignmentId: string) {
+    setSendingInvoice(assignmentId);
+    try {
+      const res = await fetch("/api/invoices", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, id: assignmentId, providerId: PROVIDER_ID }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Failed to send invoice");
+      alert("Invoice sent!");
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to send invoice");
+    } finally {
+      setSendingInvoice(null);
     }
   }
 
@@ -361,6 +379,14 @@ export default function ClientDetailPage() {
                       {p.status}
                     </span>
                     <button
+                      onClick={() => handleSendInvoice("package", p.id)}
+                      disabled={sendingInvoice === p.id}
+                      className="text-gray-400 hover:text-indigo-600 disabled:opacity-40 transition-colors"
+                      title="Send invoice"
+                    >
+                      <Mail className="h-4 w-4" />
+                    </button>
+                    <button
                       onClick={() => handleDeletePackage(p.id)}
                       disabled={deletingPkg === p.id}
                       className="text-gray-400 hover:text-red-500 disabled:opacity-40 transition-colors"
@@ -421,6 +447,14 @@ export default function ClientDetailPage() {
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium capitalize ${STATUS_COLORS[s.status] ?? "bg-gray-100 text-gray-600"}`}>
                       {s.status.replace("_", " ")}
                     </span>
+                    <button
+                      onClick={() => handleSendInvoice("subscription", s.id)}
+                      disabled={sendingInvoice === s.id}
+                      className="text-gray-400 hover:text-indigo-600 disabled:opacity-40 transition-colors"
+                      title="Send invoice"
+                    >
+                      <Mail className="h-4 w-4" />
+                    </button>
                     {s.status !== "cancelled" && (
                       <button
                         onClick={() => handleCancelSubscription(s.id)}

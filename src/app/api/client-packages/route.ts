@@ -1,12 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { clientPackages, clientSubscriptions, packages, subscriptionPlans } from "@/lib/db/schema";
+import { clientPackages, packages, clients, providers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import {
   TRIGGERS,
   fireGhlTrigger,
   getClientTriggerContext,
 } from "@/lib/ghl/triggers";
+import { sendInvoiceEmail } from "@/lib/email/invoice";
+
+function formatCurrencyAmount(amount: string, currency: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+  }).format(parseFloat(amount));
+}
 
 // Manually assign a package to a client (no payment required)
 export async function POST(req: NextRequest) {
@@ -49,6 +57,36 @@ export async function POST(req: NextRequest) {
       });
     } catch (err) {
       console.error("[GHL Trigger] package_purchased (manual) failed:", err);
+    }
+  })();
+
+  // Auto-send invoice if provider setting is enabled (non-blocking)
+  (async () => {
+    try {
+      const [client] = await db.select().from(clients).where(eq(clients.id, clientId));
+      if (!client?.email) return;
+
+      const [provider] = await db.select().from(providers).where(eq(providers.id, pkg.providerId));
+      if (!provider?.autoSendInvoiceOnPackage) return;
+
+      await sendInvoiceEmail({
+        clientEmail: client.email,
+        clientName: client.name,
+        providerName: provider.name,
+        providerEmail: provider.email,
+        invoiceBusinessName: provider.invoiceBusinessName,
+        invoiceAddress: provider.invoiceAddress,
+        invoiceTaxId: provider.invoiceTaxId,
+        invoiceLogoUrl: provider.invoiceLogoUrl,
+        invoiceFooterNote: provider.invoiceFooterNote,
+        itemName: `${pkg.name} (${pkg.sessionCount} sessions)`,
+        amount: formatCurrencyAmount(pkg.price, pkg.currency),
+        currency: pkg.currency,
+        issuedAt: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+        invoiceNumber: `INV-${Date.now()}`,
+      });
+    } catch (err) {
+      console.error("[Invoice] Auto-send on package failed:", err);
     }
   })();
 

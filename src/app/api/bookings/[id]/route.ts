@@ -1,12 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { bookings, clientPackages, clientSubscriptions, bookingParticipants } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import {
+  bookings,
+  bookingSeries,
+  clientPackages,
+  clientSubscriptions,
+  bookingParticipants,
+} from "@/lib/db/schema";
+import { eq, and, gte, asc } from "drizzle-orm";
 import {
   TRIGGERS,
   fireGhlTrigger,
   getClientTriggerContext,
 } from "@/lib/ghl/triggers";
+import { checkAndApplyLateCancelPolicy } from "@/lib/late-cancel";
+
+// Restores session credit for a single booking (individual sessions only)
+async function restoreIndividualSession(booking: typeof bookings.$inferSelect) {
+  if (booking.clientPackageId) {
+    const [pkg] = await db
+      .select()
+      .from(clientPackages)
+      .where(eq(clientPackages.id, booking.clientPackageId));
+    if (pkg) {
+      await db
+        .update(clientPackages)
+        .set({
+          sessionsUsed: Math.max(0, pkg.sessionsUsed - 1),
+          sessionsRemaining: pkg.sessionsRemaining + 1,
+          status: "active",
+        })
+        .where(eq(clientPackages.id, pkg.id));
+    }
+  }
+  if (booking.clientSubscriptionId) {
+    const [sub] = await db
+      .select()
+      .from(clientSubscriptions)
+      .where(eq(clientSubscriptions.id, booking.clientSubscriptionId));
+    if (sub) {
+      await db
+        .update(clientSubscriptions)
+        .set({
+          sessionsUsedThisPeriod: Math.max(0, sub.sessionsUsedThisPeriod - 1),
+        })
+        .where(eq(clientSubscriptions.id, sub.id));
+    }
+  }
+}
 
 export async function PATCH(
   req: NextRequest,
@@ -14,73 +55,156 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await req.json();
-  const { title, startTime, endTime, status, notes, clientId, clientPackageId, sessionType, maxParticipants } = body;
+  const {
+    title,
+    startTime,
+    endTime,
+    status,
+    notes,
+    clientId,
+    clientPackageId,
+    sessionType,
+    maxParticipants,
+    editScope = "one", // "one" | "this_and_future" | "all"
+  } = body;
 
-  // If marking as cancelled, restore sessions
+  const [existing] = await db
+    .select()
+    .from(bookings)
+    .where(eq(bookings.id, id));
+  if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+  // ── Series scope: collect affected bookings ──────────────────────────────
+  let affectedBookings: (typeof bookings.$inferSelect)[] = [existing];
+
+  if (editScope !== "one" && existing.bookingSeriesId) {
+    const query =
+      editScope === "this_and_future"
+        ? and(
+            eq(bookings.bookingSeriesId, existing.bookingSeriesId),
+            gte(bookings.startTime, existing.startTime)
+          )
+        : eq(bookings.bookingSeriesId, existing.bookingSeriesId);
+
+    affectedBookings = await db
+      .select()
+      .from(bookings)
+      .where(query)
+      .orderBy(asc(bookings.startTime));
+  }
+
+  // ── Cancellation: handle session restoration for each affected booking ──
   if (status === "cancelled") {
-    const [existing] = await db.select().from(bookings).where(eq(bookings.id, id));
+    for (const b of affectedBookings) {
+      if (b.status === "scheduled") {
+        if (b.sessionType === "group") {
+          const bookedParticipants = await db
+            .select()
+            .from(bookingParticipants)
+            .where(eq(bookingParticipants.bookingId, b.id));
 
-    if (existing?.sessionType === "group") {
-      // Bulk-restore sessions for all booked participants
-      const bookedParticipants = await db
-        .select()
-        .from(bookingParticipants)
-        .where(eq(bookingParticipants.bookingId, id));
-
-      for (const p of bookedParticipants.filter((p) => p.status === "booked")) {
-        if (p.clientPackageId) {
-          const [pkg] = await db.select().from(clientPackages).where(eq(clientPackages.id, p.clientPackageId));
-          if (pkg) {
-            await db.update(clientPackages).set({
-              sessionsUsed: Math.max(0, pkg.sessionsUsed - 1),
-              sessionsRemaining: pkg.sessionsRemaining + 1,
-              status: "active",
-            }).where(eq(clientPackages.id, pkg.id));
+          for (const p of bookedParticipants.filter((p) => p.status === "booked")) {
+            if (p.clientPackageId) {
+              const [pkg] = await db
+                .select()
+                .from(clientPackages)
+                .where(eq(clientPackages.id, p.clientPackageId));
+              if (pkg) {
+                await db.update(clientPackages).set({
+                  sessionsUsed: Math.max(0, pkg.sessionsUsed - 1),
+                  sessionsRemaining: pkg.sessionsRemaining + 1,
+                  status: "active",
+                }).where(eq(clientPackages.id, pkg.id));
+              }
+            }
+            if (p.clientSubscriptionId) {
+              const [sub] = await db
+                .select()
+                .from(clientSubscriptions)
+                .where(eq(clientSubscriptions.id, p.clientSubscriptionId));
+              if (sub) {
+                await db.update(clientSubscriptions).set({
+                  sessionsUsedThisPeriod: Math.max(0, sub.sessionsUsedThisPeriod - 1),
+                }).where(eq(clientSubscriptions.id, sub.id));
+              }
+            }
+            await db
+              .update(bookingParticipants)
+              .set({ status: "cancelled" })
+              .where(eq(bookingParticipants.id, p.id));
+          }
+        } else {
+          // Provider-side individual cancel: apply policy (always exempt for provider)
+          const lateCancelResult = await checkAndApplyLateCancelPolicy({
+            bookingId: b.id,
+            clientId: b.clientId ?? "",
+            providerId: b.providerId,
+            sessionStartTime: b.startTime,
+            clientPackageId: b.clientPackageId,
+            clientSubscriptionId: b.clientSubscriptionId,
+            isPortalCancel: false, // provider-side → always exempt
+          });
+          if (lateCancelResult.shouldRestoreSession) {
+            await restoreIndividualSession(b);
           }
         }
-        if (p.clientSubscriptionId) {
-          const [sub] = await db.select().from(clientSubscriptions).where(eq(clientSubscriptions.id, p.clientSubscriptionId));
-          if (sub) {
-            await db.update(clientSubscriptions).set({
-              sessionsUsedThisPeriod: Math.max(0, sub.sessionsUsedThisPeriod - 1),
-            }).where(eq(clientSubscriptions.id, sub.id));
-          }
-        }
-        await db.update(bookingParticipants).set({ status: "cancelled" }).where(eq(bookingParticipants.id, p.id));
-      }
-    } else if (existing?.clientPackageId) {
-      // Individual session — restore to package
-      const [pkg] = await db.select().from(clientPackages).where(eq(clientPackages.id, existing.clientPackageId));
-      if (pkg) {
-        await db.update(clientPackages).set({
-          sessionsUsed: Math.max(0, pkg.sessionsUsed - 1),
-          sessionsRemaining: pkg.sessionsRemaining + 1,
-          status: "active",
-        }).where(eq(clientPackages.id, pkg.id));
       }
     }
   }
 
-  const [updated] = await db
-    .update(bookings)
-    .set({
-      title,
-      startTime: startTime ? new Date(startTime) : undefined,
-      endTime: endTime ? new Date(endTime) : undefined,
-      status,
-      notes,
-      clientId: sessionType === "group" ? null : clientId,
-      maxParticipants: maxParticipants != null ? parseInt(maxParticipants) : undefined,
-      updatedAt: new Date(),
-    })
-    .where(eq(bookings.id, id))
-    .returning();
+  // ── Compute time delta for series time shifts ─────────────────────────────
+  const newStart = startTime ? new Date(startTime) : null;
+  const deltaMs =
+    newStart && editScope !== "one"
+      ? newStart.getTime() - existing.startTime.getTime()
+      : 0;
+  const durationMs =
+    endTime && startTime
+      ? new Date(endTime).getTime() - new Date(startTime).getTime()
+      : existing.endTime.getTime() - existing.startTime.getTime();
 
-  // Fire GHL triggers based on status change (non-blocking)
+  // ── Apply updates to all affected bookings ────────────────────────────────
+  const updatedBookings: (typeof bookings.$inferSelect)[] = [];
+
+  for (const b of affectedBookings) {
+    const shiftedStart =
+      editScope !== "one" && deltaMs !== 0
+        ? new Date(b.startTime.getTime() + deltaMs)
+        : b.id === id && newStart
+        ? newStart
+        : undefined;
+
+    const shiftedEnd = shiftedStart
+      ? new Date(shiftedStart.getTime() + durationMs)
+      : b.id === id && endTime
+      ? new Date(endTime)
+      : undefined;
+
+    const [updated] = await db
+      .update(bookings)
+      .set({
+        title: title ?? undefined,
+        startTime: shiftedStart,
+        endTime: shiftedEnd,
+        status: status ?? undefined,
+        notes: b.id === id ? notes ?? undefined : undefined,
+        clientId: sessionType === "group" ? null : clientId ?? undefined,
+        maxParticipants:
+          maxParticipants != null ? parseInt(maxParticipants) : undefined,
+        updatedAt: new Date(),
+      })
+      .where(eq(bookings.id, b.id))
+      .returning();
+
+    updatedBookings.push(updated);
+  }
+
+  const updated = updatedBookings[0];
+
+  // ── GHL triggers ──────────────────────────────────────────────────────────
   if (status === "cancelled" || status === "completed") {
     (async () => {
       try {
-        // For individual sessions, fire on the booking's clientId
         if (updated.clientId && updated.sessionType !== "group") {
           const ctx = await getClientTriggerContext(updated.clientId);
           if (ctx) {
@@ -100,7 +224,12 @@ export async function PATCH(
             };
 
             if (status === "cancelled") {
-              await fireGhlTrigger(ctx.locationId, ctx.contactId, TRIGGERS.SESSION_CANCELLED, baseData);
+              await fireGhlTrigger(
+                ctx.locationId,
+                ctx.contactId,
+                TRIGGERS.SESSION_CANCELLED,
+                baseData
+              );
             } else if (status === "completed") {
               let sessionsRemaining = 0;
               if (updated.clientPackageId) {
@@ -110,10 +239,12 @@ export async function PATCH(
                   .where(eq(clientPackages.id, updated.clientPackageId));
                 sessionsRemaining = pkg?.sessionsRemaining ?? 0;
               }
-              await fireGhlTrigger(ctx.locationId, ctx.contactId, TRIGGERS.SESSION_COMPLETED, {
-                ...baseData,
-                sessionsRemaining,
-              });
+              await fireGhlTrigger(
+                ctx.locationId,
+                ctx.contactId,
+                TRIGGERS.SESSION_COMPLETED,
+                { ...baseData, sessionsRemaining }
+              );
             }
           }
         }
@@ -127,10 +258,81 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  await db.delete(bookings).where(eq(bookings.id, id));
+  const { searchParams } = new URL(req.url);
+  const deleteScope = searchParams.get("deleteScope") ?? "one"; // "one" | "this_and_future" | "all"
+
+  const [existing] = await db
+    .select()
+    .from(bookings)
+    .where(eq(bookings.id, id));
+  if (!existing) return NextResponse.json({ ok: true });
+
+  let toDelete: (typeof bookings.$inferSelect)[] = [existing];
+
+  if (deleteScope !== "one" && existing.bookingSeriesId) {
+    const query =
+      deleteScope === "this_and_future"
+        ? and(
+            eq(bookings.bookingSeriesId, existing.bookingSeriesId),
+            gte(bookings.startTime, existing.startTime)
+          )
+        : eq(bookings.bookingSeriesId, existing.bookingSeriesId);
+
+    toDelete = await db
+      .select()
+      .from(bookings)
+      .where(query)
+      .orderBy(asc(bookings.startTime));
+  }
+
+  for (const b of toDelete) {
+    if (b.status === "scheduled") {
+      if (b.sessionType === "group") {
+        const parts = await db
+          .select()
+          .from(bookingParticipants)
+          .where(and(eq(bookingParticipants.bookingId, b.id), eq(bookingParticipants.status, "booked")));
+        for (const p of parts) {
+          if (p.clientPackageId) {
+            const [pkg] = await db.select().from(clientPackages).where(eq(clientPackages.id, p.clientPackageId));
+            if (pkg) {
+              await db.update(clientPackages).set({
+                sessionsUsed: Math.max(0, pkg.sessionsUsed - 1),
+                sessionsRemaining: pkg.sessionsRemaining + 1,
+                status: "active",
+              }).where(eq(clientPackages.id, pkg.id));
+            }
+          }
+          if (p.clientSubscriptionId) {
+            const [sub] = await db.select().from(clientSubscriptions).where(eq(clientSubscriptions.id, p.clientSubscriptionId));
+            if (sub) {
+              await db.update(clientSubscriptions).set({
+                sessionsUsedThisPeriod: Math.max(0, sub.sessionsUsedThisPeriod - 1),
+              }).where(eq(clientSubscriptions.id, sub.id));
+            }
+          }
+        }
+      } else {
+        await restoreIndividualSession(b);
+      }
+    }
+    await db.delete(bookings).where(eq(bookings.id, b.id));
+  }
+
+  // Clean up orphaned series row
+  if (existing.bookingSeriesId && deleteScope !== "one") {
+    const remaining = await db
+      .select({ id: bookings.id })
+      .from(bookings)
+      .where(eq(bookings.bookingSeriesId, existing.bookingSeriesId));
+    if (remaining.length === 0) {
+      await db.delete(bookingSeries).where(eq(bookingSeries.id, existing.bookingSeriesId));
+    }
+  }
+
   return NextResponse.json({ ok: true });
 }

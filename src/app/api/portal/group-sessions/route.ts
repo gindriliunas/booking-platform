@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { bookings, bookingParticipants } from "@/lib/db/schema";
+import { bookings, bookingParticipants, providers, waitlistEntries } from "@/lib/db/schema";
 import { eq, and, gte, inArray } from "drizzle-orm";
 import { getPortalClient } from "@/lib/portal";
 
@@ -15,7 +15,11 @@ export async function GET() {
 
     const now = new Date();
 
-    // Upcoming scheduled group sessions for this provider
+    const [provider] = await db
+      .select({ enableWaitlist: providers.enableWaitlist })
+      .from(providers)
+      .where(eq(providers.id, client.providerId));
+
     const sessionRows = await db
       .select({
         id: bookings.id,
@@ -35,25 +39,37 @@ export async function GET() {
         )
       );
 
-    if (sessionRows.length === 0) return NextResponse.json({ sessions: [] });
+    if (sessionRows.length === 0) return NextResponse.json({ sessions: [], enableWaitlist: provider?.enableWaitlist ?? false });
 
     const bookingIds = sessionRows.map((r) => r.id);
 
-    // Fetch all participants for these sessions in one query
-    const participantRows = await db
-      .select({
-        bookingId: bookingParticipants.bookingId,
-        clientId: bookingParticipants.clientId,
-      })
-      .from(bookingParticipants)
-      .where(
-        and(
-          inArray(bookingParticipants.bookingId, bookingIds),
-          eq(bookingParticipants.status, "booked")
-        )
-      );
+    // Fetch participants and waitlist entries in parallel
+    const [participantRows, waitlistRows] = await Promise.all([
+      db
+        .select({ bookingId: bookingParticipants.bookingId, clientId: bookingParticipants.clientId })
+        .from(bookingParticipants)
+        .where(
+          and(
+            inArray(bookingParticipants.bookingId, bookingIds),
+            eq(bookingParticipants.status, "booked")
+          )
+        ),
+      db
+        .select({
+          bookingId: waitlistEntries.bookingId,
+          clientId: waitlistEntries.clientId,
+          position: waitlistEntries.position,
+          status: waitlistEntries.status,
+        })
+        .from(waitlistEntries)
+        .where(
+          and(
+            inArray(waitlistEntries.bookingId, bookingIds),
+            eq(waitlistEntries.clientId, client.id)
+          )
+        ),
+    ]);
 
-    // Aggregate counts in JS
     const countMap = new Map<string, number>();
     const joinedSet = new Set<string>();
     for (const p of participantRows) {
@@ -61,17 +77,34 @@ export async function GET() {
       if (p.clientId === client.id) joinedSet.add(p.bookingId);
     }
 
+    // Build a map of waitlist entries for this client
+    const waitlistMap = new Map<string, { position: number; status: string }>();
+    for (const w of waitlistRows) {
+      if (w.status === "waiting" || w.status === "notified") {
+        waitlistMap.set(w.bookingId, { position: w.position, status: w.status });
+      }
+    }
+
     return NextResponse.json({
-      sessions: sessionRows.map((r) => ({
-        id: r.id,
-        title: r.title ?? "Group Session",
-        start: r.startTime.toISOString(),
-        end: r.endTime.toISOString(),
-        status: r.status,
-        maxParticipants: r.maxParticipants,
-        participantCount: countMap.get(r.id) ?? 0,
-        alreadyJoined: joinedSet.has(r.id),
-      })),
+      sessions: sessionRows.map((r) => {
+        const participantCount = countMap.get(r.id) ?? 0;
+        const waitEntry = waitlistMap.get(r.id);
+        return {
+          id: r.id,
+          title: r.title ?? "Group Session",
+          start: r.startTime.toISOString(),
+          end: r.endTime.toISOString(),
+          status: r.status,
+          maxParticipants: r.maxParticipants,
+          participantCount,
+          alreadyJoined: joinedSet.has(r.id),
+          isFull: r.maxParticipants != null && participantCount >= r.maxParticipants,
+          isWaitlisted: !!waitEntry,
+          waitlistPosition: waitEntry?.position ?? null,
+          waitlistStatus: waitEntry?.status ?? null,
+        };
+      }),
+      enableWaitlist: provider?.enableWaitlist ?? false,
     });
   } catch (err) {
     console.error("GET /api/portal/group-sessions error:", err);

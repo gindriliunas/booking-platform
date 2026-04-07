@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { clientSubscriptions, subscriptionPlans } from "@/lib/db/schema";
+import { clientSubscriptions, subscriptionPlans, clients, providers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { sendInvoiceEmail } from "@/lib/email/invoice";
+
+function formatCurrencyAmount(amount: string, currency: string): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: currency.toUpperCase(),
+  }).format(parseFloat(amount));
+}
 
 // Manually assign a subscription plan to a client (no payment required)
 export async function POST(req: NextRequest) {
@@ -35,6 +43,36 @@ export async function POST(req: NextRequest) {
       paymentMethod: paymentMethod ?? null,
     })
     .returning();
+
+  // Auto-send invoice if provider setting is enabled (non-blocking)
+  (async () => {
+    try {
+      const [client] = await db.select().from(clients).where(eq(clients.id, clientId));
+      if (!client?.email) return;
+
+      const [provider] = await db.select().from(providers).where(eq(providers.id, plan.providerId));
+      if (!provider?.autoSendInvoiceOnSubscription) return;
+
+      await sendInvoiceEmail({
+        clientEmail: client.email,
+        clientName: client.name,
+        providerName: provider.name,
+        providerEmail: provider.email,
+        invoiceBusinessName: provider.invoiceBusinessName,
+        invoiceAddress: provider.invoiceAddress,
+        invoiceTaxId: provider.invoiceTaxId,
+        invoiceLogoUrl: provider.invoiceLogoUrl,
+        invoiceFooterNote: provider.invoiceFooterNote,
+        itemName: `${plan.name} (${plan.sessionsPerPeriod} sessions/${plan.billingPeriod.replace("ly", "")})`,
+        amount: formatCurrencyAmount(plan.price, plan.currency),
+        currency: plan.currency,
+        issuedAt: now.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
+        invoiceNumber: `INV-${Date.now()}`,
+      });
+    } catch (err) {
+      console.error("[Invoice] Auto-send on subscription failed:", err);
+    }
+  })();
 
   return NextResponse.json({ clientSubscription: clientSub }, { status: 201 });
 }

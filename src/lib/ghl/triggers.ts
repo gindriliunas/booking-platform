@@ -18,14 +18,15 @@ import { getValidToken } from "./tokens";
 // ─── Trigger Keys ────────────────────────────────────────────────────────────
 
 export const TRIGGERS = {
-  SESSION_BOOKED:       "session_booked",
-  SESSION_CANCELLED:    "session_cancelled",
-  SESSION_COMPLETED:    "session_completed",
-  SESSION_REMINDER_24H: "session_reminder_24h",
-  SESSION_REMINDER_1H:  "session_reminder_1h",
-  SESSIONS_UPDATED:     "sessions_updated",
-  PACKAGE_PURCHASED:    "package_purchased",
-  SUBSCRIPTION_RENEWED: "subscription_renewed",
+  SESSION_BOOKED:          "session_booked",
+  SESSION_CANCELLED:       "session_cancelled",
+  SESSION_COMPLETED:       "session_completed",
+  SESSION_REMINDER_24H:    "session_reminder_24h",
+  SESSION_REMINDER_1H:     "session_reminder_1h",
+  SESSIONS_UPDATED:        "sessions_updated",
+  PACKAGE_PURCHASED:       "package_purchased",
+  SUBSCRIPTION_RENEWED:    "subscription_renewed",
+  WAITLIST_SPOT_AVAILABLE: "waitlist_spot_available",
 } as const;
 
 export type TriggerKey = typeof TRIGGERS[keyof typeof TRIGGERS];

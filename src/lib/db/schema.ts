@@ -12,6 +12,27 @@ import {
 import { relations } from "drizzle-orm";
 
 // Enums
+export const recurrenceFrequencyEnum = pgEnum("recurrence_frequency", [
+  "weekly",
+  "biweekly",
+  "monthly",
+]);
+
+export const waitlistStatusEnum = pgEnum("waitlist_status", [
+  "waiting",
+  "notified",
+  "expired",
+  "cancelled",
+]);
+
+export const lateCancelOutcomeEnum = pgEnum("late_cancel_outcome", [
+  "deducted",
+  "charged",
+  "charge_failed",
+  "requires_collection",
+  "waived",
+]);
+
 export const questionTypeEnum = pgEnum("question_type", [
   "text",
   "textarea",
@@ -93,6 +114,18 @@ export const providers = pgTable("providers", {
   stripeWebhookSecret: text("stripe_webhook_secret"), // Provider's webhook signing secret
   allowIndividualSelfBook: boolean("allow_individual_self_book").notNull().default(true),
   allowGroupSelfBook: boolean("allow_group_self_book").notNull().default(true),
+  enableWaitlist: boolean("enable_waitlist").notNull().default(false),
+  lateCancelWindowHours: integer("late_cancel_window_hours"),
+  lateCancelAction: text("late_cancel_action"), // "deduct_session" | "charge"
+  lateCancelChargeAmount: decimal("late_cancel_charge_amount", { precision: 10, scale: 2 }),
+  // Invoice settings
+  invoiceBusinessName: text("invoice_business_name"),
+  invoiceAddress: text("invoice_address"),
+  invoiceTaxId: text("invoice_tax_id"),
+  invoiceLogoUrl: text("invoice_logo_url"),
+  invoiceFooterNote: text("invoice_footer_note"),
+  autoSendInvoiceOnPackage: boolean("auto_send_invoice_on_package").notNull().default(false),
+  autoSendInvoiceOnSubscription: boolean("auto_send_invoice_on_subscription").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   clerkUserId: text("clerk_user_id"),
@@ -150,6 +183,7 @@ export const clients = pgTable("clients", {
   phone: text("phone"),
   stripeCustomerId: text("stripe_customer_id"),
   notes: text("notes"),
+  isActive: boolean("is_active").notNull().default(true),
   clerkUserId: text("clerk_user_id"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
@@ -196,6 +230,17 @@ export const clientSubscriptions = pgTable("client_subscriptions", {
   cancelledAt: timestamp("cancelled_at"),
 });
 
+// Booking series — groups recurring bookings
+export const bookingSeries = pgTable("booking_series", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  providerId: uuid("provider_id")
+    .notNull()
+    .references(() => providers.id, { onDelete: "cascade" }),
+  frequency: recurrenceFrequencyEnum("frequency").notNull(),
+  occurrences: integer("occurrences").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Bookings — individual session appointments
 export const bookings = pgTable("bookings", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -220,6 +265,7 @@ export const bookings = pgTable("bookings", {
   ghlAppointmentId: text("ghl_appointment_id"),
   sessionType: sessionTypeEnum("session_type").notNull().default("individual"),
   maxParticipants: integer("max_participants"),
+  bookingSeriesId: uuid("booking_series_id").references(() => bookingSeries.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -237,6 +283,47 @@ export const bookingParticipants = pgTable("booking_participants", {
   clientSubscriptionId: uuid("client_subscription_id").references(() => clientSubscriptions.id),
   status: participantStatusEnum("status").notNull().default("booked"),
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
+});
+
+// Waitlist entries — for full group sessions
+export const waitlistEntries = pgTable(
+  "waitlist_entries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    bookingId: uuid("booking_id")
+      .notNull()
+      .references(() => bookings.id, { onDelete: "cascade" }),
+    clientId: uuid("client_id")
+      .notNull()
+      .references(() => clients.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    status: waitlistStatusEnum("status").notNull().default("waiting"),
+    notifiedAt: timestamp("notified_at"),
+    addedAt: timestamp("added_at").defaultNow().notNull(),
+  },
+  (t) => [unique().on(t.bookingId, t.clientId)]
+);
+
+// Late cancellation audit log
+export const lateCancellationLogs = pgTable("late_cancellation_logs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  bookingId: uuid("booking_id")
+    .notNull()
+    .references(() => bookings.id, { onDelete: "cascade" }),
+  clientId: uuid("client_id")
+    .notNull()
+    .references(() => clients.id, { onDelete: "cascade" }),
+  providerId: uuid("provider_id")
+    .notNull()
+    .references(() => providers.id, { onDelete: "cascade" }),
+  cancelledAt: timestamp("cancelled_at").defaultNow().notNull(),
+  sessionStartTime: timestamp("session_start_time").notNull(),
+  windowHours: integer("window_hours").notNull(),
+  action: text("action").notNull(), // "deduct_session" | "charge"
+  outcome: lateCancelOutcomeEnum("outcome").notNull(),
+  stripePaymentIntentId: text("stripe_payment_intent_id"),
+  chargeAmountCents: integer("charge_amount_cents"),
+  notes: text("notes"),
 });
 
 // Questionnaire templates
@@ -430,7 +517,46 @@ export const bookingsRelations = relations(bookings, ({ one, many }) => ({
     fields: [bookings.clientSubscriptionId],
     references: [clientSubscriptions.id],
   }),
+  series: one(bookingSeries, {
+    fields: [bookings.bookingSeriesId],
+    references: [bookingSeries.id],
+  }),
   participants: many(bookingParticipants),
+  waitlistEntries: many(waitlistEntries),
+}));
+
+export const bookingSeriesRelations = relations(bookingSeries, ({ one, many }) => ({
+  provider: one(providers, {
+    fields: [bookingSeries.providerId],
+    references: [providers.id],
+  }),
+  bookings: many(bookings),
+}));
+
+export const waitlistEntriesRelations = relations(waitlistEntries, ({ one }) => ({
+  booking: one(bookings, {
+    fields: [waitlistEntries.bookingId],
+    references: [bookings.id],
+  }),
+  client: one(clients, {
+    fields: [waitlistEntries.clientId],
+    references: [clients.id],
+  }),
+}));
+
+export const lateCancellationLogsRelations = relations(lateCancellationLogs, ({ one }) => ({
+  booking: one(bookings, {
+    fields: [lateCancellationLogs.bookingId],
+    references: [bookings.id],
+  }),
+  client: one(clients, {
+    fields: [lateCancellationLogs.clientId],
+    references: [clients.id],
+  }),
+  provider: one(providers, {
+    fields: [lateCancellationLogs.providerId],
+    references: [providers.id],
+  }),
 }));
 
 export const bookingParticipantsRelations = relations(bookingParticipants, ({ one }) => ({

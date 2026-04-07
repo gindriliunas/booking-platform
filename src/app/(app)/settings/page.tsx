@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, Check, Eye, EyeOff, ExternalLink, Clock } from "lucide-react";
+import { Settings, Check, Eye, EyeOff, ExternalLink, Clock, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -72,6 +72,17 @@ interface Provider {
   stripeWebhookSecretMasked?: string | null;
   allowIndividualSelfBook: boolean;
   allowGroupSelfBook: boolean;
+  enableWaitlist: boolean;
+  lateCancelWindowHours?: number | null;
+  lateCancelAction?: string | null;
+  lateCancelChargeAmount?: string | null;
+  invoiceBusinessName?: string | null;
+  invoiceAddress?: string | null;
+  invoiceTaxId?: string | null;
+  invoiceLogoUrl?: string | null;
+  invoiceFooterNote?: string | null;
+  autoSendInvoiceOnPackage: boolean;
+  autoSendInvoiceOnSubscription: boolean;
 }
 
 export default function SettingsPage() {
@@ -90,8 +101,17 @@ export default function SettingsPage() {
   const [currency, setCurrency] = useState("usd");
   const [allowIndividualSelfBook, setAllowIndividualSelfBook] = useState(true);
   const [allowGroupSelfBook, setAllowGroupSelfBook] = useState(true);
+  const [enableWaitlist, setEnableWaitlist] = useState(false);
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileSaved, setProfileSaved] = useState(false);
+
+  // Cancellation policy
+  const [cancelEnabled, setCancelEnabled] = useState(false);
+  const [cancelWindowHours, setCancelWindowHours] = useState("24");
+  const [cancelAction, setCancelAction] = useState<"deduct_session" | "charge">("deduct_session");
+  const [cancelChargeAmount, setCancelChargeAmount] = useState("");
+  const [cancelSaving, setCancelSaving] = useState(false);
+  const [cancelSaved, setCancelSaved] = useState(false);
 
   // Stripe form
   const [stripeSecretKey, setStripeSecretKey] = useState("");
@@ -101,6 +121,17 @@ export default function SettingsPage() {
   const [stripeSaving, setStripeSaving] = useState(false);
   const [stripeSaved, setStripeSaved] = useState(false);
   const [stripeError, setStripeError] = useState("");
+
+  // Invoice settings
+  const [invoiceBusinessName, setInvoiceBusinessName] = useState("");
+  const [invoiceAddress, setInvoiceAddress] = useState("");
+  const [invoiceTaxId, setInvoiceTaxId] = useState("");
+  const [invoiceLogoUrl, setInvoiceLogoUrl] = useState("");
+  const [invoiceFooterNote, setInvoiceFooterNote] = useState("");
+  const [autoSendInvoiceOnPackage, setAutoSendInvoiceOnPackage] = useState(false);
+  const [autoSendInvoiceOnSubscription, setAutoSendInvoiceOnSubscription] = useState(false);
+  const [invoiceSaving, setInvoiceSaving] = useState(false);
+  const [invoiceSaved, setInvoiceSaved] = useState(false);
 
   // Availability
   type DaySlot = { enabled: boolean; startTime: string; endTime: string };
@@ -127,6 +158,19 @@ export default function SettingsPage() {
       setCurrency(p.currency ?? "usd");
       setAllowIndividualSelfBook(p.allowIndividualSelfBook ?? true);
       setAllowGroupSelfBook(p.allowGroupSelfBook ?? true);
+      setEnableWaitlist(p.enableWaitlist ?? false);
+      const hasPolicy = !!p.lateCancelWindowHours && !!p.lateCancelAction;
+      setCancelEnabled(hasPolicy);
+      setCancelWindowHours(String(p.lateCancelWindowHours ?? 24));
+      setCancelAction((p.lateCancelAction as "deduct_session" | "charge") ?? "deduct_session");
+      setCancelChargeAmount(p.lateCancelChargeAmount ?? "");
+      setInvoiceBusinessName(p.invoiceBusinessName ?? "");
+      setInvoiceAddress(p.invoiceAddress ?? "");
+      setInvoiceTaxId(p.invoiceTaxId ?? "");
+      setInvoiceLogoUrl(p.invoiceLogoUrl ?? "");
+      setInvoiceFooterNote(p.invoiceFooterNote ?? "");
+      setAutoSendInvoiceOnPackage(p.autoSendInvoiceOnPackage ?? false);
+      setAutoSendInvoiceOnSubscription(p.autoSendInvoiceOnSubscription ?? false);
       const availData = await availRes.json();
       const rows: { dayOfWeek: number; startTime: string; endTime: string }[] = availData.availability ?? [];
       setAvailSlots(DAYS.map((_, i) => {
@@ -155,7 +199,7 @@ export default function SettingsPage() {
       const res = await fetch(`/api/providers/${provider.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, serviceType, timezone, sessionDurationMins, currency, allowIndividualSelfBook, allowGroupSelfBook }),
+        body: JSON.stringify({ name, email, phone, serviceType, timezone, sessionDurationMins, currency, allowIndividualSelfBook, allowGroupSelfBook, enableWaitlist }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Save failed");
       setProfileSaved(true);
@@ -237,6 +281,59 @@ export default function SettingsPage() {
       setError(err instanceof Error ? err.message : "Failed to save availability");
     } finally {
       setAvailSaving(false);
+    }
+  }
+
+  async function handleCancelPolicySave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!provider) return;
+    setCancelSaving(true);
+    setCancelSaved(false);
+    try {
+      const payload = cancelEnabled
+        ? {
+            lateCancelWindowHours: cancelWindowHours,
+            lateCancelAction: cancelAction,
+            lateCancelChargeAmount: cancelAction === "charge" ? cancelChargeAmount : null,
+          }
+        : { lateCancelWindowHours: null, lateCancelAction: null, lateCancelChargeAmount: null };
+      const res = await fetch(`/api/providers/${provider.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Save failed");
+      setCancelSaved(true);
+      setTimeout(() => setCancelSaved(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setCancelSaving(false);
+    }
+  }
+
+  async function handleInvoiceSave(e: React.FormEvent) {
+    e.preventDefault();
+    if (!provider) return;
+    setInvoiceSaving(true);
+    setInvoiceSaved(false);
+    try {
+      const res = await fetch(`/api/providers/${provider.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          invoiceBusinessName, invoiceAddress, invoiceTaxId,
+          invoiceLogoUrl, invoiceFooterNote,
+          autoSendInvoiceOnPackage, autoSendInvoiceOnSubscription,
+        }),
+      });
+      if (!res.ok) throw new Error((await res.json()).error ?? "Save failed");
+      setInvoiceSaved(true);
+      setTimeout(() => setInvoiceSaved(false), 3000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+    } finally {
+      setInvoiceSaving(false);
     }
   }
 
@@ -364,6 +461,18 @@ export default function SettingsPage() {
                   type="checkbox"
                   checked={allowGroupSelfBook}
                   onChange={(e) => setAllowGroupSelfBook(e.target.checked)}
+                  className="h-4 w-4 rounded"
+                />
+              </label>
+              <label className="flex items-center justify-between gap-3 cursor-pointer">
+                <div>
+                  <p className="text-sm text-gray-700">Enable waitlist for group sessions</p>
+                  <p className="text-xs text-gray-400">When a group session is full, clients can join a waitlist and are notified when a spot opens</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={enableWaitlist}
+                  onChange={(e) => setEnableWaitlist(e.target.checked)}
                   className="h-4 w-4 rounded"
                 />
               </label>
@@ -505,6 +614,241 @@ export default function SettingsPage() {
                 >
                   Disconnect
                 </Button>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Cancellation Policy */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Clock className="h-4 w-4 text-gray-500" />
+            Cancellation Policy
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleCancelPolicySave} className="space-y-4">
+            <label className="flex items-center justify-between gap-3 cursor-pointer">
+              <div>
+                <p className="text-sm text-gray-700">Enable late cancellation policy</p>
+                <p className="text-xs text-gray-400">Apply a penalty when clients cancel within a set window</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={cancelEnabled}
+                onChange={(e) => setCancelEnabled(e.target.checked)}
+                className="h-4 w-4 rounded"
+              />
+            </label>
+
+            {cancelEnabled && (
+              <div className="space-y-4 border-t border-gray-100 pt-4">
+                <div className="space-y-1">
+                  <Label htmlFor="cancelWindow">Cancellation window (hours)</Label>
+                  <Input
+                    id="cancelWindow"
+                    type="number"
+                    min="1"
+                    max="168"
+                    value={cancelWindowHours}
+                    onChange={(e) => setCancelWindowHours(e.target.value)}
+                    className="w-32"
+                  />
+                  <p className="text-xs text-gray-400">Cancellations within this many hours of the session start are considered late</p>
+                </div>
+
+                <div className="space-y-1">
+                  <Label>Late cancellation penalty</Label>
+                  <Select value={cancelAction} onValueChange={(v) => setCancelAction(v as "deduct_session" | "charge")}>
+                    <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="deduct_session">Deduct session credit</SelectItem>
+                      <SelectItem value="charge">Charge a fee</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {cancelAction === "charge" && (
+                  <div className="space-y-1">
+                    <Label htmlFor="cancelCharge">Charge amount ({currency.toUpperCase()})</Label>
+                    <Input
+                      id="cancelCharge"
+                      type="number"
+                      min="1"
+                      step="0.01"
+                      value={cancelChargeAmount}
+                      onChange={(e) => setCancelChargeAmount(e.target.value)}
+                      placeholder="e.g. 25.00"
+                      className="w-40"
+                    />
+                    <p className="text-xs text-gray-400">Charged to the client&apos;s saved payment method. If no payment method is on file, a manual collection notice is logged.</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="flex items-center gap-3 pt-1">
+              <Button type="submit" disabled={cancelSaving || !provider}>
+                {cancelSaving ? "Saving…" : "Save Policy"}
+              </Button>
+              {cancelSaved && (
+                <span className="flex items-center gap-1.5 text-sm text-green-600">
+                  <Check className="h-4 w-4" /> Saved
+                </span>
+              )}
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Invoice Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <FileText className="h-4 w-4 text-gray-500" />
+            Invoice Settings
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleInvoiceSave} className="space-y-5">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div className="space-y-1">
+                <Label htmlFor="invoiceBusinessName">Business Name</Label>
+                <Input
+                  id="invoiceBusinessName"
+                  value={invoiceBusinessName}
+                  onChange={(e) => setInvoiceBusinessName(e.target.value)}
+                  placeholder="Acme Fitness LLC"
+                />
+                <p className="text-xs text-gray-400">Appears on invoices instead of your display name</p>
+              </div>
+              <div className="space-y-1">
+                <Label htmlFor="invoiceTaxId">Tax ID / VAT Number</Label>
+                <Input
+                  id="invoiceTaxId"
+                  value={invoiceTaxId}
+                  onChange={(e) => setInvoiceTaxId(e.target.value)}
+                  placeholder="e.g. US123456789"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="invoiceAddress">Business Address</Label>
+              <textarea
+                id="invoiceAddress"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                rows={2}
+                value={invoiceAddress}
+                onChange={(e) => setInvoiceAddress(e.target.value)}
+                placeholder="123 Main St, New York, NY 10001"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Business Logo</Label>
+              {invoiceLogoUrl ? (
+                <div className="flex items-center gap-4">
+                  <img
+                    src={invoiceLogoUrl}
+                    alt="Invoice logo"
+                    className="h-14 max-w-[180px] object-contain rounded border border-gray-200 bg-gray-50 p-1"
+                  />
+                  <div className="flex flex-col gap-1.5">
+                    <label
+                      htmlFor="logoUpload"
+                      className="cursor-pointer text-xs text-indigo-600 hover:underline"
+                    >
+                      Replace image
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setInvoiceLogoUrl("")}
+                      className="text-xs text-red-500 hover:underline text-left"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <label
+                  htmlFor="logoUpload"
+                  className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-colors"
+                >
+                  <svg className="h-6 w-6 text-gray-400 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  <span className="text-sm text-gray-500">Click to upload logo</span>
+                  <span className="text-xs text-gray-400 mt-0.5">PNG, JPG, SVG — max 500 KB</span>
+                </label>
+              )}
+              <input
+                id="logoUpload"
+                type="file"
+                accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  if (file.size > 500 * 1024) {
+                    alert("Image must be under 500 KB");
+                    e.target.value = "";
+                    return;
+                  }
+                  const reader = new FileReader();
+                  reader.onload = () => setInvoiceLogoUrl(reader.result as string);
+                  reader.readAsDataURL(file);
+                  e.target.value = "";
+                }}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="invoiceFooterNote">Footer Note</Label>
+              <textarea
+                id="invoiceFooterNote"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                rows={2}
+                value={invoiceFooterNote}
+                onChange={(e) => setInvoiceFooterNote(e.target.value)}
+                placeholder="Thank you for your business! Payment is due within 7 days."
+              />
+            </div>
+            <hr className="border-gray-100" />
+            <div className="space-y-3">
+              <Label>Auto-send invoices</Label>
+              <label className="flex items-center justify-between gap-3 cursor-pointer">
+                <div>
+                  <p className="text-sm text-gray-700">Send when a package is assigned</p>
+                  <p className="text-xs text-gray-400">Automatically email an invoice to the client when a package is manually assigned</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={autoSendInvoiceOnPackage}
+                  onChange={(e) => setAutoSendInvoiceOnPackage(e.target.checked)}
+                  className="h-4 w-4 rounded"
+                />
+              </label>
+              <label className="flex items-center justify-between gap-3 cursor-pointer">
+                <div>
+                  <p className="text-sm text-gray-700">Send when a subscription is assigned</p>
+                  <p className="text-xs text-gray-400">Automatically email an invoice to the client when a subscription is manually assigned</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={autoSendInvoiceOnSubscription}
+                  onChange={(e) => setAutoSendInvoiceOnSubscription(e.target.checked)}
+                  className="h-4 w-4 rounded"
+                />
+              </label>
+            </div>
+            <div className="flex items-center gap-3 pt-1">
+              <Button type="submit" disabled={invoiceSaving || !provider}>
+                {invoiceSaving ? "Saving…" : "Save Invoice Settings"}
+              </Button>
+              {invoiceSaved && (
+                <span className="flex items-center gap-1.5 text-sm text-green-600">
+                  <Check className="h-4 w-4" /> Saved
+                </span>
               )}
             </div>
           </form>

@@ -11,10 +11,16 @@ export async function GET(req: NextRequest) {
   const authError = await requireAdminProvider(providerId);
   if (authError) return authError;
 
+  const status = req.nextUrl.searchParams.get("status"); // "active" | "inactive" | null = all
+
+  const conditions = [eq(clients.providerId, providerId)];
+  if (status === "active") conditions.push(eq(clients.isActive, true));
+  else if (status === "inactive") conditions.push(eq(clients.isActive, false));
+
   const rows = await db
     .select()
     .from(clients)
-    .where(eq(clients.providerId, providerId))
+    .where(and(...conditions))
     .orderBy(clients.name);
 
   // Find which clients have pending questionnaires (needs attention badge)

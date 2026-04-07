@@ -17,6 +17,7 @@ interface Client {
   email?: string | null;
   phone?: string | null;
   notes?: string | null;
+  isActive?: boolean;
 }
 
 interface Props {
@@ -34,6 +35,7 @@ export function ClientDialog({ open, onOpenChange, providerId, client, onSuccess
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
+  const [isActive, setIsActive] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -43,11 +45,13 @@ export function ClientDialog({ open, onOpenChange, providerId, client, onSuccess
       setEmail(client.email ?? "");
       setPhone(client.phone ?? "");
       setNotes(client.notes ?? "");
+      setIsActive(client.isActive ?? true);
     } else {
       setName("");
       setEmail("");
       setPhone("");
       setNotes("");
+      setIsActive(true);
     }
     setError("");
   }, [client, open]);
@@ -62,7 +66,7 @@ export function ClientDialog({ open, onOpenChange, providerId, client, onSuccess
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ providerId, name, email, phone, notes }),
+        body: JSON.stringify({ providerId, name, email, phone, notes, isActive }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Request failed");
       onSuccess();
@@ -133,6 +137,21 @@ export function ClientDialog({ open, onOpenChange, providerId, client, onSuccess
               placeholder="Any notes about this client..."
             />
           </div>
+
+          {isEdit && (
+            <label className="flex items-center justify-between gap-3 cursor-pointer rounded-lg border border-gray-200 px-3 py-2.5">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Active client</p>
+                <p className="text-xs text-gray-400">Inactive clients are hidden from the default view</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={isActive}
+                onChange={(e) => setIsActive(e.target.checked)}
+                className="h-4 w-4 rounded"
+              />
+            </label>
+          )}
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 

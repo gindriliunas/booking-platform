@@ -39,6 +39,7 @@ export type CalendarEvent = {
   sessionType?: "individual" | "group";
   participantCount?: number;
   maxParticipants?: number;
+  bookingSeriesId?: string | null;
 };
 
 interface SessionCalendarProps {
