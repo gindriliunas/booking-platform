@@ -153,6 +153,7 @@ export const packages = pgTable("packages", {
   stripePriceId: text("stripe_price_id"),
   stripeProductId: text("stripe_product_id"),
   isActive: boolean("is_active").notNull().default(true),
+  isPublic: boolean("is_public").notNull().default(true),
   sessionType: sessionTypeEnum("session_type").notNull().default("individual"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
@@ -173,6 +174,7 @@ export const subscriptionPlans = pgTable("subscription_plans", {
   stripePriceId: text("stripe_price_id"),
   stripeProductId: text("stripe_product_id"),
   isActive: boolean("is_active").notNull().default(true),
+  isPublic: boolean("is_public").notNull().default(true),
   sessionType: sessionTypeEnum("session_type").notNull().default("individual"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

@@ -31,6 +31,7 @@ interface Package {
   currency: string;
   validityDays?: number | null;
   isActive: boolean;
+  isPublic: boolean;
   sessionType?: "individual" | "group";
 }
 
@@ -53,6 +54,7 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
   const [currency, setCurrency] = useState(defaultCurrency);
   const [sessionDurationMins, setSessionDurationMins] = useState("");
   const [validityDays, setValidityDays] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -66,6 +68,7 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
       setPrice(pkg.price);
       setCurrency(pkg.currency);
       setValidityDays(pkg.validityDays ? String(pkg.validityDays) : "");
+      setIsPublic(pkg.isPublic);
     } else {
       setSessionType("individual");
       setName("");
@@ -75,6 +78,7 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
       setPrice("");
       setCurrency(defaultCurrency);
       setValidityDays("");
+      setIsPublic(true);
     }
     setError("");
   }, [pkg, open, defaultCurrency]);
@@ -99,6 +103,7 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
           currency,
           validityDays: validityDays || null,
           sessionType,
+          isPublic,
         }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Request failed");
@@ -236,6 +241,27 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
               placeholder="e.g. 365"
             />
           </div>
+
+          {/* Visibility toggle */}
+          <div className="flex rounded-lg border border-gray-200 p-0.5 gap-0.5">
+            <button
+              type="button"
+              onClick={() => setIsPublic(true)}
+              className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${isPublic ? "bg-indigo-600 text-white" : "text-gray-600 hover:text-gray-900"}`}
+            >
+              Public
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPublic(false)}
+              className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${!isPublic ? "bg-gray-700 text-white" : "text-gray-600 hover:text-gray-900"}`}
+            >
+              Private
+            </button>
+          </div>
+          <p className="text-xs text-gray-500 -mt-2">
+            {isPublic ? "Clients can see and purchase this package in the portal." : "Only you can assign this package — clients won't see it."}
+          </p>
 
           {!isEdit && (
             <p className="text-xs text-gray-500">

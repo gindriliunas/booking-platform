@@ -24,6 +24,7 @@ interface Package {
   stripePriceId?: string | null;
   stripeProductId?: string | null;
   isActive: boolean;
+  isPublic: boolean;
   sessionType?: "individual" | "group";
   createdAt: string;
 }
@@ -40,6 +41,7 @@ interface Plan {
   stripePriceId?: string | null;
   stripeProductId?: string | null;
   isActive: boolean;
+  isPublic: boolean;
   sessionType?: "individual" | "group";
   createdAt: string;
 }
@@ -136,6 +138,9 @@ export default function PackagesPage() {
                         {pkg.sessionType === "group" && (
                           <Badge className="bg-teal-100 text-teal-700 border-teal-200">Group</Badge>
                         )}
+                        {!pkg.isPublic && (
+                          <Badge variant="secondary" className="text-gray-600 bg-gray-100">Private</Badge>
+                        )}
                         {!pkg.stripePriceId && (
                           <Badge variant="secondary" className="text-orange-600 bg-orange-50">
                             No Stripe price
@@ -208,6 +213,9 @@ export default function PackagesPage() {
                         </Badge>
                         {plan.sessionType === "group" && (
                           <Badge className="bg-teal-100 text-teal-700 border-teal-200">Group</Badge>
+                        )}
+                        {!plan.isPublic && (
+                          <Badge variant="secondary" className="text-gray-600 bg-gray-100">Private</Badge>
                         )}
                         {!plan.stripePriceId && (
                           <Badge variant="secondary" className="text-orange-600 bg-orange-50">

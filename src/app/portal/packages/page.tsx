@@ -50,7 +50,7 @@ export default async function PortalPackagesPage({
     db
       .select()
       .from(packages)
-      .where(and(eq(packages.providerId, client.providerId), eq(packages.isActive, true))),
+      .where(and(eq(packages.providerId, client.providerId), eq(packages.isActive, true), eq(packages.isPublic, true))),
   ]);
 
   const activeMyPkgs = myPkgRows.filter(({ cp }) => cp.status === "active");
