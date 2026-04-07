@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Menu } from "lucide-react";
+import { Menu, CalendarDays } from "lucide-react";
 import { ProviderProvider } from "@/components/provider-context";
 import { Sidebar } from "@/components/layout/sidebar";
 
@@ -22,10 +22,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
             >
               <Menu className="h-6 w-6" />
             </button>
-            <span className="text-lg font-extrabold tracking-tight">
-              <span className="text-gray-900">VIV</span>
-              <span className="text-indigo-500">-Z</span>
-            </span>
+            <CalendarDays className="h-6 w-6 text-indigo-500" />
           </header>
 
           <main className="flex-1 overflow-y-auto bg-gray-50 p-4 lg:p-8">{children}</main>

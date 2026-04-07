@@ -28,7 +28,6 @@ export default async function PortalLayout({ children }: { children: React.React
       <aside className="flex w-56 flex-col border-r border-gray-200 bg-white shrink-0">
         <div className="flex h-16 items-center gap-2 px-5 border-b border-gray-200">
           <CalendarDays className="h-5 w-5 text-indigo-600" />
-          <span className="text-base font-bold text-gray-900">VIV-Z</span>
         </div>
         <nav className="flex-1 space-y-0.5 p-3">
           {navItems.map(({ href, label, icon: Icon }) => (

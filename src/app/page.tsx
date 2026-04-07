@@ -319,39 +319,76 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
+      {/* WHAT HAPPENS NEXT */}
       <section className="bg-gray-950 px-6 py-20 text-white">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
-            <h2 className="mb-3 text-3xl font-black md:text-4xl">Up and running in 3 steps</h2>
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-14 text-center">
+            <h2 className="mb-3 text-3xl font-black md:text-4xl">What happens after you sign up</h2>
             <p className="text-gray-400">
-              We do the heavy lifting. You focus on your clients.
+              From payment to your business being live — here&apos;s exactly what to expect.
             </p>
           </div>
-          <div className="grid gap-8 md:grid-cols-3">
-            {[
-              {
-                step: "01",
-                title: "We build your website",
-                desc: "Send us your logo, brand colours, photos, and a few details about your services. We design and build your professional website within 3–5 working days.",
-              },
-              {
-                step: "02",
-                title: "We set up your platform",
-                desc: "Your CRM, booking system, automations, social scheduler, review requests, web chat, and business email are all configured and ready.",
-              },
-              {
-                step: "03",
-                title: "You go live and grow",
-                desc: "Your complete online business is live. Clients find you on Google, book online, and your platform handles the rest automatically.",
-              },
-            ].map((s) => (
-              <div key={s.step} className="relative rounded-2xl border border-white/10 bg-white/5 p-8">
-                <div className="mb-4 text-5xl font-black text-emerald-500/30">{s.step}</div>
-                <h3 className="mb-3 text-xl font-bold">{s.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-400">{s.desc}</p>
-              </div>
-            ))}
+
+          <div className="relative">
+            {/* Vertical line */}
+            <div className="absolute left-6 top-0 hidden h-full w-px bg-white/10 md:left-1/2 md:block" />
+
+            <div className="space-y-10">
+              {[
+                {
+                  step: "01",
+                  icon: "💳",
+                  title: "Make payment",
+                  timing: "Today",
+                  desc: "Subscribe for £79/month — no setup fee, no long contract. Your subscription starts immediately and you can cancel anytime with 30 days' notice.",
+                },
+                {
+                  step: "02",
+                  icon: "📋",
+                  title: "Fill out your business info form",
+                  timing: "Same day",
+                  desc: "Right after payment you'll receive a short onboarding form. We'll ask for your logo, brand colours, photos, service details, and any existing accounts. Takes around 10 minutes to complete.",
+                },
+                {
+                  step: "03",
+                  icon: "🎨",
+                  title: "We build your website",
+                  timing: "Within 3–5 working days",
+                  desc: "Our team designs and builds your professional website based on your branding and services. We'll send you a preview link to review before anything goes live. Revisions included.",
+                },
+                {
+                  step: "04",
+                  icon: "🚀",
+                  title: "Full platform access",
+                  timing: "Live and ready",
+                  desc: "Your website is published, your domain is connected, and your entire platform is configured — CRM, booking system, automations, social scheduler, business email, and more. We walk you through everything on a handover call.",
+                },
+              ].map((s, i) => (
+                <div key={s.step} className={`relative flex flex-col gap-6 md:flex-row md:items-start ${i % 2 === 1 ? "md:flex-row-reverse" : ""}`}>
+                  {/* Icon bubble */}
+                  <div className="flex shrink-0 items-center gap-4 md:w-1/2 md:justify-end md:pr-12">
+                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-2xl ${i % 2 === 1 ? "md:order-last" : ""}`}>
+                      {s.icon}
+                    </div>
+                    <div className={`md:hidden`}>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">{s.timing}</p>
+                      <h3 className="mt-0.5 text-lg font-bold">{s.title}</h3>
+                      <p className="mt-1 text-sm leading-relaxed text-gray-400">{s.desc}</p>
+                    </div>
+                  </div>
+
+                  {/* Center dot */}
+                  <div className="absolute left-6 top-4 hidden h-3 w-3 -translate-x-1.5 rounded-full bg-emerald-500 ring-4 ring-gray-950 md:left-1/2 md:block md:-translate-x-1.5 md:top-4" />
+
+                  {/* Text — desktop */}
+                  <div className={`hidden md:block md:w-1/2 ${i % 2 === 1 ? "md:pr-12 md:text-right" : "md:pl-12"}`}>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">{s.timing}</p>
+                    <h3 className="mt-0.5 text-lg font-bold">{s.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-gray-400">{s.desc}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -463,7 +500,7 @@ export default function LandingPage() {
               </ul>
 
               <Link
-                href="mailto:hello@viv-z.com"
+                href="https://link.fastpaydirect.com/payment-link/69d56afca6c96e61a84603da"
                 className="block w-full rounded-xl bg-emerald-500 py-4 text-center font-bold text-white shadow-lg transition hover:bg-emerald-400"
               >
                 Get started today →
@@ -502,7 +539,7 @@ export default function LandingPage() {
             Everything included for £79/month.
           </p>
           <Link
-            href="mailto:hello@viv-z.com"
+            href="https://link.fastpaydirect.com/payment-link/69d56afca6c96e61a84603da"
             className="inline-block rounded-xl bg-white px-10 py-5 text-base font-black text-emerald-700 shadow-xl transition hover:bg-emerald-50"
           >
             Get your website built today →

@@ -8,6 +8,7 @@ import {
   LayoutDashboard,
   CalendarCheck,
   ClipboardList,
+  CalendarDays,
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -54,12 +55,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function Logo() {
-  return (
-    <span className="text-xl font-extrabold tracking-tight">
-      <span className="text-white">VIV</span>
-      <span className="text-indigo-400">-Z</span>
-    </span>
-  );
+  return <CalendarDays className="h-6 w-6 text-indigo-400" />;
 }
 
 export function Sidebar({ mobileOpen, onClose }: SidebarProps) {

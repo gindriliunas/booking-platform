@@ -6,9 +6,9 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "VIV-Z — Booking & Session Management",
+  title: "Session Management",
   description:
-    "Calendar booking, session tracking and payments for personal trainers, massage therapists and other service providers.",
+    "Calendar booking, session tracking and payments for service providers.",
 };
 
 export default function RootLayout({

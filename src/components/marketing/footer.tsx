@@ -34,11 +34,6 @@ export function MarketingFooter() {
                   Getting Started
                 </Link>
               </li>
-              <li>
-                <Link href="/install" className="hover:text-violet-700">
-                  Install on GHL
-                </Link>
-              </li>
             </ul>
           </div>
 
