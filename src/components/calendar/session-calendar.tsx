@@ -105,7 +105,7 @@ function CustomEvent({ event }: { event: CalendarEvent }) {
     );
   }
 
-  const timeStr = format(event.start, "h:mma").toLowerCase();
+  const timeStr = format(event.start, "HH:mm");
 
   if (event.sessionType === "group") {
     const count = event.participantCount ?? 0;
@@ -134,6 +134,38 @@ function CustomEvent({ event }: { event: CalendarEvent }) {
     </>
   );
 }
+
+function WeekDayHeader({ date }: { date: Date }) {
+  const initial = format(date, "EEEEE"); // Single letter: M T W T F S S
+  const day = format(date, "d");
+  const isToday =
+    format(date, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
+  return (
+    <div className="flex flex-col items-center py-1 gap-0.5">
+      <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">
+        {initial}
+      </span>
+      <span
+        className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors ${
+          isToday
+            ? "bg-blue-600 text-white"
+            : "text-gray-700"
+        }`}
+      >
+        {day}
+      </span>
+    </div>
+  );
+}
+
+const calendarFormats = {
+  timeGutterFormat: (date: Date) => format(date, "HH:mm"),
+  eventTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
+    `${format(start, "HH:mm")} – ${format(end, "HH:mm")}`,
+  agendaTimeFormat: (date: Date) => format(date, "HH:mm"),
+  agendaTimeRangeFormat: ({ start, end }: { start: Date; end: Date }) =>
+    `${format(start, "HH:mm")} – ${format(end, "HH:mm")}`,
+};
 
 function parseTime(t: string): Date {
   const [h, m] = t.split(":").map(Number);
@@ -289,7 +321,11 @@ export function SessionCalendar({
           eventPropGetter={eventStyleGetter}
           startAccessor="start"
           endAccessor="end"
-          components={{ event: CustomEvent }}
+          formats={calendarFormats}
+          components={{
+            event: CustomEvent,
+            week: { header: WeekDayHeader },
+          }}
           views={isMobile ? [Views.WEEK, Views.DAY, Views.AGENDA] : [Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
           step={30}
           timeslots={2}
