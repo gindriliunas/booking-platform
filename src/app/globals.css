@@ -68,3 +68,44 @@ body {
 .rbc-event-content {
   font-size: 10px !important;
 }
+
+/* Revenue calculator range slider */
+.calc-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  width: 100%;
+}
+.calc-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 3px;
+  background: inherit;
+}
+.calc-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #fff;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+  margin-top: -7px;
+}
+.calc-slider::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #10b981;
+  border: 2px solid #fff;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+.calc-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 3px;
+  background: inherit;
+}

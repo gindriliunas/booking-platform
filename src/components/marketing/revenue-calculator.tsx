@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useId } from "react";
+import { useState } from "react";
 import Link from "next/link";
 
 function fmt(n: number) {
@@ -26,36 +26,27 @@ function SliderInput({
   display: string;
   hint?: string;
 }) {
-  const id = useId();
   const pct = ((value - min) / (max - min)) * 100;
 
   return (
     <div>
       <div className="mb-2 flex items-baseline justify-between">
-        <label htmlFor={id} className="text-sm font-semibold text-gray-200">
-          {label}
-        </label>
+        <label className="text-sm font-semibold text-gray-200">{label}</label>
         <span className="text-lg font-black text-emerald-400">{display}</span>
       </div>
       {hint && <p className="mb-3 text-xs text-gray-500">{hint}</p>}
-      <div className="relative">
-        <input
-          id={id}
-          type="range"
-          min={min}
-          max={max}
-          step={step}
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="slider-input w-full cursor-pointer appearance-none rounded-full bg-white/10 accent-emerald-500"
-          style={{ height: "6px" }}
-        />
-        {/* filled track overlay */}
-        <div
-          className="pointer-events-none absolute left-0 top-0 h-[6px] rounded-full bg-emerald-500 transition-all"
-          style={{ width: `${pct}%`, marginTop: "0px" }}
-        />
-      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="calc-slider"
+        style={{
+          background: `linear-gradient(to right, #10b981 ${pct}%, rgba(255,255,255,0.1) ${pct}%)`,
+        }}
+      />
       <div className="mt-1 flex justify-between text-xs text-gray-600">
         <span>{min}</span>
         <span>{max}</span>
@@ -106,9 +97,8 @@ export function RevenueCalculator() {
   const [price, setPrice] = useState(60);
   const [adminHours, setAdminHours] = useState(8);
 
-  // ── Core maths ──
   const WEEKS_PER_MONTH = 4.33;
-  const TARGET_FILL = 85; // realistic optimised fill rate
+  const TARGET_FILL = 85;
 
   const currentSessions = capacity * (fillRate / 100);
   const targetSessions = capacity * (TARGET_FILL / 100);
@@ -117,57 +107,20 @@ export function RevenueCalculator() {
   const targetMonthly = targetSessions * price * WEEKS_PER_MONTH;
   const revenueGap = targetMonthly - currentMonthly;
 
-  // Value of admin hours (if spent coaching instead)
-  const sessionDurationHrs = 1; // assume 1-hour sessions
-  const hourlyRate = price / sessionDurationHrs;
-  const adminCostMonthly = adminHours * WEEKS_PER_MONTH * hourlyRate;
+  const adminCostMonthly = adminHours * WEEKS_PER_MONTH * price;
 
-  // Total leakage per month and year
   const totalLeakageMonthly = revenueGap + adminCostMonthly;
   const totalLeakageAnnual = totalLeakageMonthly * 12;
 
-  // VIV-Z ROI
   const vivzCost = 79;
-  const netGainMonthly = revenueGap - vivzCost;
+  const netGainMonthly = Math.max(revenueGap - vivzCost, 0);
   const netGainAnnual = netGainMonthly * 12;
 
-  // Bar widths (as % of target)
-  const currentBarPct = Math.round((currentMonthly / targetMonthly) * 100);
+  const currentBarPct = Math.min(Math.round((currentMonthly / targetMonthly) * 100), 100);
 
   return (
     <section id="calculator" className="bg-gray-950 px-6 py-20">
-      {/* Scoped slider styles */}
-      <style>{`
-        .slider-input::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: #10b981;
-          border: 2px solid #fff;
-          cursor: pointer;
-          box-shadow: 0 0 6px rgba(16,185,129,0.5);
-          position: relative;
-          z-index: 2;
-        }
-        .slider-input::-moz-range-thumb {
-          width: 20px;
-          height: 20px;
-          border-radius: 50%;
-          background: #10b981;
-          border: 2px solid #fff;
-          cursor: pointer;
-          box-shadow: 0 0 6px rgba(16,185,129,0.5);
-        }
-        .slider-input::-webkit-slider-runnable-track {
-          height: 6px;
-          border-radius: 3px;
-          background: transparent;
-        }
-      `}</style>
-
       <div className="mx-auto max-w-5xl">
-        {/* Heading */}
         <div className="mb-12 text-center">
           <span className="mb-3 inline-block rounded-full bg-emerald-500/10 px-4 py-1 text-sm font-semibold text-emerald-400">
             Revenue Calculator
@@ -176,16 +129,14 @@ export function RevenueCalculator() {
             How much is your schedule costing you?
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-400">
-            Adjust the sliders to match your current situation and see exactly what empty slots and admin time are costing your business — every single month.
+            Adjust the sliders to match your situation and see exactly what empty slots and admin time are costing you every month.
           </p>
         </div>
 
         <div className="grid gap-10 lg:grid-cols-2">
-          {/* ── LEFT: Inputs ── */}
+          {/* Inputs */}
           <div className="space-y-8 rounded-2xl border border-white/10 bg-white/5 p-8">
-            <h3 className="text-base font-bold uppercase tracking-wider text-gray-400">
-              Your numbers
-            </h3>
+            <h3 className="text-base font-bold uppercase tracking-wider text-gray-400">Your numbers</h3>
 
             <SliderInput
               label="Available sessions per week"
@@ -197,7 +148,6 @@ export function RevenueCalculator() {
               display={`${capacity} slots`}
               hint="All the time slots you have available to fill with clients"
             />
-
             <SliderInput
               label="Current fill rate"
               value={fillRate}
@@ -208,7 +158,6 @@ export function RevenueCalculator() {
               display={`${fillRate}%`}
               hint="What percentage of your slots are currently booked?"
             />
-
             <SliderInput
               label="Average session price"
               value={price}
@@ -219,7 +168,6 @@ export function RevenueCalculator() {
               display={`£${price}`}
               hint="Your typical 1-to-1 or group session rate"
             />
-
             <SliderInput
               label="Admin hours per week"
               value={adminHours}
@@ -228,19 +176,17 @@ export function RevenueCalculator() {
               step={1}
               onChange={setAdminHours}
               display={`${adminHours} hrs`}
-              hint="Time spent on chasing bookings, DMs, reminders, social, invoicing…"
+              hint="Time on chasing bookings, DMs, reminders, social, invoicing…"
             />
           </div>
 
-          {/* ── RIGHT: Results ── */}
+          {/* Results */}
           <div className="flex flex-col gap-6">
             {/* Revenue bar */}
             <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
               <p className="mb-5 text-sm font-semibold uppercase tracking-wider text-gray-400">
                 Monthly revenue snapshot
               </p>
-
-              {/* Current */}
               <div className="mb-4">
                 <div className="mb-1.5 flex items-center justify-between text-sm">
                   <span className="text-gray-300">Current ({fillRate}% full)</span>
@@ -249,27 +195,21 @@ export function RevenueCalculator() {
                 <div className="h-5 overflow-hidden rounded-full bg-white/10">
                   <div
                     className="h-full rounded-full bg-white/40 transition-all duration-500"
-                    style={{ width: `${Math.min(currentBarPct, 100)}%` }}
+                    style={{ width: `${currentBarPct}%` }}
                   />
                 </div>
               </div>
-
-              {/* Target */}
               <div className="mb-2">
                 <div className="mb-1.5 flex items-center justify-between text-sm">
                   <span className="text-emerald-300">Optimised ({TARGET_FILL}% full)</span>
                   <span className="font-bold text-emerald-400">{fmt(targetMonthly)}/mo</span>
                 </div>
                 <div className="h-5 overflow-hidden rounded-full bg-white/10">
-                  <div
-                    className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                    style={{ width: "100%" }}
-                  />
+                  <div className="h-full w-full rounded-full bg-emerald-500 transition-all duration-500" />
                 </div>
               </div>
-
               <p className="mt-3 text-right text-xs text-gray-600">
-                85% fill rate is a realistic target with an automated booking system
+                85% fill is a realistic target with automated bookings
               </p>
             </div>
 
@@ -289,7 +229,7 @@ export function RevenueCalculator() {
               />
             </div>
 
-            {/* Big leakage number */}
+            {/* Total leakage */}
             <div className="rounded-2xl border border-red-500/20 bg-gradient-to-br from-red-950/60 to-gray-950 p-6 text-center">
               <p className="mb-1 text-sm font-semibold text-red-300">
                 Total monthly leakage without systems
@@ -307,12 +247,10 @@ export function RevenueCalculator() {
               <p className="mb-1 text-sm font-semibold text-emerald-300">
                 With VIV-Z (£79/mo) you recover
               </p>
-              <p className="mb-0.5 text-5xl font-black text-emerald-400">
-                {fmt(Math.max(netGainMonthly, 0))}
-              </p>
+              <p className="mb-0.5 text-5xl font-black text-emerald-400">{fmt(netGainMonthly)}</p>
               <p className="text-sm text-emerald-300">
                 extra every month ·{" "}
-                <strong>{fmt(Math.max(netGainAnnual, 0))} per year</strong>
+                <strong>{fmt(netGainAnnual)} per year</strong>
               </p>
               <p className="mt-3 text-xs text-gray-500">
                 Based on recovering empty slots only — admin time savings are on top

@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { useProvider } from "@/components/provider-context";
 
 const CURRENCIES = [
   { code: "usd", label: "USD — US Dollar" },
@@ -89,7 +88,6 @@ interface Provider {
 }
 
 export default function SettingsPage() {
-  const { providerId: PROVIDER_ID } = useProvider();
   const [provider, setProvider] = useState<Provider | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -164,12 +162,11 @@ export default function SettingsPage() {
   const [availSaved, setAvailSaved] = useState(false);
   async function fetchProvider() {
     try {
-      const [provRes, availRes] = await Promise.all([
-        fetch(`/api/providers?providerId=${PROVIDER_ID}`),
-        fetch(`/api/availability?providerId=${PROVIDER_ID}`),
-      ]);
+      const provRes = await fetch("/api/providers/me", { credentials: "include" });
+      if (!provRes.ok) throw new Error(`HTTP ${provRes.status}`);
       const data = await provRes.json();
       const p: Provider = data.provider;
+      if (!p) throw new Error("No provider found");
       setProvider(p);
       setName(p.name);
       setEmail(p.email ?? "");
@@ -194,6 +191,8 @@ export default function SettingsPage() {
       setAutoSendInvoiceOnPackage(p.autoSendInvoiceOnPackage ?? false);
       setAutoSendInvoiceOnSubscription(p.autoSendInvoiceOnSubscription ?? false);
       setGcalConnected(p.googleCalendarSyncEnabled ?? false);
+
+      const availRes = await fetch(`/api/availability?providerId=${p.id}`);
       const availData = await availRes.json();
       const rows: { dayOfWeek: number; startTime: string; endTime: string }[] = availData.availability ?? [];
       setAvailSlots(DAYS.map((_, i) => {
@@ -202,16 +201,16 @@ export default function SettingsPage() {
           ? { enabled: true, startTime: row.startTime, endTime: row.endTime }
           : { enabled: false, startTime: DEFAULT_START, endTime: DEFAULT_END };
       }));
-    } catch {
-      setError("Failed to load provider settings.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load provider settings.");
     } finally {
       setLoading(false);
     }
   }
 
   useEffect(() => {
-    if (PROVIDER_ID) fetchProvider();
-  }, [PROVIDER_ID]); // eslint-disable-line react-hooks/exhaustive-deps
+    fetchProvider();
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function handleProfileSave(e: React.FormEvent) {
     e.preventDefault();

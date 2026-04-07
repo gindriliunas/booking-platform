@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .from(providers)
     .where(eq(providers.clerkUserId, userId));
 
-  if (!provider) redirect("/portal");
+  if (!provider) redirect("/setup");
 
   return <DashboardShell>{children}</DashboardShell>;
 }

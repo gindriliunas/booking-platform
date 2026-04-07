@@ -36,7 +36,16 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
 
   async function fetchProvider() {
     try {
-      const res = await fetch("/api/providers/me");
+      const res = await fetch("/api/providers/me", { credentials: "include" });
+      if (!res.ok) {
+        // Auth failed or server error — redirect to sign-in if 401, setup otherwise
+        if (res.status === 401) {
+          router.push("/sign-in");
+        } else {
+          router.push("/setup");
+        }
+        return;
+      }
       const data = await res.json();
       if (data.provider) {
         setProvider(data.provider);
@@ -44,7 +53,7 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
         router.push("/setup");
       }
     } catch {
-      router.push("/setup");
+      router.push("/sign-in");
     } finally {
       setLoading(false);
     }

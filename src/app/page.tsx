@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { VivZLogo } from "@/components/marketing/logo";
-import { LeadCalculator } from "@/components/marketing/lead-calculator";
 import { RevenueCalculator } from "@/components/marketing/revenue-calculator";
 
 const features = [
@@ -186,7 +185,7 @@ export default function LandingPage() {
             <Link href="#pricing" className="transition hover:text-emerald-400">Pricing</Link>
             <Link href="#calculator" className="transition hover:text-emerald-400">Calculator</Link>
             <Link href="#faq" className="transition hover:text-emerald-400">FAQ</Link>
-            <Link href="/portal" className="transition hover:text-emerald-400">Client Login</Link>
+            <Link href="/sign-in" className="transition hover:text-emerald-400">Business Login</Link>
           </nav>
           <Link
             href="#pricing"
@@ -475,11 +474,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* FAQ */}
-      {/* LEAD CALCULATOR */}
-      <section id="calculator" className="bg-gray-950 px-6 py-20">
-        <LeadCalculator />
-      </section>
 
       <section id="faq" className="px-6 py-20">
         <div className="mx-auto max-w-3xl">

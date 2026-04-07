@@ -10,26 +10,31 @@ function maskKey(key: string | null | undefined) {
 }
 
 export async function GET() {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [provider] = await db
-    .select()
-    .from(providers)
-    .where(eq(providers.clerkUserId, userId));
+    const [provider] = await db
+      .select()
+      .from(providers)
+      .where(eq(providers.clerkUserId, userId));
 
-  if (!provider) return NextResponse.json({ provider: null }, { status: 200 });
+    if (!provider) return NextResponse.json({ provider: null }, { status: 200 });
 
-  return NextResponse.json({
-    provider: {
-      ...provider,
-      stripeSecretKey: undefined,
-      stripeWebhookSecret: undefined,
-      stripeSecretKeyMasked: maskKey(provider.stripeSecretKey),
-      stripeWebhookSecretMasked: maskKey(provider.stripeWebhookSecret),
-      stripeConfigured: !!provider.stripeSecretKey,
-    },
-  });
+    return NextResponse.json({
+      provider: {
+        ...provider,
+        stripeSecretKey: undefined,
+        stripeWebhookSecret: undefined,
+        stripeSecretKeyMasked: maskKey(provider.stripeSecretKey),
+        stripeWebhookSecretMasked: maskKey(provider.stripeWebhookSecret),
+        stripeConfigured: !!provider.stripeSecretKey,
+      },
+    });
+  } catch (err) {
+    console.error("[GET /api/providers/me]", err);
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
 }
 
 export async function POST(req: NextRequest) {
