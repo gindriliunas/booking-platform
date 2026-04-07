@@ -44,8 +44,9 @@ body {
 }
 
 /* Force the header row tall enough so the today circle sits fully above the border */
-.rbc-time-header > .rbc-row:first-child {
+.rbc-time-header-cell {
   min-height: 40px !important;
+  overflow: visible !important;
 }
 
 /* Force events to span the full column width */
