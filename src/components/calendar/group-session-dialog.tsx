@@ -128,7 +128,7 @@ export function GroupSessionDialog({
     setSaving(true);
     setSaveError("");
     try {
-      const body: Record<string, unknown> = { title, startTime, endTime, maxParticipants, status, notes };
+      const body: Record<string, unknown> = { title, startTime: new Date(startTime).toISOString(), endTime: new Date(endTime).toISOString(), maxParticipants, status, notes };
       if (isSeries) body.editScope = editScope;
       const res = await fetch(`/api/group-sessions/${event.id}`, {
         method: "PATCH",

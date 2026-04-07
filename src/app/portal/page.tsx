@@ -15,7 +15,7 @@ import { eq, and } from "drizzle-orm";
 import { getPortalClient } from "@/lib/portal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Users, CalendarDays } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { LocalTime } from "@/components/local-time";
 import Link from "next/link";
 
 const PAGE_SIZE = 10;
@@ -234,7 +234,7 @@ export default async function PortalDashboardPage({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500">{formatDate(b.startTime.toISOString())}</p>
+                      <p className="text-xs text-gray-500"><LocalTime date={b.startTime} /></p>
                       {b.notes && (
                         <p className="text-xs text-gray-400 italic mt-0.5">{b.notes}</p>
                       )}
@@ -299,7 +299,7 @@ export default async function PortalDashboardPage({
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-gray-500">{formatDate(b.startTime.toISOString())}</p>
+                      <p className="text-xs text-gray-500"><LocalTime date={b.startTime} /></p>
                       {b.notes && (
                         <p className="text-xs text-gray-400 italic mt-0.5">{b.notes}</p>
                       )}
