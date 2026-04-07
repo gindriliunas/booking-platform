@@ -36,8 +36,9 @@ body {
   display: block !important;
 }
 
-/* Week header cells: no padding, allow natural height */
+/* Week header cells: override RBC's overflow:hidden so our date circle isn't clipped */
 .rbc-header {
+  overflow: visible !important;
   padding: 0 !important;
   white-space: normal !important;
 }
