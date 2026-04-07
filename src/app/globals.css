@@ -43,6 +43,11 @@ body {
   white-space: normal !important;
 }
 
+/* The row containing header cells must also not clip */
+.rbc-time-header-content > .rbc-row:first-child {
+  overflow: visible !important;
+}
+
 /* Force events to span the full column width */
 .rbc-day-slot .rbc-events-container {
   margin-right: 0 !important;
