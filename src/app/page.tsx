@@ -287,6 +287,36 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* BUILT BY FITNESS PROS */}
+      <section className="bg-white px-6 py-20">
+        <div className="mx-auto max-w-4xl">
+          <div className="rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 to-blue-50 p-10 md:p-14">
+            <div className="flex flex-col items-start gap-8 md:flex-row md:items-center">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-violet-600 text-3xl shadow-md">
+                🏋️
+              </div>
+              <div>
+                <span className="mb-3 inline-block rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">
+                  Built by fitness professionals
+                </span>
+                <h2 className="mb-3 text-2xl font-black text-gray-900 md:text-3xl">
+                  We know the industry because we&apos;ve worked in it.
+                </h2>
+                <p className="leading-relaxed text-gray-600">
+                  VIV-Z was built by health and fitness professionals who got
+                  tired of stitching together tools that weren&apos;t designed
+                  for this industry. We&apos;ve experienced the admin overload,
+                  the no-shows, the leads that go cold — and we built the
+                  platform we always wished existed. Everything in VIV-Z is
+                  designed specifically around how fitness and wellness
+                  businesses actually run.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* REVENUE CALCULATOR */}
       <RevenueCalculator />
 
