@@ -26,6 +26,12 @@ export function MarketingNav() {
 
         <div className="flex items-center gap-3">
           <Link
+            href="/portal"
+            className="text-sm font-medium text-gray-600 transition hover:text-violet-700"
+          >
+            Client portal
+          </Link>
+          <Link
             href="/dashboard"
             className="hidden text-sm font-medium text-gray-600 transition hover:text-violet-700 md:block"
           >

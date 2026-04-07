@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, Check, Eye, EyeOff, ExternalLink, Clock, FileText } from "lucide-react";
+import { Settings, Check, Eye, EyeOff, ExternalLink, Clock, FileText, Copy, Link2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -132,6 +132,21 @@ export default function SettingsPage() {
   const [autoSendInvoiceOnSubscription, setAutoSendInvoiceOnSubscription] = useState(false);
   const [invoiceSaving, setInvoiceSaving] = useState(false);
   const [invoiceSaved, setInvoiceSaved] = useState(false);
+
+  // Embed
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [copiedEmbed, setCopiedEmbed] = useState(false);
+
+  function copyToClipboard(text: string, which: "link" | "embed") {
+    navigator.clipboard.writeText(text);
+    if (which === "link") {
+      setCopiedLink(true);
+      setTimeout(() => setCopiedLink(false), 2000);
+    } else {
+      setCopiedEmbed(true);
+      setTimeout(() => setCopiedEmbed(false), 2000);
+    }
+  }
 
   // Availability
   type DaySlot = { enabled: boolean; startTime: string; endTime: string };
@@ -852,6 +867,72 @@ export default function SettingsPage() {
               )}
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Client Portal Embed */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Link2 className="h-4 w-4 text-gray-500" />
+            Client Portal
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-5">
+          <p className="text-sm text-gray-500">
+            Share the portal link directly with your clients, or embed it on your own website so they can log in and manage their sessions without leaving your site.
+          </p>
+
+          {/* Direct link */}
+          <div className="space-y-1.5">
+            <Label>Portal link</Label>
+            <div className="flex items-center gap-2">
+              <code className="flex-1 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-sm font-mono text-gray-700 truncate select-all">
+                https://book.viv-z.com/portal
+              </code>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="shrink-0"
+                onClick={() => copyToClipboard("https://book.viv-z.com/portal", "link")}
+              >
+                {copiedLink ? (
+                  <span className="flex items-center gap-1.5 text-green-600"><Check className="h-3.5 w-3.5" /> Copied</span>
+                ) : (
+                  <span className="flex items-center gap-1.5"><Copy className="h-3.5 w-3.5" /> Copy</span>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Embed snippet */}
+          <div className="space-y-1.5">
+            <Label>Embed on your website</Label>
+            <p className="text-xs text-gray-400">
+              Paste this snippet into any page on your website. The portal will load inside an inline frame.
+            </p>
+            <div className="relative">
+              <pre className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-xs font-mono text-gray-700 overflow-x-auto whitespace-pre-wrap">{`<iframe\n  src="https://book.viv-z.com/portal"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border:none;border-radius:12px;"\n  allow="payment"\n></iframe>`}</pre>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                copyToClipboard(
+                  `<iframe\n  src="https://book.viv-z.com/portal"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border:none;border-radius:12px;"\n  allow="payment"\n></iframe>`,
+                  "embed"
+                )
+              }
+            >
+              {copiedEmbed ? (
+                <span className="flex items-center gap-1.5 text-green-600"><Check className="h-3.5 w-3.5" /> Copied</span>
+              ) : (
+                <span className="flex items-center gap-1.5"><Copy className="h-3.5 w-3.5" /> Copy embed code</span>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
