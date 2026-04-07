@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Settings, Check, Eye, EyeOff, ExternalLink, Clock, FileText, Copy, Link2 } from "lucide-react";
+import { Settings, Check, Eye, EyeOff, ExternalLink, Clock, FileText, Copy, Link2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -83,6 +83,8 @@ interface Provider {
   invoiceFooterNote?: string | null;
   autoSendInvoiceOnPackage: boolean;
   autoSendInvoiceOnSubscription: boolean;
+  googleCalendarSyncEnabled: boolean;
+  googleCalendarId?: string | null;
 }
 
 export default function SettingsPage() {
@@ -132,6 +134,10 @@ export default function SettingsPage() {
   const [autoSendInvoiceOnSubscription, setAutoSendInvoiceOnSubscription] = useState(false);
   const [invoiceSaving, setInvoiceSaving] = useState(false);
   const [invoiceSaved, setInvoiceSaved] = useState(false);
+
+  // Google Calendar
+  const [gcalConnected, setGcalConnected] = useState(false);
+  const [gcalDisconnecting, setGcalDisconnecting] = useState(false);
 
   // Embed
   const [copiedLink, setCopiedLink] = useState(false);
@@ -186,6 +192,7 @@ export default function SettingsPage() {
       setInvoiceFooterNote(p.invoiceFooterNote ?? "");
       setAutoSendInvoiceOnPackage(p.autoSendInvoiceOnPackage ?? false);
       setAutoSendInvoiceOnSubscription(p.autoSendInvoiceOnSubscription ?? false);
+      setGcalConnected(p.googleCalendarSyncEnabled ?? false);
       const availData = await availRes.json();
       const rows: { dayOfWeek: number; startTime: string; endTime: string }[] = availData.availability ?? [];
       setAvailSlots(DAYS.map((_, i) => {
@@ -349,6 +356,36 @@ export default function SettingsPage() {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setInvoiceSaving(false);
+    }
+  }
+
+  // Handle Google Calendar OAuth callback query params
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("gcal_connected") === "1") {
+      setGcalConnected(true);
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (params.get("gcal_error")) {
+      setError("Google Calendar connection failed. Please try again.");
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
+  async function handleGcalDisconnect() {
+    if (!provider) return;
+    if (!confirm("Disconnect Google Calendar? Bookings will no longer sync.")) return;
+    setGcalDisconnecting(true);
+    try {
+      await fetch("/api/google-calendar/disconnect", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ providerId: provider.id }),
+      });
+      setGcalConnected(false);
+    } catch {
+      setError("Failed to disconnect Google Calendar.");
+    } finally {
+      setGcalDisconnecting(false);
     }
   }
 
@@ -933,6 +970,58 @@ export default function SettingsPage() {
               )}
             </Button>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Google Calendar */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Calendar className="h-4 w-4 text-gray-500" />
+              Google Calendar
+            </CardTitle>
+            {gcalConnected ? (
+              <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
+                Connected
+              </span>
+            ) : (
+              <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
+                Not connected
+              </span>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-gray-500">
+            Sync your bookings to Google Calendar so sessions appear alongside your other events.
+          </p>
+          {gcalConnected ? (
+            <div className="space-y-3">
+              <div className="rounded-lg bg-green-50 border border-green-200 p-3 text-sm text-green-800">
+                Google Calendar is connected. New bookings will sync automatically.
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleGcalDisconnect}
+                disabled={gcalDisconnecting || !provider}
+                className="text-red-600 border-red-200 hover:bg-red-50"
+              >
+                {gcalDisconnecting ? "Disconnecting…" : "Disconnect"}
+              </Button>
+            </div>
+          ) : (
+            <Button
+              type="button"
+              asChild
+              disabled={!provider}
+            >
+              <a href={`/api/google-calendar/connect?providerId=${provider?.id ?? ""}`}>
+                Connect Google Calendar
+              </a>
+            </Button>
+          )}
         </CardContent>
       </Card>
 

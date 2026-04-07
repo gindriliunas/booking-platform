@@ -21,6 +21,8 @@ export async function GET(req: NextRequest) {
       ...provider,
       stripeSecretKey: undefined,
       stripeWebhookSecret: undefined,
+      googleCalendarAccessToken: undefined,
+      googleCalendarRefreshToken: undefined,
       stripeSecretKeyMasked: maskKey(provider.stripeSecretKey),
       stripeWebhookSecretMasked: maskKey(provider.stripeWebhookSecret),
       stripeConfigured: !!provider.stripeSecretKey,

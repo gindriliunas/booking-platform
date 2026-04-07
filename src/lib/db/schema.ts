@@ -126,6 +126,12 @@ export const providers = pgTable("providers", {
   invoiceFooterNote: text("invoice_footer_note"),
   autoSendInvoiceOnPackage: boolean("auto_send_invoice_on_package").notNull().default(false),
   autoSendInvoiceOnSubscription: boolean("auto_send_invoice_on_subscription").notNull().default(false),
+  // Google Calendar integration
+  googleCalendarAccessToken: text("google_calendar_access_token"),
+  googleCalendarRefreshToken: text("google_calendar_refresh_token"),
+  googleCalendarTokenExpiresAt: timestamp("google_calendar_token_expires_at"),
+  googleCalendarId: text("google_calendar_id"), // selected calendar ID
+  googleCalendarSyncEnabled: boolean("google_calendar_sync_enabled").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
   clerkUserId: text("clerk_user_id"),
