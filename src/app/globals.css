@@ -29,3 +29,9 @@ body {
 .rbc-event-label {
   display: none !important;
 }
+
+/* Let rbc-event-content flow naturally so our spans stack correctly */
+.rbc-event-content {
+  overflow: hidden;
+  display: block !important;
+}

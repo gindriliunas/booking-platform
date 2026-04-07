@@ -99,9 +99,9 @@ const eventStyleGetter = (event: CalendarEvent) => {
 function CustomEvent({ event }: { event: CalendarEvent }) {
   if (event.type === "blocked") {
     return (
-      <div className="h-full flex flex-col justify-start overflow-hidden px-1 py-0.5">
-        <span className="text-xs font-medium leading-tight truncate opacity-80">{event.title}</span>
-      </div>
+      <span className="block truncate text-xs font-medium leading-tight px-1">
+        {event.title}
+      </span>
     );
   }
 
@@ -111,23 +111,27 @@ function CustomEvent({ event }: { event: CalendarEvent }) {
     const count = event.participantCount ?? 0;
     const max = event.maxParticipants ?? "?";
     return (
-      <div className="h-full flex flex-col justify-start overflow-hidden px-1.5 py-1 gap-0.5">
-        <div className="flex items-center gap-1 min-w-0">
+      <>
+        <span className="flex items-center gap-1 truncate text-xs font-semibold leading-tight px-1">
           <Users className="h-3 w-3 shrink-0 opacity-70" />
-          <span className="text-xs font-semibold leading-tight truncate">{event.title}</span>
-        </div>
-        <span className="text-[10px] leading-tight opacity-75">{timeStr} · {count}/{max}</span>
-      </div>
+          {event.title}
+        </span>
+        <span className="block truncate text-[10px] leading-tight opacity-75 px-1">
+          {timeStr} · {count}/{max}
+        </span>
+      </>
     );
   }
 
   return (
-    <div className="h-full flex flex-col justify-start overflow-hidden px-1.5 py-1 gap-0.5">
-      <span className="text-xs font-semibold leading-tight truncate">
+    <>
+      <span className="block truncate text-xs font-semibold leading-tight px-1">
         {event.clientName ?? event.title}
       </span>
-      <span className="text-[10px] leading-tight opacity-75">{timeStr}</span>
-    </div>
+      <span className="block truncate text-[10px] leading-tight opacity-75 px-1">
+        {timeStr}
+      </span>
+    </>
   );
 }
 
@@ -232,7 +236,7 @@ export function SessionCalendar({
         {/* Mobile view switcher */}
         {isMobile && (
           <div className="flex rounded-lg border border-gray-200 overflow-hidden text-xs font-medium ml-auto">
-            {([Views.DAY, Views.AGENDA] as View[]).map((v) => (
+            {([Views.WEEK, Views.DAY, Views.AGENDA] as View[]).map((v) => (
               <button
                 key={v}
                 onClick={() => setView(v)}
@@ -286,7 +290,7 @@ export function SessionCalendar({
           startAccessor="start"
           endAccessor="end"
           components={{ event: CustomEvent }}
-          views={isMobile ? [Views.DAY, Views.AGENDA] : [Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
+          views={isMobile ? [Views.WEEK, Views.DAY, Views.AGENDA] : [Views.MONTH, Views.WEEK, Views.DAY, Views.AGENDA]}
           step={30}
           timeslots={2}
           min={calMin}
