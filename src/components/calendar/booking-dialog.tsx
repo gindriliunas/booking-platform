@@ -118,8 +118,8 @@ export function BookingDialog({
         providerId,
         clientId: sessionType === "group" ? null : (clientId || null),
         title,
-        startTime: new Date(startTime).toISOString(),
-        endTime: new Date(endTime).toISOString(),
+        startTime: localInputToISO(startTime),
+        endTime: localInputToISO(endTime),
         status,
         notes,
         sessionType,
@@ -412,4 +412,12 @@ export function BookingDialog({
 
 function formatForInput(d: Date) {
   return format(d, "yyyy-MM-dd'T'HH:mm");
+}
+
+/** Parse a datetime-local input value as LOCAL time, unambiguously. */
+function localInputToISO(value: string): string {
+  const [datePart, timePart] = value.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hours, minutes] = timePart.split(":").map(Number);
+  return new Date(year, month - 1, day, hours, minutes, 0, 0).toISOString();
 }

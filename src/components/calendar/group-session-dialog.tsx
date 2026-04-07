@@ -128,7 +128,7 @@ export function GroupSessionDialog({
     setSaving(true);
     setSaveError("");
     try {
-      const body: Record<string, unknown> = { title, startTime: new Date(startTime).toISOString(), endTime: new Date(endTime).toISOString(), maxParticipants, status, notes };
+      const body: Record<string, unknown> = { title, startTime: localInputToISO(startTime), endTime: localInputToISO(endTime), maxParticipants, status, notes };
       if (isSeries) body.editScope = editScope;
       const res = await fetch(`/api/group-sessions/${event.id}`, {
         method: "PATCH",
@@ -537,4 +537,11 @@ export function GroupSessionDialog({
 
 function formatForInput(d: Date) {
   return format(d, "yyyy-MM-dd'T'HH:mm");
+}
+
+function localInputToISO(value: string): string {
+  const [datePart, timePart] = value.split("T");
+  const [year, month, day] = datePart.split("-").map(Number);
+  const [hours, minutes] = timePart.split(":").map(Number);
+  return new Date(year, month - 1, day, hours, minutes, 0, 0).toISOString();
 }

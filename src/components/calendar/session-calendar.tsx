@@ -112,11 +112,11 @@ function CustomEvent({ event }: { event: CalendarEvent }) {
     const max = event.maxParticipants ?? "?";
     return (
       <>
-        <span className="flex items-center gap-1 truncate text-xs font-semibold leading-tight px-1">
-          <Users className="h-3 w-3 shrink-0 opacity-70" />
+        <span className="flex items-center gap-0.5 truncate text-[10px] font-semibold leading-tight px-0.5">
+          <Users className="h-2.5 w-2.5 shrink-0 opacity-70" />
           {event.title}
         </span>
-        <span className="block truncate text-[10px] leading-tight opacity-75 px-1">
+        <span className="block truncate text-[9px] leading-tight opacity-75 px-0.5">
           {timeStr} · {count}/{max}
         </span>
       </>
@@ -125,10 +125,10 @@ function CustomEvent({ event }: { event: CalendarEvent }) {
 
   return (
     <>
-      <span className="block truncate text-xs font-semibold leading-tight px-1">
+      <span className="block truncate text-[10px] font-semibold leading-tight px-0.5">
         {event.clientName ?? event.title}
       </span>
-      <span className="block truncate text-[10px] leading-tight opacity-75 px-1">
+      <span className="block truncate text-[9px] leading-tight opacity-75 px-0.5">
         {timeStr}
       </span>
     </>
@@ -141,12 +141,12 @@ function WeekDayHeader({ date }: { date: Date }) {
   const isToday =
     format(date, "yyyy-MM-dd") === format(new Date(), "yyyy-MM-dd");
   return (
-    <div className="flex flex-col items-center py-1 gap-0.5">
-      <span className="text-[11px] font-medium text-gray-500 uppercase tracking-wide">
+    <div className="flex flex-col items-center pt-1 pb-0 gap-0">
+      <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wide leading-none">
         {initial}
       </span>
       <span
-        className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium transition-colors ${
+        className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium leading-none ${
           isToday
             ? "bg-blue-600 text-white"
             : "text-gray-700"
