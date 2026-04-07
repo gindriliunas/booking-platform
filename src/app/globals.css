@@ -35,3 +35,28 @@ body {
   overflow: hidden;
   display: block !important;
 }
+
+/* Allow week header row to grow so date numbers aren't clipped */
+.rbc-header {
+  overflow: visible !important;
+  white-space: normal !important;
+  padding: 0 !important;
+  min-height: 52px !important;
+}
+
+.rbc-time-header,
+.rbc-time-header-content,
+.rbc-time-header-content > .rbc-row,
+.rbc-row.rbc-month-header {
+  overflow: visible !important;
+}
+
+/* Ensure event text is not clipped by the event wrapper */
+.rbc-event {
+  overflow: hidden !important;
+  padding: 1px 2px !important;
+}
+
+.rbc-event-content {
+  font-size: 10px !important;
+}

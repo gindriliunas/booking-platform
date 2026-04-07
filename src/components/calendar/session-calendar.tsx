@@ -112,11 +112,11 @@ function CustomEvent({ event }: { event: CalendarEvent }) {
     const max = event.maxParticipants ?? "?";
     return (
       <>
-        <span className="flex items-center gap-0.5 truncate text-[10px] font-semibold leading-tight px-0.5">
+        <span className="flex items-center gap-0.5 overflow-hidden text-[10px] font-semibold leading-tight" style={{ whiteSpace: "nowrap", textOverflow: "clip" }}>
           <Users className="h-2.5 w-2.5 shrink-0 opacity-70" />
           {event.title}
         </span>
-        <span className="block truncate text-[9px] leading-tight opacity-75 px-0.5">
+        <span className="block overflow-hidden text-[9px] leading-tight opacity-75" style={{ whiteSpace: "nowrap", textOverflow: "clip" }}>
           {timeStr} · {count}/{max}
         </span>
       </>
@@ -125,10 +125,10 @@ function CustomEvent({ event }: { event: CalendarEvent }) {
 
   return (
     <>
-      <span className="block truncate text-[10px] font-semibold leading-tight px-0.5">
+      <span className="block overflow-hidden text-[10px] font-semibold leading-tight" style={{ whiteSpace: "nowrap", textOverflow: "clip" }}>
         {event.clientName ?? event.title}
       </span>
-      <span className="block truncate text-[9px] leading-tight opacity-75 px-0.5">
+      <span className="block overflow-hidden text-[9px] leading-tight opacity-75" style={{ whiteSpace: "nowrap", textOverflow: "clip" }}>
         {timeStr}
       </span>
     </>
