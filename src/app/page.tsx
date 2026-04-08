@@ -284,7 +284,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {/* Client 1 */}
             <div className="group rounded-2xl border border-gray-100 bg-gray-50 p-6 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
               <div className="mb-4 flex items-center gap-3">
@@ -317,6 +317,26 @@ export default function LandingPage() {
               <p className="mb-4 text-sm text-gray-500">Full platform setup including website, CRM, booking system, and automations — built and ready to go live.</p>
               <a
                 href="https://www.gitraining.co.uk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-500"
+              >
+                View site →
+              </a>
+            </div>
+
+            {/* Client 3 */}
+            <div className="group rounded-2xl border border-gray-100 bg-gray-50 p-6 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-xl">🩺</div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Skills 4 2 U</h3>
+                  <p className="text-xs text-gray-500">First Aid Training · UK-wide</p>
+                </div>
+              </div>
+              <p className="mb-4 text-sm text-gray-500">Training provider with online booking, course management, and automated client communications.</p>
+              <a
+                href="https://www.skills42u.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-500"
