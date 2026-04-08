@@ -9,6 +9,7 @@ export const metadata: Metadata = {
   title: "Session Management",
   description:
     "Calendar booking, session tracking and payments for service providers.",
+  icons: { icon: "/viv-z-logo.png" },
 };
 
 export default function RootLayout({
