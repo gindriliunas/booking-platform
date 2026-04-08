@@ -21,8 +21,10 @@ const isPublicRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req) => {
   const hostname = req.headers.get("host") ?? "";
-  if (hostname === "book.viv-z.com" && req.nextUrl.pathname === "/") {
-    return NextResponse.redirect(new URL("/portal/book", req.url));
+  if (hostname === "book.viv-z.com" && !req.nextUrl.pathname.startsWith("/portal")) {
+    const url = req.nextUrl.clone();
+    url.pathname = "/portal" + (req.nextUrl.pathname === "/" ? "" : req.nextUrl.pathname);
+    return NextResponse.rewrite(url);
   }
 
   if (!isPublicRoute(req)) {
