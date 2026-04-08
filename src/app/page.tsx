@@ -168,6 +168,18 @@ const faqs = [
     q: "£79 a month seems expensive — is it worth it?",
     a: "Consider what you're replacing: a web designer, an SEO expert, a CRM, a booking tool, a social scheduler, business email, SMS, review management, and hosting. That stack costs £500–£1,000+ per month when bought separately — or thousands upfront just for the website alone. At £79/month all-in, it pays for itself the moment it brings you one extra client.",
   },
+  {
+    q: "Is there a guarantee?",
+    a: "Yes. If your website isn't live within the agreed timeframe, or you're not completely satisfied in your first 30 days, we'll give you a full refund. No questions asked. We're confident in what we deliver — and we want you to feel zero risk signing up.",
+  },
+  {
+    q: "How is this different from other all-in-one tools?",
+    a: "Most all-in-one platforms require you to build everything yourself — the website, the automations, all of it. VIV-Z is done-for-you. We design, build, and configure everything specifically for your health & fitness business. You're live in days, not months, and you never have to touch the technical side.",
+  },
+  {
+    q: "I already have clients — why would I need this?",
+    a: "If your calendar isn't consistently full, or you're spending hours each week on admin, or you're losing leads because you didn't follow up fast enough — this system fixes all of that. Most clients don't just get more bookings, they get back 5–10 hours a week they were wasting on manual tasks.",
+  },
 ];
 
 export default function LandingPage() {
@@ -214,16 +226,16 @@ export default function LandingPage() {
           </div>
 
           <h1 className="mb-6 text-center text-4xl font-black leading-tight tracking-tight md:text-6xl lg:text-7xl">
-            Your complete online business.
+            More clients. Less admin.
             <br />
             <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-              Ready in days, not months.
+              A business that runs itself.
             </span>
           </h1>
 
           <p className="mx-auto mb-4 max-w-3xl text-center text-lg text-gray-300 md:text-xl">
-            Professional website, online booking, CRM, social media, reviews, SEO, SMS, automations, business email, domain &amp; hosting —{" "}
-            <strong className="text-white">all included for one flat monthly price.</strong>
+            Personal trainers, coaches, and therapists use VIV-Z to fill their calendar, stop losing leads, and free up hours every week —{" "}
+            <strong className="text-white">without stitching together 10 different tools.</strong>
           </p>
 
           <p className="mb-10 text-center text-2xl font-black text-emerald-400">
@@ -235,7 +247,7 @@ export default function LandingPage() {
               href="#pricing"
               className="rounded-xl bg-emerald-500 px-8 py-4 text-base font-bold text-white shadow-lg transition hover:bg-emerald-400"
             >
-              Get your website built →
+              Get my website built in 3–5 days →
             </Link>
             <Link
               href="#features"
@@ -244,12 +256,98 @@ export default function LandingPage() {
               See everything included
             </Link>
           </div>
+          <p className="mt-4 text-center text-xs text-gray-500">30-day money-back guarantee · No setup fee · Cancel anytime</p>
 
           {/* Trust bar */}
           <div className="mt-14 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
-            {["No long contracts", "Cancel anytime", "Live within 3–5 days", "UK-based support"].map((t) => (
+            {["No long contracts", "Live within 3–5 days", "UK-based support", "30-day money-back guarantee"].map((t) => (
               <span key={t} className="flex items-center gap-1.5">
                 <span className="text-emerald-500">✓</span> {t}
+              </span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SOCIAL PROOF — CLIENT PORTFOLIO */}
+      <section className="bg-white px-6 py-20">
+        <div className="mx-auto max-w-5xl">
+          <div className="mb-12 text-center">
+            <span className="mb-3 inline-block rounded-full bg-emerald-50 px-4 py-1 text-sm font-semibold text-emerald-700">
+              Real businesses. Real results.
+            </span>
+            <h2 className="mb-3 text-3xl font-black md:text-4xl">
+              See it in action — built in days, not months
+            </h2>
+            <p className="text-lg text-gray-500">
+              These are real health &amp; fitness businesses running on VIV-Z right now.
+            </p>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {/* Client 1 */}
+            <div className="group rounded-2xl border border-gray-100 bg-gray-50 p-6 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-xl">🏋️</div>
+                <div>
+                  <h3 className="font-bold text-gray-900">Felipe Rodas</h3>
+                  <p className="text-xs text-gray-500">Personal Trainer · Stockwell, London</p>
+                </div>
+              </div>
+              <p className="mb-4 text-sm text-gray-500">Professional site with online booking, client portal, and automated follow-ups — live within days.</p>
+              <a
+                href="https://www.feliperodas.co.uk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-500"
+              >
+                View site →
+              </a>
+            </div>
+
+            {/* Client 2 */}
+            <div className="group rounded-2xl border border-gray-100 bg-gray-50 p-6 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-xl">💪</div>
+                <div>
+                  <h3 className="font-bold text-gray-900">GI Training</h3>
+                  <p className="text-xs text-gray-500">Personal Training · Launching this week</p>
+                </div>
+              </div>
+              <p className="mb-4 text-sm text-gray-500">Full platform setup including website, CRM, booking system, and automations — built and ready to go live.</p>
+              <a
+                href="https://www.gitraining.co.uk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-500"
+              >
+                View site →
+              </a>
+            </div>
+
+            {/* Your business here */}
+            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-6 text-center">
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-xl">✨</div>
+              <h3 className="mb-1 font-bold text-emerald-800">Your business here</h3>
+              <p className="mb-4 text-sm text-emerald-600">We're onboarding new clients now — limited spots available each month.</p>
+              <a
+                href="#pricing"
+                className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-400"
+              >
+                Get started →
+              </a>
+            </div>
+          </div>
+
+          {/* Stats bar */}
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-8 rounded-2xl border border-gray-100 bg-gray-50 px-8 py-5 text-sm font-medium text-gray-600">
+            {[
+              "Live in 3–5 working days",
+              "Mobile-first, built to rank on Google",
+              "Bookings & payments from day one",
+            ].map((s) => (
+              <span key={s} className="flex items-center gap-2">
+                <span className="text-emerald-500">✓</span> {s}
               </span>
             ))}
           </div>
@@ -459,33 +557,33 @@ export default function LandingPage() {
             </p>
           </div>
           <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
-            {/* What you'd pay elsewhere */}
+            {/* Value stack */}
             <div className="rounded-2xl border border-white/10 bg-white/5 p-8">
-              <h3 className="mb-2 text-lg font-bold text-gray-300">What you pay doing it yourself</h3>
-              <p className="mb-6 text-sm text-gray-500">Typical costs hiring separately + tool subscriptions:</p>
+              <h3 className="mb-2 text-lg font-bold text-gray-300">What this is worth</h3>
+              <p className="mb-6 text-sm text-gray-500">The real value of everything included in VIV-Z:</p>
               <ul className="space-y-3 text-sm">
                 {[
-                  ["Freelance web designer", "£500–£2,000 one-off"],
-                  ["Website hosting (Wix / Squarespace)", "£20–£35/mo"],
-                  ["SEO expert / agency", "£300–£800/mo"],
-                  ["Online booking (Calendly / Acuity)", "£12–£20/mo"],
-                  ["CRM (HubSpot / Pipedrive)", "£45–£80/mo"],
-                  ["Social scheduler (Buffer / Hootsuite)", "£15–£30/mo"],
-                  ["Business email (Google Workspace)", "£6/mo"],
-                  ["Review tools", "£20–£40/mo"],
-                  ["SMS platform", "£15–£25/mo"],
-                  ["Email marketing (Mailchimp)", "£13–£20/mo"],
-                  ["GMB setup (agency fee)", "£100–£300 one-off"],
-                  ["Domain + hosting", "£15–£20/mo"],
+                  ["Professional Website Design", "£1,200 one-off"],
+                  ["Google My Business Setup", "£300 one-off"],
+                  ["Full CRM & Contact Management", "£80/mo"],
+                  ["Online Booking System", "£20/mo"],
+                  ["Social Media Scheduler", "£30/mo"],
+                  ["Business Email Address", "£6/mo"],
+                  ["Automated Reviews System", "£40/mo"],
+                  ["Unified Inbox (SMS, Email, DMs)", "£25/mo"],
+                  ["Email Marketing Platform", "£20/mo"],
+                  ["Domain Name", "£15/mo"],
+                  ["Hosting & SSL", "£20/mo"],
+                  ["UK Setup Support & Handover Call", "£200 one-off"],
                 ].map(([item, cost]) => (
                   <li key={item} className="flex items-center justify-between border-b border-white/5 pb-2">
                     <span className="text-gray-400">{item}</span>
-                    <span className="font-semibold text-red-400">{cost}</span>
+                    <span className="font-semibold text-gray-300">{cost}</span>
                   </li>
                 ))}
                 <li className="flex items-center justify-between pt-2">
-                  <span className="font-bold text-white">Monthly ongoing</span>
-                  <span className="text-xl font-black text-red-400">£561–£1,170+/mo</span>
+                  <span className="font-bold text-white">Total value</span>
+                  <span className="text-right text-sm font-black text-white">£1,700+ up front<br /><span className="text-red-400">+ £256+/mo ongoing</span></span>
                 </li>
               </ul>
             </div>
@@ -498,12 +596,13 @@ export default function LandingPage() {
               <h3 className="mb-1 text-lg font-bold text-white">VIV-Z All-in-One</h3>
               <p className="mb-6 text-sm text-emerald-300">Everything. One subscription.</p>
 
-              <div className="mb-6">
+              <div className="mb-2">
                 <span className="text-6xl font-black text-white">£79</span>
                 <span className="ml-2 text-gray-400">/month</span>
               </div>
+              <p className="mb-6 text-sm font-semibold text-emerald-400">You save £177+/month vs doing it yourself</p>
 
-              <ul className="mb-8 space-y-2.5 text-sm">
+              <ul className="mb-6 space-y-2.5 text-sm">
                 {[
                   "Professional website (custom designed)",
                   "Online booking & client portal",
@@ -529,18 +628,62 @@ export default function LandingPage() {
                 ))}
               </ul>
 
+              {/* Bonuses */}
+              <div className="mb-6 rounded-xl border border-emerald-400/30 bg-emerald-900/40 p-4">
+                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-emerald-400">🎁 Sign up this month — FREE bonuses:</p>
+                <ul className="space-y-1.5 text-sm text-gray-200">
+                  {[
+                    "30-min onboarding strategy call (value: £150)",
+                    "First month's social media content calendar (value: £100)",
+                    "Custom intake form setup — PAR-Q / consultation",
+                  ].map((b) => (
+                    <li key={b} className="flex items-start gap-2">
+                      <span className="mt-0.5 shrink-0 text-emerald-400">✓</span>
+                      {b}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Scarcity */}
+              <p className="mb-4 flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-400">
+                <span>⚡</span> Limited spots — we onboard a small number of clients each month to guarantee quality.
+              </p>
+
               <Link
                 href="https://link.fastpaydirect.com/payment-link/69d56afca6c96e61a84603da"
                 className="block w-full rounded-xl bg-emerald-500 py-4 text-center font-bold text-white shadow-lg transition hover:bg-emerald-400"
               >
-                Get started today →
+                Start filling my calendar →
               </Link>
-              <p className="mt-3 text-center text-xs text-gray-500">No setup fee · No long contract · Cancel anytime</p>
+              <p className="mt-3 text-center text-xs text-gray-500">30-day money-back guarantee · No setup fee · Cancel anytime</p>
             </div>
           </div>
         </div>
       </section>
 
+
+      {/* GUARANTEE */}
+      <section className="bg-white px-6 py-16">
+        <div className="mx-auto max-w-3xl">
+          <div className="rounded-3xl border-2 border-emerald-200 bg-emerald-50 p-10 text-center">
+            <div className="mb-4 flex justify-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-4xl">🛡️</div>
+            </div>
+            <h2 className="mb-3 text-2xl font-black text-gray-900 md:text-3xl">
+              Try it risk-free for 30 days.
+            </h2>
+            <p className="mx-auto max-w-xl leading-relaxed text-gray-600">
+              If your website isn&apos;t live and you&apos;re not completely happy within 30 days of signing up, contact us and we&apos;ll refund every penny. No questions. No drama. You have nothing to lose.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm font-semibold text-emerald-700">
+              <span className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Full refund if not satisfied</span>
+              <span className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> No questions asked</span>
+              <span className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Your data is always exportable</span>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <section id="faq" className="px-6 py-20">
         <div className="mx-auto max-w-3xl">
@@ -572,10 +715,10 @@ export default function LandingPage() {
             href="https://link.fastpaydirect.com/payment-link/69d56afca6c96e61a84603da"
             className="inline-block rounded-xl bg-white px-10 py-5 text-base font-black text-emerald-700 shadow-xl transition hover:bg-emerald-50"
           >
-            Get your website built today →
+            Build my online business for £79/month →
           </Link>
           <p className="mt-4 text-sm text-emerald-200">
-            Reply within 24 hours · Setup complete in 3–5 working days
+            30-day money-back guarantee · No setup fee · Setup in 3–5 working days
           </p>
         </div>
       </section>
