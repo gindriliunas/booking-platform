@@ -25,6 +25,8 @@ interface Package {
   stripeProductId?: string | null;
   isActive: boolean;
   isPublic?: boolean;
+  isFreeTrialSession?: boolean;
+  allowSelfBook?: boolean;
   sessionType?: "individual" | "group";
   createdAt: string;
 }
@@ -137,6 +139,12 @@ export default function PackagesPage() {
                         </Badge>
                         {pkg.sessionType === "group" && (
                           <Badge className="bg-teal-100 text-teal-700 border-teal-200">Group</Badge>
+                        )}
+                        {pkg.isFreeTrialSession && (
+                          <Badge className="bg-green-100 text-green-700 border-green-200">Free Trial</Badge>
+                        )}
+                        {!pkg.allowSelfBook && (
+                          <Badge variant="secondary" className="text-amber-700 bg-amber-50 border-amber-200">No Self-Book</Badge>
                         )}
                         {!pkg.isPublic && (
                           <Badge variant="secondary" className="text-gray-600 bg-gray-100">Private</Badge>

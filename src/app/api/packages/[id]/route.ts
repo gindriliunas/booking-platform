@@ -9,7 +9,7 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await req.json();
-  const { name, description, sessionCount, sessionDurationMins, price, currency, validityDays, isActive, isPublic, sessionType } = body;
+  const { name, description, sessionCount, sessionDurationMins, price, currency, validityDays, isActive, isPublic, isFreeTrialSession, allowSelfBook, sessionType } = body;
 
   const [updated] = await db
     .update(packages)
@@ -23,6 +23,8 @@ export async function PATCH(
       validityDays: validityDays != null ? (validityDays ? parseInt(validityDays) : null) : undefined,
       isActive: isActive ?? undefined,
       isPublic: isPublic ?? undefined,
+      isFreeTrialSession: isFreeTrialSession ?? undefined,
+      allowSelfBook: allowSelfBook ?? undefined,
       sessionType: sessionType ?? undefined,
     })
     .where(eq(packages.id, id))

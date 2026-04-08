@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { providerId, name, description, sessionCount, sessionDurationMins, price, currency, validityDays, sessionType, isPublic } = body;
+  const { providerId, name, description, sessionCount, sessionDurationMins, price, currency, validityDays, sessionType, isPublic, isFreeTrialSession, allowSelfBook } = body;
 
   if (!providerId || !name || !sessionCount || !price) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -79,6 +79,8 @@ export async function POST(req: NextRequest) {
         validityDays: validityDays ? parseInt(validityDays) : null,
         sessionType: sessionType ?? "individual",
         isPublic: isPublic ?? true,
+        isFreeTrialSession: isFreeTrialSession ?? false,
+        allowSelfBook: allowSelfBook ?? true,
         stripePriceId,
         stripeProductId,
       })

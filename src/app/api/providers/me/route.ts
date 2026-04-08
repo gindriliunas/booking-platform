@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
+import { adminAuth } from "@/lib/firebase/admin";
 import { db } from "@/lib/db";
 import { providers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -14,10 +15,23 @@ export async function GET() {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const [provider] = await db
+    let [provider] = await db
       .select()
       .from(providers)
       .where(eq(providers.firebaseUid, session.uid));
+
+    // Migration path: first Firebase login after switching from old auth — link by email
+    if (!provider) {
+      const firebaseUser = await adminAuth.getUser(session.uid).catch(() => null);
+      const email = firebaseUser?.email;
+      if (email) {
+        const [byEmail] = await db.select().from(providers).where(eq(providers.email, email));
+        if (byEmail) {
+          await db.update(providers).set({ firebaseUid: session.uid }).where(eq(providers.id, byEmail.id));
+          provider = { ...byEmail, firebaseUid: session.uid };
+        }
+      }
+    }
 
     if (!provider) return NextResponse.json({ provider: null }, { status: 200 });
 

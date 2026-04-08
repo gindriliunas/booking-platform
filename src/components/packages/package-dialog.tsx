@@ -32,6 +32,8 @@ interface Package {
   validityDays?: number | null;
   isActive: boolean;
   isPublic?: boolean;
+  isFreeTrialSession?: boolean;
+  allowSelfBook?: boolean;
   sessionType?: "individual" | "group";
 }
 
@@ -55,6 +57,8 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
   const [sessionDurationMins, setSessionDurationMins] = useState("");
   const [validityDays, setValidityDays] = useState("");
   const [isPublic, setIsPublic] = useState(true);
+  const [isFreeTrialSession, setIsFreeTrialSession] = useState(false);
+  const [allowSelfBook, setAllowSelfBook] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -69,6 +73,8 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
       setCurrency(pkg.currency);
       setValidityDays(pkg.validityDays ? String(pkg.validityDays) : "");
       setIsPublic(pkg.isPublic ?? true);
+      setIsFreeTrialSession(pkg.isFreeTrialSession ?? false);
+      setAllowSelfBook(pkg.allowSelfBook ?? true);
     } else {
       setSessionType("individual");
       setName("");
@@ -79,6 +85,8 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
       setCurrency(defaultCurrency);
       setValidityDays("");
       setIsPublic(true);
+      setIsFreeTrialSession(false);
+      setAllowSelfBook(true);
     }
     setError("");
   }, [pkg, open, defaultCurrency]);
@@ -99,11 +107,13 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
           description,
           sessionCount,
           sessionDurationMins: sessionDurationMins || null,
-          price,
+          price: isFreeTrialSession ? "0" : price,
           currency,
           validityDays: validityDays || null,
           sessionType,
           isPublic,
+          isFreeTrialSession,
+          allowSelfBook,
         }),
       });
       if (!res.ok) throw new Error((await res.json()).error ?? "Request failed");
@@ -221,10 +231,11 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
                   type="number"
                   min="0"
                   step="0.01"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
+                  value={isFreeTrialSession ? "0" : price}
+                  onChange={(e) => { if (!isFreeTrialSession) setPrice(e.target.value); }}
                   placeholder="500.00"
                   required
+                  disabled={isFreeTrialSession}
                   className="flex-1"
                 />
               </div>
@@ -240,6 +251,42 @@ export function PackageDialog({ open, onOpenChange, providerId, defaultCurrency 
               onChange={(e) => setValidityDays(e.target.value)}
               placeholder="e.g. 365"
             />
+          </div>
+
+          {/* Free trial toggle */}
+          <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2.5">
+            <div>
+              <p className="text-sm font-medium text-gray-900">Free Trial Session</p>
+              <p className="text-xs text-gray-500">Price is set to $0 — for introductory sessions.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                const next = !isFreeTrialSession;
+                setIsFreeTrialSession(next);
+                if (next) setPrice("0");
+              }}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${isFreeTrialSession ? "bg-green-500" : "bg-gray-200"}`}
+            >
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${isFreeTrialSession ? "translate-x-5" : "translate-x-0"}`} />
+            </button>
+          </div>
+
+          {/* Self-booking toggle */}
+          <div className="flex items-center justify-between rounded-lg border border-gray-200 px-3 py-2.5">
+            <div>
+              <p className="text-sm font-medium text-gray-900">Allow Self-Booking</p>
+              <p className="text-xs text-gray-500">
+                {allowSelfBook ? "Clients can book sessions themselves via the portal." : "Only you can schedule sessions for this package."}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setAllowSelfBook((v) => !v)}
+              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${allowSelfBook ? "bg-indigo-600" : "bg-gray-200"}`}
+            >
+              <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${allowSelfBook ? "translate-x-5" : "translate-x-0"}`} />
+            </button>
           </div>
 
           {/* Visibility toggle */}

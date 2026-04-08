@@ -154,6 +154,8 @@ export const packages = pgTable("packages", {
   stripeProductId: text("stripe_product_id"),
   isActive: boolean("is_active").notNull().default(true),
   isPublic: boolean("is_public").notNull().default(true),
+  isFreeTrialSession: boolean("is_free_trial_session").notNull().default(false),
+  allowSelfBook: boolean("allow_self_book").notNull().default(true),
   sessionType: sessionTypeEnum("session_type").notNull().default("individual"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });

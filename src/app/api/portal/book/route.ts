@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
-import { bookings, clientPackages } from "@/lib/db/schema";
+import { bookings, clientPackages, packages } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getPortalClient } from "@/lib/portal";
 import {
@@ -26,10 +26,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Deduct from active package if available
-    const [activePkg] = await db
-      .select()
+    const [activePkgRow] = await db
+      .select({ clientPackage: clientPackages, pkg: packages })
       .from(clientPackages)
+      .innerJoin(packages, eq(clientPackages.packageId, packages.id))
       .where(and(eq(clientPackages.clientId, client.id), eq(clientPackages.status, "active")));
+
+    if (activePkgRow && !activePkgRow.pkg.allowSelfBook) {
+      return NextResponse.json(
+        { error: "Self-booking is not enabled for your current package. Please contact your provider to schedule a session." },
+        { status: 403 }
+      );
+    }
+
+    const activePkg = activePkgRow?.clientPackage ?? null;
 
     const [booking] = await db
       .insert(bookings)

@@ -36,6 +36,13 @@
       "when": 1744156800000,
       "tag": "0004_clerk_to_firebase",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1744243200000,
+      "tag": "0005_free_trial_self_book",
+      "breakpoints": true
     }
   ]
 }
