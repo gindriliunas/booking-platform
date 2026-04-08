@@ -12,8 +12,8 @@ export async function getPortalClient(uid: string) {
   if (client) return client;
 
   // First sign-in: try to link by email from Firebase Auth
-  const firebaseUser = await adminAuth.getUser(uid);
-  const email = firebaseUser.email;
+  const firebaseUser = await adminAuth.getUser(uid).catch(() => null);
+  const email = firebaseUser?.email;
   if (!email) return null;
 
   const [matched] = await db

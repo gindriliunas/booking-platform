@@ -8,12 +8,14 @@ import {
   GoogleAuthProvider,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
+import Link from "next/link";
 
 interface SignInFormProps {
   redirectTo: string;
+  signUpHref?: string;
 }
 
-export function SignInForm({ redirectTo }: SignInFormProps) {
+export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -130,6 +132,15 @@ export function SignInForm({ redirectTo }: SignInFormProps) {
         <GoogleIcon />
         Continue with Google
       </button>
+
+      {signUpHref && (
+        <p className="text-center text-sm text-gray-500">
+          Don&apos;t have an account?{" "}
+          <Link href={signUpHref} className="text-indigo-600 hover:underline font-medium">
+            Create account
+          </Link>
+        </p>
+      )}
     </div>
   );
 }
