@@ -603,6 +603,7 @@ export default function LandingPage() {
               <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Account</h3>
               <ul className="space-y-2 text-sm text-gray-600">
                 <li><Link href="/portal" className="hover:text-emerald-600">Client Booking Portal</Link></li>
+                <li><Link href="/contact" className="hover:text-emerald-600">Contact</Link></li>
                 <li><Link href="/sign-in" className="hover:text-emerald-600">Sign In</Link></li>
               </ul>
             </div>
