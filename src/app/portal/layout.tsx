@@ -1,8 +1,8 @@
-import { UserButton } from "@clerk/nextjs";
-import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 import Link from "next/link";
+import { getSession } from "@/lib/session";
+import { UserMenu } from "@/components/user-menu";
 import { CalendarDays, Package, LayoutDashboard, UserCircle, CalendarPlus, ClipboardList } from "lucide-react";
 
 const navItems = [
@@ -14,13 +14,13 @@ const navItems = [
 ];
 
 export default async function PortalLayout({ children }: { children: React.ReactNode }) {
-  const { userId } = await auth();
+  const session = await getSession();
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") ?? "";
   const isAuthPage =
     pathname.startsWith("/portal/sign-in") || pathname.startsWith("/portal/sign-up");
 
-  if (!userId && !isAuthPage) redirect("/portal/sign-in");
+  if (!session && !isAuthPage) redirect("/portal/sign-in");
   if (isAuthPage) return <>{children}</>;
 
   return (
@@ -42,7 +42,7 @@ export default async function PortalLayout({ children }: { children: React.React
           ))}
         </nav>
         <div className="border-t border-gray-200 p-4 flex items-center gap-3">
-          <UserButton />
+          <UserMenu redirectTo="/portal/sign-in" />
           <span className="text-xs text-gray-500">Account</span>
         </div>
       </aside>

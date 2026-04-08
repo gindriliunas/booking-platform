@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import {
   clientQuestionnaires,
@@ -14,10 +14,10 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const client = await getPortalClient(userId);
+  const client = await getPortalClient(session.uid);
   if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
   const { id } = await params;
@@ -54,10 +54,10 @@ export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const client = await getPortalClient(userId);
+  const client = await getPortalClient(session.uid);
   if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
   const { id } = await params;

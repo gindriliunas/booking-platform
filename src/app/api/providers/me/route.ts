@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { providers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -11,13 +11,13 @@ function maskKey(key: string | null | undefined) {
 
 export async function GET() {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
     const [provider] = await db
       .select()
       .from(providers)
-      .where(eq(providers.clerkUserId, userId));
+      .where(eq(providers.firebaseUid, session.uid));
 
     if (!provider) return NextResponse.json({ provider: null }, { status: 200 });
 
@@ -38,13 +38,13 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const [existing] = await db
     .select({ id: providers.id })
     .from(providers)
-    .where(eq(providers.clerkUserId, userId));
+    .where(eq(providers.firebaseUid, session.uid));
   if (existing) return NextResponse.json({ error: "Provider already exists" }, { status: 409 });
 
   const body = await req.json();
@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
       timezone: timezone || "UTC",
       sessionDurationMins: sessionDurationMins || 60,
       currency: currency || "usd",
-      clerkUserId: userId,
+      firebaseUid: session.uid,
     })
     .returning();
 

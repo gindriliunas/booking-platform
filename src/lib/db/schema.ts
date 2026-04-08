@@ -134,7 +134,7 @@ export const providers = pgTable("providers", {
   googleCalendarSyncEnabled: boolean("google_calendar_sync_enabled").notNull().default(false),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  clerkUserId: text("clerk_user_id"),
+  firebaseUid: text("firebase_uid"),
 });
 
 // Session packages — e.g. "10 sessions for $500"
@@ -192,7 +192,7 @@ export const clients = pgTable("clients", {
   stripeCustomerId: text("stripe_customer_id"),
   notes: text("notes"),
   isActive: boolean("is_active").notNull().default(true),
-  clerkUserId: text("clerk_user_id"),
+  firebaseUid: text("firebase_uid"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

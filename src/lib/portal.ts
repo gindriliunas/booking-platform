@@ -1,21 +1,19 @@
-import { currentUser } from "@clerk/nextjs/server";
+import { adminAuth } from "@/lib/firebase/admin";
 import { db } from "@/lib/db";
 import { clients } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
-export async function getPortalClient(userId: string) {
-  // Fast path: already linked by clerkUserId
+export async function getPortalClient(uid: string) {
+  // Fast path: already linked by firebaseUid
   let [client] = await db
     .select()
     .from(clients)
-    .where(eq(clients.clerkUserId, userId));
+    .where(eq(clients.firebaseUid, uid));
   if (client) return client;
 
-  // First sign-in: try to link by email
-  const clerkUser = await currentUser();
-  const email = clerkUser?.emailAddresses?.find(
-    (e) => e.id === clerkUser.primaryEmailAddressId
-  )?.emailAddress;
+  // First sign-in: try to link by email from Firebase Auth
+  const firebaseUser = await adminAuth.getUser(uid);
+  const email = firebaseUser.email;
   if (!email) return null;
 
   const [matched] = await db
@@ -24,10 +22,10 @@ export async function getPortalClient(userId: string) {
     .where(eq(clients.email, email));
   if (!matched) return null;
 
-  // Link the Clerk user ID to the client record (one-time write)
+  // Link the Firebase UID to the client record (one-time write)
   const [linked] = await db
     .update(clients)
-    .set({ clerkUserId: userId, updatedAt: new Date() })
+    .set({ firebaseUid: uid, updatedAt: new Date() })
     .where(eq(clients.id, matched.id))
     .returning();
   return linked;

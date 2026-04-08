@@ -1,9 +1,9 @@
-import { SignIn } from "@clerk/nextjs";
+import { SignInForm } from "@/components/sign-in-form";
 
 export default function BusinessSignInPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <SignIn forceRedirectUrl="/dashboard" />
+      <SignInForm redirectTo="/dashboard" />
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { packages, clients } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
@@ -7,10 +7,10 @@ import { getStripeForProvider } from "@/lib/stripe/provider";
 import { getPortalClient } from "@/lib/portal";
 
 export async function POST(req: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const client = await getPortalClient(userId);
+  const client = await getPortalClient(session.uid);
   if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
   const body = await req.json();

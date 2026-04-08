@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { clients } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getStripeForProvider } from "@/lib/stripe/provider";
 
 export async function POST() {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [client] = await db.select().from(clients).where(eq(clients.clerkUserId, userId));
+  const [client] = await db.select().from(clients).where(eq(clients.firebaseUid, session.uid));
   if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
   if (!client.stripeCustomerId) {
@@ -28,10 +28,10 @@ export async function POST() {
   }
 
   const base = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
-  const session = await stripe.billingPortal.sessions.create({
+  const billingSession = await stripe.billingPortal.sessions.create({
     customer: client.stripeCustomerId,
     return_url: `${base}/portal`,
   });
 
-  return NextResponse.json({ url: session.url });
+  return NextResponse.json({ url: billingSession.url });
 }

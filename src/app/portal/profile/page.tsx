@@ -17,7 +17,7 @@ interface ClientProfile {
 
 export default function PortalProfilePage() {
   const [profile, setProfile] = useState<ClientProfile | null>(null);
-  const [clerkEmail, setClerkEmail] = useState<string | null>(null);
+  const [signedInEmail, setSignedInEmail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -37,8 +37,8 @@ export default function PortalProfilePage() {
           setProfile(d.client);
           setName(d.client.name ?? "");
           setPhone(d.client.phone ?? "");
-        } else if (d.clerkEmail) {
-          setClerkEmail(d.clerkEmail);
+        } else if (d.email) {
+          setSignedInEmail(d.email);
         }
       })
       .catch(() => {})
@@ -85,9 +85,9 @@ export default function PortalProfilePage() {
   if (!profile) return (
     <div className="rounded-xl border border-amber-200 bg-amber-50 p-8 max-w-md space-y-2">
       <p className="text-sm font-medium text-amber-900">No client account linked</p>
-      {clerkEmail ? (
+      {signedInEmail ? (
         <p className="text-sm text-amber-700">
-          You&apos;re signed in as <strong>{clerkEmail}</strong>. Ask your provider to add a client record with this email address.
+          You&apos;re signed in as <strong>{signedInEmail}</strong>. Ask your provider to add a client record with this email address.
         </p>
       ) : (
         <p className="text-sm text-amber-700">Please contact your provider to get access set up.</p>

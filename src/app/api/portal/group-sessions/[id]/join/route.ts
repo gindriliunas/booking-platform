@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import {
   bookings,
@@ -17,15 +17,15 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authSession = await getSession();
+    if (!authSession) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const client = await getPortalClient(userId);
+    const client = await getPortalClient(authSession.uid);
     if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
     const { id: bookingId } = await params;
 
-    const [session] = await db
+    const [groupSession] = await db
       .select()
       .from(bookings)
       .where(
@@ -36,7 +36,7 @@ export async function POST(
         )
       );
 
-    if (!session) return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    if (!groupSession) return NextResponse.json({ error: "Session not found" }, { status: 404 });
 
     // Check already joined
     const [existing] = await db
@@ -53,7 +53,7 @@ export async function POST(
 
     // Check capacity
     let isFull = false;
-    if (session.maxParticipants) {
+    if (groupSession.maxParticipants) {
       const [{ count }] = await db
         .select({ count: sql<number>`count(*)`.mapWith(Number) })
         .from(bookingParticipants)
@@ -63,14 +63,14 @@ export async function POST(
             eq(bookingParticipants.status, "booked")
           )
         );
-      isFull = count >= session.maxParticipants;
+      isFull = count >= groupSession.maxParticipants;
     }
 
     // Check provider waitlist setting
     const [provider] = await db
       .select({ enableWaitlist: providers.enableWaitlist })
       .from(providers)
-      .where(eq(providers.id, session.providerId));
+      .where(eq(providers.id, groupSession.providerId));
 
     if (isFull) {
       if (provider?.enableWaitlist) {

@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { clientPackages, packages, clientSubscriptions, subscriptionPlans } from "@/lib/db/schema";
@@ -18,14 +18,14 @@ export default async function PortalPackagesPage({
 }: {
   searchParams: Promise<{ pkgPage?: string; subPage?: string; payment?: string }>;
 }) {
-  const { userId } = await auth();
-  if (!userId) redirect("/portal/sign-in");
+  const session = await getSession();
+  if (!session) redirect("/portal/sign-in");
 
   const sp = await searchParams;
   const pkgPage = Math.max(1, parseInt(sp.pkgPage ?? "1"));
   const subPage = Math.max(1, parseInt(sp.subPage ?? "1"));
 
-  const client = await getPortalClient(userId);
+  const client = await getPortalClient(session.uid);
   if (!client) {
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-8 max-w-md">

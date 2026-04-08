@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { bookings, bookingParticipants, providers, waitlistEntries } from "@/lib/db/schema";
 import { eq, and, gte, inArray } from "drizzle-orm";
@@ -7,10 +7,10 @@ import { getPortalClient } from "@/lib/portal";
 
 export async function GET() {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const client = await getPortalClient(userId);
+    const client = await getPortalClient(session.uid);
     if (!client) return NextResponse.json({ sessions: [] });
 
     const now = new Date();

@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import {
@@ -32,14 +32,14 @@ export default async function PortalDashboardPage({
 }: {
   searchParams: Promise<{ upcomingPage?: string; pastPage?: string }>;
 }) {
-  const { userId } = await auth();
-  if (!userId) redirect("/portal/sign-in");
+  const session = await getSession();
+  if (!session) redirect("/portal/sign-in");
 
   const sp = await searchParams;
   const upcomingPage = Math.max(1, parseInt(sp.upcomingPage ?? "1"));
   const pastPage = Math.max(1, parseInt(sp.pastPage ?? "1"));
 
-  const client = await getPortalClient(userId);
+  const client = await getPortalClient(session.uid);
 
   if (!client) {
     return (

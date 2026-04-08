@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import {
   bookings,
@@ -7,9 +7,8 @@ import {
   clientPackages,
   clientSubscriptions,
   providers,
-  waitlistEntries,
 } from "@/lib/db/schema";
-import { eq, and, asc, gt } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { getPortalClient } from "@/lib/portal";
 import { checkAndApplyLateCancelPolicy } from "@/lib/late-cancel";
 import { differenceInHours } from "date-fns";
@@ -20,10 +19,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const authSession = await getSession();
+    if (!authSession) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const client = await getPortalClient(userId);
+    const client = await getPortalClient(authSession.uid);
     if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
     const { id: bookingId } = await params;
@@ -44,9 +43,9 @@ export async function POST(
 
     if (!participant) return NextResponse.json({ error: "Not joined" }, { status: 404 });
 
-    const [session] = await db.select().from(bookings).where(eq(bookings.id, bookingId));
-    if (!session) return NextResponse.json({ error: "Session not found" }, { status: 404 });
-    if (session.startTime <= new Date()) {
+    const [groupSession] = await db.select().from(bookings).where(eq(bookings.id, bookingId));
+    if (!groupSession) return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    if (groupSession.startTime <= new Date()) {
       return NextResponse.json({ error: "Cannot leave a session that has already started" }, { status: 400 });
     }
 
@@ -59,9 +58,9 @@ export async function POST(
         currency: providers.currency,
       })
       .from(providers)
-      .where(eq(providers.id, session.providerId));
+      .where(eq(providers.id, groupSession.providerId));
 
-    const hoursUntil = differenceInHours(session.startTime, new Date());
+    const hoursUntil = differenceInHours(groupSession.startTime, new Date());
     const isLate =
       !!provider?.lateCancelWindowHours &&
       !!provider?.lateCancelAction &&
@@ -85,8 +84,8 @@ export async function POST(
     const result = await checkAndApplyLateCancelPolicy({
       bookingId,
       clientId: client.id,
-      providerId: session.providerId,
-      sessionStartTime: session.startTime,
+      providerId: groupSession.providerId,
+      sessionStartTime: groupSession.startTime,
       clientPackageId: participant.clientPackageId,
       clientSubscriptionId: participant.clientSubscriptionId,
       isPortalCancel: true,
@@ -120,7 +119,7 @@ export async function POST(
       .where(eq(bookingParticipants.id, participant.id));
 
     // Notify next waitlist entry (non-blocking)
-    notifyNextWaitlistEntry(bookingId, session);
+    notifyNextWaitlistEntry(bookingId, groupSession);
 
     return NextResponse.json({ ok: true, isLate: result.isLate, outcome: result.outcome });
   } catch (err) {

@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { clients } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
 export async function PATCH(req: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const [client] = await db.select().from(clients).where(eq(clients.clerkUserId, userId));
+  const [client] = await db.select().from(clients).where(eq(clients.firebaseUid, session.uid));
   if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
   const { name, phone } = await req.json();

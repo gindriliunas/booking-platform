@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { availability, clientPackages, clientSubscriptions, packages, subscriptionPlans, providers } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 import { getPortalClient } from "@/lib/portal";
 
 export async function GET() {
-  const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const client = await getPortalClient(userId);
+  const client = await getPortalClient(session.uid);
   if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
   const [weeklyAvailability, activePkgRows, activeSubRows, providerRows] = await Promise.all([

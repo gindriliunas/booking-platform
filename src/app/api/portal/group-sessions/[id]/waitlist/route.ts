@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { waitlistEntries } from "@/lib/db/schema";
 import { eq, and, gt } from "drizzle-orm";
@@ -11,10 +11,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const client = await getPortalClient(userId);
+    const client = await getPortalClient(session.uid);
     if (!client) return NextResponse.json({ onWaitlist: false });
 
     const { id: bookingId } = await params;
@@ -51,10 +51,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const client = await getPortalClient(userId);
+    const client = await getPortalClient(session.uid);
     if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
     const { id: bookingId } = await params;

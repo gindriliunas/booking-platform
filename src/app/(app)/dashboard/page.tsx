@@ -2,8 +2,9 @@ import { db } from "@/lib/db";
 import { bookings, clientPackages, clients, packages, providers } from "@/lib/db/schema";
 import { eq, count, gte, and, lt, sql } from "drizzle-orm";
 import { getAdminProviderId } from "@/lib/auth-provider";
+import { getSession } from "@/lib/session";
+import { adminAuth } from "@/lib/firebase/admin";
 import { redirect } from "next/navigation";
-import { currentUser } from "@clerk/nextjs/server";
 import { formatCurrency } from "@/lib/utils";
 import { MiniCalendar } from "./mini-calendar";
 import { UpcomingSessions, TodayLoad } from "./upcoming-sessions";
@@ -207,14 +208,17 @@ export default async function DashboardPage() {
   const providerId = await getAdminProviderId();
   if (!providerId) redirect("/setup");
 
-  const [stats, user] = await Promise.all([
+  const session = await getSession();
+  const [stats, firebaseUser] = await Promise.all([
     getDashboardStats(providerId),
-    currentUser(),
+    session ? adminAuth.getUser(session.uid).catch(() => null) : null,
   ]);
 
-  const initials = user
-    ? ((user.firstName?.[0] ?? "") + (user.lastName?.[0] ?? "")).toUpperCase() || "U"
-    : "U";
+  const displayName = firebaseUser?.displayName ?? "";
+  const parts = displayName.trim().split(" ");
+  const initials = parts.length >= 2
+    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+    : (displayName[0] ?? "U").toUpperCase();
 
   return (
     <div className="space-y-6">

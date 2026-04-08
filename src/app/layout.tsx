@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { ClerkProvider } from "@clerk/nextjs";
+import { FirebaseAuthProvider } from "@/components/firebase-auth-provider";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -18,12 +18,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider afterSignOutUrl="/portal/sign-in">
-      <html lang="en" className="h-full antialiased">
-        <body className={`${inter.className} min-h-full bg-gray-50 text-gray-900`}>
-          {children}
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" className="h-full antialiased">
+      <body className={`${inter.className} min-h-full bg-gray-50 text-gray-900`}>
+        <FirebaseAuthProvider>{children}</FirebaseAuthProvider>
+      </body>
+    </html>
   );
 }

@@ -1,4 +1,4 @@
-import { auth } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { clientQuestionnaires, questionnaires } from "@/lib/db/schema";
@@ -10,10 +10,10 @@ import { formatDateOnly } from "@/lib/utils";
 import Link from "next/link";
 
 export default async function PortalQuestionnairesPage() {
-  const { userId } = await auth();
-  if (!userId) redirect("/portal/sign-in");
+  const session = await getSession();
+  if (!session) redirect("/portal/sign-in");
 
-  const client = await getPortalClient(userId);
+  const client = await getPortalClient(session.uid);
   if (!client) {
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-8 max-w-md">

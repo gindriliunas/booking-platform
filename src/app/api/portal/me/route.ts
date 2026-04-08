@@ -1,24 +1,15 @@
 import { NextResponse } from "next/server";
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { getSession } from "@/lib/session";
 import { getPortalClient } from "@/lib/portal";
 
 export async function GET() {
   try {
-    const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const session = await getSession();
+    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const client = await getPortalClient(userId);
+    const client = await getPortalClient(session.uid);
     if (!client) {
-      let clerkEmail: string | undefined;
-      try {
-        const clerkUser = await currentUser();
-        clerkEmail = clerkUser?.emailAddresses?.find(
-          (e) => e.id === clerkUser.primaryEmailAddressId
-        )?.emailAddress;
-      } catch {
-        // non-fatal
-      }
-      return NextResponse.json({ error: "no_account", clerkEmail }, { status: 404 });
+      return NextResponse.json({ error: "no_account" }, { status: 404 });
     }
 
     return NextResponse.json({
