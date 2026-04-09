@@ -26,7 +26,7 @@ function isPublicRoute(pathname: string) {
 
 export default async function middleware(req: NextRequest) {
   const hostname = req.headers.get("host") ?? "";
-  if (hostname === "book.viv-z.com" && !req.nextUrl.pathname.startsWith("/portal")) {
+  if (hostname === "book.viv-z.com" && !req.nextUrl.pathname.startsWith("/portal") && !req.nextUrl.pathname.startsWith("/api/")) {
     const url = req.nextUrl.clone();
     url.pathname = "/portal" + (req.nextUrl.pathname === "/" ? "" : req.nextUrl.pathname);
     return NextResponse.rewrite(url);
