@@ -77,6 +77,26 @@ export async function checkAndApplyLateCancelPolicy(
   const action = provider.lateCancelAction as "deduct_session" | "charge";
 
   if (action === "deduct_session") {
+    // Deduct the session credit now (was never deducted at booking creation)
+    if (params.clientPackageId) {
+      const [pkg] = await db.select().from(clientPackages).where(eq(clientPackages.id, params.clientPackageId));
+      if (pkg) {
+        const newRemaining = Math.max(0, pkg.sessionsRemaining - 1);
+        await db.update(clientPackages).set({
+          sessionsUsed: pkg.sessionsUsed + 1,
+          sessionsRemaining: newRemaining,
+          status: newRemaining <= 0 ? "exhausted" : "active",
+        }).where(eq(clientPackages.id, pkg.id));
+      }
+    }
+    if (params.clientSubscriptionId) {
+      const [sub] = await db.select().from(clientSubscriptions).where(eq(clientSubscriptions.id, params.clientSubscriptionId));
+      if (sub) {
+        await db.update(clientSubscriptions).set({
+          sessionsUsedThisPeriod: sub.sessionsUsedThisPeriod + 1,
+        }).where(eq(clientSubscriptions.id, sub.id));
+      }
+    }
     await db.insert(lateCancellationLogs).values({
       bookingId,
       clientId,

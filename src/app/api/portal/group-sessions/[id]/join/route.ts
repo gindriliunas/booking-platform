@@ -116,13 +116,12 @@ export async function POST(
       return NextResponse.json({ error: "Session is full" }, { status: 409 });
     }
 
-    // Deduct from active package if available
+    // Find active package/subscription to link to participant (deduction happens at completion)
     const [activePkg] = await db
       .select()
       .from(clientPackages)
       .where(and(eq(clientPackages.clientId, client.id), eq(clientPackages.status, "active")));
 
-    // Try subscription if no package
     let clientSubscriptionId: string | null = null;
     if (!activePkg) {
       const [activeSub] = await db
@@ -131,9 +130,6 @@ export async function POST(
         .where(and(eq(clientSubscriptions.clientId, client.id), eq(clientSubscriptions.status, "active")));
       if (activeSub && activeSub.sessionsUsedThisPeriod < activeSub.sessionsPerPeriod) {
         clientSubscriptionId = activeSub.id;
-        await db.update(clientSubscriptions).set({
-          sessionsUsedThisPeriod: activeSub.sessionsUsedThisPeriod + 1,
-        }).where(eq(clientSubscriptions.id, activeSub.id));
       }
     }
 
@@ -144,14 +140,6 @@ export async function POST(
       clientSubscriptionId,
       status: "booked",
     });
-
-    if (activePkg) {
-      await db.update(clientPackages).set({
-        sessionsUsed: activePkg.sessionsUsed + 1,
-        sessionsRemaining: activePkg.sessionsRemaining - 1,
-        status: activePkg.sessionsRemaining - 1 <= 0 ? "exhausted" : "active",
-      }).where(eq(clientPackages.id, activePkg.id));
-    }
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (err) {

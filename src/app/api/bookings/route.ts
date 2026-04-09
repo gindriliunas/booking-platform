@@ -4,8 +4,6 @@ import {
   bookings,
   bookingSeries,
   blockedTimes,
-  clientPackages,
-  clientSubscriptions,
   providers,
 } from "@/lib/db/schema";
 import { eq, and, gte } from "drizzle-orm";
@@ -89,21 +87,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "occurrences must be between 2 and 52" }, { status: 400 });
     }
 
-    // Validate package capacity upfront (before any writes)
-    if (clientPackageId && sessionType !== "group") {
-      const [pkg] = await db
-        .select()
-        .from(clientPackages)
-        .where(eq(clientPackages.id, clientPackageId));
-      if (!pkg || pkg.sessionsRemaining < occurrences) {
-        return NextResponse.json(
-          {
-            error: `Not enough sessions in package (have ${pkg?.sessionsRemaining ?? 0}, need ${occurrences})`,
-          },
-          { status: 400 }
-        );
-      }
-    }
 
     const baseStart = new Date(startTime);
     const baseEnd = new Date(endTime);
@@ -115,34 +98,6 @@ export async function POST(req: NextRequest) {
         .insert(bookingSeries)
         .values({ providerId, frequency, occurrences })
         .returning();
-
-      // Deduct all sessions upfront if package-backed
-      if (clientPackageId && sessionType !== "group") {
-        const [pkg] = await tx
-          .select()
-          .from(clientPackages)
-          .where(eq(clientPackages.id, clientPackageId));
-        if (pkg) {
-          await tx.update(clientPackages).set({
-            sessionsUsed: pkg.sessionsUsed + occurrences,
-            sessionsRemaining: pkg.sessionsRemaining - occurrences,
-            status: pkg.sessionsRemaining - occurrences <= 0 ? "exhausted" : "active",
-          }).where(eq(clientPackages.id, clientPackageId));
-        }
-      }
-
-      // Deduct subscription sessions if applicable
-      if (body.clientSubscriptionId && sessionType !== "group") {
-        const [sub] = await tx
-          .select()
-          .from(clientSubscriptions)
-          .where(eq(clientSubscriptions.id, body.clientSubscriptionId));
-        if (sub) {
-          await tx.update(clientSubscriptions).set({
-            sessionsUsedThisPeriod: sub.sessionsUsedThisPeriod + occurrences,
-          }).where(eq(clientSubscriptions.id, sub.id));
-        }
-      }
 
       // Insert each occurrence
       const inserted = [];
@@ -204,21 +159,6 @@ export async function POST(req: NextRequest) {
   }
 
   // ── Single booking (original logic) ─────────────────────────────────────────
-  if (clientPackageId) {
-    const [pkg] = await db
-      .select()
-      .from(clientPackages)
-      .where(eq(clientPackages.id, clientPackageId));
-    if (!pkg || pkg.sessionsRemaining <= 0) {
-      return NextResponse.json({ error: "No sessions remaining in this package" }, { status: 400 });
-    }
-    await db.update(clientPackages).set({
-      sessionsUsed: pkg.sessionsUsed + 1,
-      sessionsRemaining: pkg.sessionsRemaining - 1,
-      status: pkg.sessionsRemaining - 1 <= 0 ? "exhausted" : "active",
-    }).where(eq(clientPackages.id, clientPackageId));
-  }
-
   const [booking] = await db.insert(bookings).values({
     providerId,
     clientId: sessionType === "group" ? null : (clientId ?? null),

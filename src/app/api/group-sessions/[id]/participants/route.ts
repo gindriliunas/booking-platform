@@ -72,7 +72,7 @@ export async function POST(
 
   if (existing) return NextResponse.json({ error: "Client is already a participant" }, { status: 409 });
 
-  // Validate package is group type if provided
+  // Validate package is group type if provided (deduction happens at completion)
   if (clientPackageId) {
     const [pkg] = await db
       .select({ cp: clientPackages, p: packages })
@@ -82,22 +82,6 @@ export async function POST(
 
     if (!pkg) return NextResponse.json({ error: "Package not found" }, { status: 404 });
     if (pkg.p.sessionType !== "group") return NextResponse.json({ error: "Package is not a group package" }, { status: 400 });
-    if (pkg.cp.sessionsRemaining <= 0) return NextResponse.json({ error: "No sessions remaining in this package" }, { status: 400 });
-
-    await db.update(clientPackages).set({
-      sessionsUsed: pkg.cp.sessionsUsed + 1,
-      sessionsRemaining: pkg.cp.sessionsRemaining - 1,
-      status: pkg.cp.sessionsRemaining - 1 <= 0 ? "exhausted" : "active",
-    }).where(eq(clientPackages.id, clientPackageId));
-  }
-
-  if (clientSubscriptionId) {
-    const [sub] = await db.select().from(clientSubscriptions).where(eq(clientSubscriptions.id, clientSubscriptionId));
-    if (sub) {
-      await db.update(clientSubscriptions).set({
-        sessionsUsedThisPeriod: sub.sessionsUsedThisPeriod + 1,
-      }).where(eq(clientSubscriptions.id, clientSubscriptionId));
-    }
   }
 
   const [participant] = await db

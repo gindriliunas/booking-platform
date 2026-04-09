@@ -55,19 +55,6 @@ export async function POST(req: NextRequest) {
       })
       .returning();
 
-    if (activePkg) {
-      const newUsed = activePkg.sessionsUsed + 1;
-      const newRemaining = activePkg.sessionsRemaining - 1;
-      await db
-        .update(clientPackages)
-        .set({
-          sessionsUsed: newUsed,
-          sessionsRemaining: newRemaining,
-          status: newRemaining <= 0 ? "exhausted" : "active",
-        })
-        .where(eq(clientPackages.id, activePkg.id));
-    }
-
     // Fire GHL triggers (non-blocking)
     (async () => {
       try {

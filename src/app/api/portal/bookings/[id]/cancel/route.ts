@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
-import { bookings, clientPackages, clientSubscriptions, providers } from "@/lib/db/schema";
+import { bookings, providers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getPortalClient } from "@/lib/portal";
 import { checkAndApplyLateCancelPolicy } from "@/lib/late-cancel";
@@ -74,28 +74,6 @@ export async function POST(
       clientSubscriptionId: booking.clientSubscriptionId,
       isPortalCancel: true,
     });
-
-    // Restore session credit if policy permits
-    if (result.shouldRestoreSession) {
-      if (booking.clientPackageId) {
-        const [pkg] = await db.select().from(clientPackages).where(eq(clientPackages.id, booking.clientPackageId));
-        if (pkg) {
-          await db.update(clientPackages).set({
-            sessionsUsed: Math.max(0, pkg.sessionsUsed - 1),
-            sessionsRemaining: pkg.sessionsRemaining + 1,
-            status: "active",
-          }).where(eq(clientPackages.id, pkg.id));
-        }
-      }
-      if (booking.clientSubscriptionId) {
-        const [sub] = await db.select().from(clientSubscriptions).where(eq(clientSubscriptions.id, booking.clientSubscriptionId));
-        if (sub) {
-          await db.update(clientSubscriptions).set({
-            sessionsUsedThisPeriod: Math.max(0, sub.sessionsUsedThisPeriod - 1),
-          }).where(eq(clientSubscriptions.id, sub.id));
-        }
-      }
-    }
 
     const [cancelled] = await db
       .update(bookings)
