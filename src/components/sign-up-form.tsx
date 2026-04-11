@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createUserWithEmailAndPassword,
@@ -9,7 +9,10 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
-import { PORTAL_GOOGLE_OAUTH_PATH, completePortalAuthNavigation } from "@/lib/firebase/google-auth-ui";
+import {
+  PORTAL_GOOGLE_OAUTH_PATH,
+  isEmbeddedInIframe,
+} from "@/lib/firebase/google-auth-ui";
 import Link from "next/link";
 
 interface SignUpFormProps {
@@ -24,6 +27,11 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [embeddedInIframe, setEmbeddedInIframe] = useState(false);
+
+  useEffect(() => {
+    setEmbeddedInIframe(isEmbeddedInIframe());
+  }, []);
 
   const exchangeToken = useCallback(async (idToken: string) => {
     const res = await fetch("/api/auth/session", {
@@ -44,7 +52,8 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
       if (name) await updateProfile(cred.user, { displayName: name });
       const idToken = await cred.user.getIdToken();
       await exchangeToken(idToken);
-      completePortalAuthNavigation(router, redirectTo);
+      router.push(redirectTo);
+      router.refresh();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Sign up failed";
       setError(friendlyError(msg));
@@ -53,28 +62,10 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
     }
   }
 
-  async function handleGoogleSignUp() {
+  function handleGoogleSignUpFromIframe() {
     setError("");
     setLoading(true);
-    try {
-      const provider = new GoogleAuthProvider();
-      const cred = await signInWithPopup(auth, provider);
-      const idToken = await cred.user.getIdToken();
-      await exchangeToken(idToken);
-      completePortalAuthNavigation(router, redirectTo);
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Sign up failed";
-      if (msg.includes("popup-blocked") || msg.includes("unauthorized-domain") || msg.includes("web-storage-unsupported")) {
-        fallbackToOAuthWindow();
-        return;
-      }
-      setError(friendlyError(msg));
-    } finally {
-      setLoading(false);
-    }
-  }
 
-  function fallbackToOAuthWindow() {
     const w = 500;
     const h = 600;
     const left = window.screenX + (window.outerWidth - w) / 2;
@@ -86,7 +77,7 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
     );
 
     if (!popup) {
-      setError("Could not open sign-in window. Please allow popups for this site.");
+      setError("Popup blocked — please allow popups for this site and try again.");
       setLoading(false);
       return;
     }
@@ -94,14 +85,16 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
     function onMessage(e: MessageEvent) {
       if (e.data?.type === "portal-google-auth-success") {
         cleanup();
-        completePortalAuthNavigation(router, redirectTo);
+        router.push(redirectTo);
+        router.refresh();
       }
     }
 
     const pollTimer = setInterval(() => {
       if (popup.closed) {
         cleanup();
-        completePortalAuthNavigation(router, redirectTo);
+        router.push(redirectTo);
+        router.refresh();
       }
     }, 500);
 
@@ -112,6 +105,24 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
     }
 
     window.addEventListener("message", onMessage);
+  }
+
+  async function handleGoogleSignUp() {
+    setError("");
+    setLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      const cred = await signInWithPopup(auth, provider);
+      const idToken = await cred.user.getIdToken();
+      await exchangeToken(idToken);
+      router.push(redirectTo);
+      router.refresh();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Sign up failed";
+      setError(friendlyError(msg));
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -187,7 +198,7 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
 
       <button
         type="button"
-        onClick={handleGoogleSignUp}
+        onClick={embeddedInIframe ? handleGoogleSignUpFromIframe : handleGoogleSignUp}
         disabled={loading}
         className="w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
       >

@@ -14,8 +14,6 @@ export async function POST(req: NextRequest) {
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      // CHIPS: session works when portal is embedded in a third-party iframe (Safari / Chrome)
-      partitioned: true,
       path: "/",
       maxAge: 60 * 60 * 24 * 14, // 14 days in seconds
     });
