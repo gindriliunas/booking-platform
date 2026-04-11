@@ -59,10 +59,29 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
     }
   }
 
-  function handleGoogleSignInFromIframe() {
+  async function handleGoogleSignIn() {
     setError("");
     setLoading(true);
+    try {
+      const provider = new GoogleAuthProvider();
+      const cred = await signInWithPopup(auth, provider);
+      const idToken = await cred.user.getIdToken();
+      await exchangeToken(idToken);
+      router.push(redirectTo);
+      router.refresh();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Sign in failed";
+      if (msg.includes("popup-blocked") || msg.includes("unauthorized-domain") || msg.includes("web-storage-unsupported")) {
+        fallbackToOAuthWindow();
+        return;
+      }
+      setError(friendlyError(msg));
+    } finally {
+      setLoading(false);
+    }
+  }
 
+  function fallbackToOAuthWindow() {
     const w = 500;
     const h = 600;
     const left = window.screenX + (window.outerWidth - w) / 2;
@@ -74,7 +93,7 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
     );
 
     if (!popup) {
-      setError("Popup blocked — please allow popups for this site and try again.");
+      setError("Could not open sign-in window. Please allow popups for this site.");
       setLoading(false);
       return;
     }
@@ -102,24 +121,6 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
     }
 
     window.addEventListener("message", onMessage);
-  }
-
-  async function handleGoogleSignIn() {
-    setError("");
-    setLoading(true);
-    try {
-      const provider = new GoogleAuthProvider();
-      const cred = await signInWithPopup(auth, provider);
-      const idToken = await cred.user.getIdToken();
-      await exchangeToken(idToken);
-      router.push(redirectTo);
-      router.refresh();
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Sign in failed";
-      setError(friendlyError(msg));
-    } finally {
-      setLoading(false);
-    }
   }
 
   return (
@@ -181,7 +182,7 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
 
       <button
         type="button"
-        onClick={embeddedInIframe ? handleGoogleSignInFromIframe : handleGoogleSignIn}
+        onClick={handleGoogleSignIn}
         disabled={loading}
         className="w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
       >

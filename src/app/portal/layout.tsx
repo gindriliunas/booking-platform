@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { getSession } from "@/lib/session";
 import { PortalFirebaseRedirectHandler } from "@/components/portal-firebase-redirect-handler";
+import { PortalMobileNav } from "@/components/portal-mobile-nav";
 import { UserMenu } from "@/components/user-menu";
 import { CalendarDays, Package, LayoutDashboard, UserCircle, CalendarPlus, ClipboardList } from "lucide-react";
 
@@ -36,8 +37,18 @@ export default async function PortalLayout({ children }: { children: React.React
   return (
     <>
       <PortalFirebaseRedirectHandler />
+
+      {/* Mobile hamburger + slide-out drawer */}
+      <PortalMobileNav navItems={navItems}>
+        <div className="flex items-center gap-3">
+          <UserMenu redirectTo="/portal/sign-in" />
+          <span className="text-xs text-gray-500">Account</span>
+        </div>
+      </PortalMobileNav>
+
       <div className="flex h-screen overflow-hidden">
-        <aside className="flex w-56 flex-col border-r border-gray-200 bg-white shrink-0">
+        {/* Desktop sidebar — hidden on mobile */}
+        <aside className="hidden md:flex w-56 flex-col border-r border-gray-200 bg-white shrink-0">
           <div className="flex h-16 items-center gap-2 px-5 border-b border-gray-200">
             <CalendarDays className="h-5 w-5 text-indigo-600" />
           </div>
@@ -58,7 +69,9 @@ export default async function PortalLayout({ children }: { children: React.React
             <span className="text-xs text-gray-500">Account</span>
           </div>
         </aside>
-        <main className="flex-1 overflow-y-auto p-8">{children}</main>
+
+        {/* Main content — add top padding on mobile to account for the sticky header */}
+        <main className="flex-1 overflow-y-auto p-4 pt-2 md:p-8">{children}</main>
       </div>
     </>
   );
