@@ -1,3 +1,5 @@
+import type { AppRouterInstance } from "next/navigation";
+
 /** Full-page route that starts Google sign-in outside the embed (see portal/oauth/google). */
 export const PORTAL_GOOGLE_OAUTH_PATH = "/portal/oauth/google";
 
@@ -12,4 +14,15 @@ export function isEmbeddedInIframe(): boolean {
   } catch {
     return true;
   }
+}
+
+/** After session cookie is set: full navigation in embeds so RSC + cookies apply reliably on mobile Safari. */
+export function completePortalAuthNavigation(router: AppRouterInstance, redirectTo: string) {
+  if (typeof window === "undefined") return;
+  if (isEmbeddedInIframe()) {
+    window.location.assign(`${window.location.origin}${redirectTo.startsWith("/") ? redirectTo : `/${redirectTo}`}`);
+    return;
+  }
+  router.push(redirectTo);
+  router.refresh();
 }

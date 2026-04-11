@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   signInWithEmailAndPassword,
@@ -10,7 +10,7 @@ import {
 import { auth } from "@/lib/firebase/client";
 import {
   PORTAL_GOOGLE_OAUTH_PATH,
-  isEmbeddedInIframe,
+  completePortalAuthNavigation,
 } from "@/lib/firebase/google-auth-ui";
 import Link from "next/link";
 
@@ -25,11 +25,6 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [embeddedInIframe, setEmbeddedInIframe] = useState(false);
-
-  useEffect(() => {
-    setEmbeddedInIframe(isEmbeddedInIframe());
-  }, []);
 
   const exchangeToken = useCallback(async (idToken: string) => {
     const res = await fetch("/api/auth/session", {
@@ -49,8 +44,7 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
       const cred = await signInWithEmailAndPassword(auth, email, password);
       const idToken = await cred.user.getIdToken();
       await exchangeToken(idToken);
-      router.push(redirectTo);
-      router.refresh();
+      completePortalAuthNavigation(router, redirectTo);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Sign in failed";
       setError(friendlyError(msg));
@@ -67,8 +61,7 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
       const cred = await signInWithPopup(auth, provider);
       const idToken = await cred.user.getIdToken();
       await exchangeToken(idToken);
-      router.push(redirectTo);
-      router.refresh();
+      completePortalAuthNavigation(router, redirectTo);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Sign in failed";
       if (msg.includes("popup-blocked") || msg.includes("unauthorized-domain") || msg.includes("web-storage-unsupported")) {
@@ -101,16 +94,14 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
     function onMessage(e: MessageEvent) {
       if (e.data?.type === "portal-google-auth-success") {
         cleanup();
-        router.push(redirectTo);
-        router.refresh();
+        completePortalAuthNavigation(router, redirectTo);
       }
     }
 
     const pollTimer = setInterval(() => {
       if (popup.closed) {
         cleanup();
-        router.push(redirectTo);
-        router.refresh();
+        completePortalAuthNavigation(router, redirectTo);
       }
     }, 500);
 

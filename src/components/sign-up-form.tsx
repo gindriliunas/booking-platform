@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createUserWithEmailAndPassword,
@@ -9,10 +9,7 @@ import {
   updateProfile,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
-import {
-  PORTAL_GOOGLE_OAUTH_PATH,
-  isEmbeddedInIframe,
-} from "@/lib/firebase/google-auth-ui";
+import { PORTAL_GOOGLE_OAUTH_PATH, completePortalAuthNavigation } from "@/lib/firebase/google-auth-ui";
 import Link from "next/link";
 
 interface SignUpFormProps {
@@ -27,11 +24,6 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [embeddedInIframe, setEmbeddedInIframe] = useState(false);
-
-  useEffect(() => {
-    setEmbeddedInIframe(isEmbeddedInIframe());
-  }, []);
 
   const exchangeToken = useCallback(async (idToken: string) => {
     const res = await fetch("/api/auth/session", {
@@ -52,8 +44,7 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
       if (name) await updateProfile(cred.user, { displayName: name });
       const idToken = await cred.user.getIdToken();
       await exchangeToken(idToken);
-      router.push(redirectTo);
-      router.refresh();
+      completePortalAuthNavigation(router, redirectTo);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Sign up failed";
       setError(friendlyError(msg));
@@ -70,8 +61,7 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
       const cred = await signInWithPopup(auth, provider);
       const idToken = await cred.user.getIdToken();
       await exchangeToken(idToken);
-      router.push(redirectTo);
-      router.refresh();
+      completePortalAuthNavigation(router, redirectTo);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Sign up failed";
       if (msg.includes("popup-blocked") || msg.includes("unauthorized-domain") || msg.includes("web-storage-unsupported")) {
@@ -104,16 +94,14 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
     function onMessage(e: MessageEvent) {
       if (e.data?.type === "portal-google-auth-success") {
         cleanup();
-        router.push(redirectTo);
-        router.refresh();
+        completePortalAuthNavigation(router, redirectTo);
       }
     }
 
     const pollTimer = setInterval(() => {
       if (popup.closed) {
         cleanup();
-        router.push(redirectTo);
-        router.refresh();
+        completePortalAuthNavigation(router, redirectTo);
       }
     }, 500);
 
