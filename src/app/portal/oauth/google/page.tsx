@@ -1,26 +1,45 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { signInWithRedirect, GoogleAuthProvider } from "firebase/auth";
+import { useEffect, useState } from "react";
+import { getRedirectResult, signInWithRedirect, GoogleAuthProvider } from "firebase/auth";
+import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase/client";
+
+/** Prevents React Strict Mode double-invoke from starting two redirects in dev. */
+let oauthGoogleFlowStarted = false;
 
 /** Full-window page (not inside an iframe) so Google OAuth is allowed. Embedded portal links here with target="_top". */
 export default function PortalGoogleOAuthPage() {
+  const router = useRouter();
   const [error, setError] = useState("");
-  const started = useRef(false);
 
   useEffect(() => {
-    if (started.current) return;
-    started.current = true;
+    if (oauthGoogleFlowStarted) return;
+    oauthGoogleFlowStarted = true;
+
     void (async () => {
       try {
-        const provider = new GoogleAuthProvider();
-        await signInWithRedirect(auth, provider);
+        const result = await getRedirectResult(auth);
+        if (result?.user) {
+          const idToken = await result.user.getIdToken();
+          const res = await fetch("/api/auth/session", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ idToken }),
+          });
+          if (!res.ok) throw new Error("Session creation failed");
+          router.replace("/portal");
+          router.refresh();
+          return;
+        }
+        await signInWithRedirect(auth, new GoogleAuthProvider());
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Could not start Google sign-in.");
+        oauthGoogleFlowStarted = false;
+        setError(e instanceof Error ? e.message : "Could not complete Google sign-in.");
       }
     })();
-  }, []);
+  }, [router]);
 
   if (error) {
     return (

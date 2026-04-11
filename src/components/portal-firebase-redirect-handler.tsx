@@ -2,19 +2,21 @@
 
 import { useEffect, useRef } from "react";
 import { getRedirectResult } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase/client";
 
 /**
- * Completes Google sign-in after signInWithRedirect (iframe or mobile).
- * Lives in the portal layout so it runs on whatever URL Firebase returns to,
- * and without aborting the async flow on React effect cleanup (fixes stuck sign-in).
+ * Completes Google sign-in after signInWithRedirect (e.g. mobile on /portal/sign-in).
+ * `/portal/oauth/google` handles its own getRedirectResult — that page must not double-consume
+ * the redirect or it would immediately call signInWithRedirect again (Google account loop).
  */
 export function PortalFirebaseRedirectHandler() {
   const router = useRouter();
+  const pathname = usePathname() ?? "";
   const ran = useRef(false);
 
   useEffect(() => {
+    if (pathname.startsWith("/portal/oauth/")) return;
     if (ran.current) return;
     ran.current = true;
 
@@ -36,7 +38,7 @@ export function PortalFirebaseRedirectHandler() {
         console.error("PortalFirebaseRedirectHandler", e);
       }
     })();
-  }, [router]);
+  }, [router, pathname]);
 
   return null;
 }
