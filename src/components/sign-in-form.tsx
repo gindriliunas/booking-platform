@@ -5,14 +5,12 @@ import { useRouter } from "next/navigation";
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
-  signInWithRedirect,
   GoogleAuthProvider,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import {
   PORTAL_GOOGLE_OAUTH_PATH,
   isEmbeddedInIframe,
-  prefersGoogleRedirectOverPopup,
 } from "@/lib/firebase/google-auth-ui";
 import Link from "next/link";
 
@@ -61,15 +59,55 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
     }
   }
 
+  function handleGoogleSignInFromIframe() {
+    setError("");
+    setLoading(true);
+
+    const w = 500;
+    const h = 600;
+    const left = window.screenX + (window.outerWidth - w) / 2;
+    const top = window.screenY + (window.outerHeight - h) / 2;
+    const popup = window.open(
+      `${window.location.origin}${PORTAL_GOOGLE_OAUTH_PATH}`,
+      "google-sign-in",
+      `width=${w},height=${h},left=${left},top=${top},toolbar=no,menubar=no`,
+    );
+
+    if (!popup) {
+      setError("Popup blocked — please allow popups for this site and try again.");
+      setLoading(false);
+      return;
+    }
+
+    function onMessage(e: MessageEvent) {
+      if (e.data?.type === "portal-google-auth-success") {
+        cleanup();
+        router.push(redirectTo);
+        router.refresh();
+      }
+    }
+
+    const pollTimer = setInterval(() => {
+      if (popup.closed) {
+        cleanup();
+        router.refresh();
+      }
+    }, 500);
+
+    function cleanup() {
+      clearInterval(pollTimer);
+      window.removeEventListener("message", onMessage);
+      setLoading(false);
+    }
+
+    window.addEventListener("message", onMessage);
+  }
+
   async function handleGoogleSignIn() {
     setError("");
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      if (prefersGoogleRedirectOverPopup()) {
-        await signInWithRedirect(auth, provider);
-        return;
-      }
       const cred = await signInWithPopup(auth, provider);
       const idToken = await cred.user.getIdToken();
       await exchangeToken(idToken);
@@ -140,33 +178,15 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
         </div>
       </div>
 
-      {embeddedInIframe ? (
-        <a
-          href={PORTAL_GOOGLE_OAUTH_PATH}
-          target="_top"
-          rel="noopener noreferrer"
-          className="w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-        >
-          <GoogleIcon />
-          Continue with Google
-        </a>
-      ) : (
-        <button
-          type="button"
-          onClick={handleGoogleSignIn}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-        >
-          <GoogleIcon />
-          Continue with Google
-        </button>
-      )}
-
-      {embeddedInIframe && (
-        <p className="text-center text-xs text-gray-500">
-          Opens in this tab to sign in with Google (required for embedded sites).
-        </p>
-      )}
+      <button
+        type="button"
+        onClick={embeddedInIframe ? handleGoogleSignInFromIframe : handleGoogleSignIn}
+        disabled={loading}
+        className="w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+      >
+        <GoogleIcon />
+        Continue with Google
+      </button>
 
       {signUpHref && (
         <p className="text-center text-sm text-gray-500">

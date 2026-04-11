@@ -2,17 +2,14 @@
 
 import { useState } from "react";
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
-import { useRouter } from "next/navigation";
 import { auth } from "@/lib/firebase/client";
 
 /**
- * Full-window page (not inside an iframe) so Google OAuth is allowed.
- * The embedded portal links here with target="_top".
- * Uses signInWithPopup triggered by a real click (avoids popup blockers
- * and the unreliable signInWithRedirect / getRedirectResult cycle).
+ * Full-window popup page (not inside an iframe) so Google OAuth is allowed.
+ * The embedded portal opens this via window.open(). After sign-in succeeds
+ * we set the session cookie, notify the opener iframe, and close the popup.
  */
 export default function PortalGoogleOAuthPage() {
-  const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -30,8 +27,17 @@ export default function PortalGoogleOAuthPage() {
         body: JSON.stringify({ idToken }),
       });
       if (!res.ok) throw new Error("Session creation failed");
-      router.replace("/portal");
-      router.refresh();
+
+      if (window.opener) {
+        try {
+          window.opener.postMessage({ type: "portal-google-auth-success" }, "*");
+        } catch {
+          // cross-origin opener — handled by the polling fallback in the iframe
+        }
+        window.close();
+        return;
+      }
+      window.location.href = "/portal";
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Sign-in failed";
       if (msg.includes("popup-closed")) {
@@ -48,7 +54,7 @@ export default function PortalGoogleOAuthPage() {
       <div className="w-full max-w-sm space-y-6 text-center">
         <h1 className="text-xl font-semibold text-gray-900">Sign in with Google</h1>
         <p className="text-sm text-gray-500">
-          Tap the button below to open the Google sign-in window.
+          Tap the button below to continue.
         </p>
 
         {error && (
