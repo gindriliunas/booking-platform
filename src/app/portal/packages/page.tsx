@@ -160,11 +160,11 @@ export default async function PortalPackagesPage({
         )}
 
         {/* Available packages to buy */}
-        {availablePkgs.filter((p) => p.stripePriceId).length > 0 && (
+        {availablePkgs.filter((p) => p.stripePriceId || parseFloat(p.price) === 0).length > 0 && (
           <div className="pt-4 space-y-2">
             <p className="text-sm font-medium text-gray-600">Available to purchase</p>
             {availablePkgs
-              .filter((p) => p.stripePriceId)
+              .filter((p) => p.stripePriceId || parseFloat(p.price) === 0)
               .map((pkg) => (
                 <Card key={pkg.id}>
                   <CardContent className="p-4 flex items-center justify-between gap-4">

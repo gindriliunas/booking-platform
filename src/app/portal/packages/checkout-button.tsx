@@ -23,7 +23,11 @@ export function CheckoutButton({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed");
-      window.location.href = data.url;
+      const url = data.url;
+      if (typeof url !== "string" || !url) {
+        throw new Error("No checkout URL returned");
+      }
+      window.location.assign(url);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
       setLoading(false);
@@ -32,7 +36,7 @@ export function CheckoutButton({
 
   return (
     <div>
-      <Button size="sm" onClick={handleClick} disabled={loading}>
+      <Button type="button" size="sm" onClick={handleClick} disabled={loading}>
         {loading ? "Redirecting…" : label}
       </Button>
       {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
