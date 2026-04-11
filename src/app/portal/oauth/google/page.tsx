@@ -8,10 +8,12 @@ import { auth } from "@/lib/firebase/client";
  * Full-window popup page (not inside an iframe) so Google OAuth is allowed.
  * The embedded portal opens this via window.open(). After sign-in succeeds
  * we set the session cookie, notify the opener iframe, and close the popup.
+ * If window.close() doesn't work (common on mobile), show a "you can close this" message.
  */
 export default function PortalGoogleOAuthPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [done, setDone] = useState(false);
 
   async function handleGoogleSignIn() {
     setError("");
@@ -28,16 +30,17 @@ export default function PortalGoogleOAuthPage() {
       });
       if (!res.ok) throw new Error("Session creation failed");
 
-      if (window.opener) {
-        try {
-          window.opener.postMessage({ type: "portal-google-auth-success" }, "*");
-        } catch {
-          // cross-origin opener — handled by the polling fallback in the iframe
-        }
-        window.close();
-        return;
+      try {
+        window.opener?.postMessage({ type: "portal-google-auth-success" }, "*");
+      } catch {
+        // cross-origin opener — the iframe poll timer handles this
       }
-      window.location.href = "/portal";
+
+      window.close();
+
+      // If window.close() didn't work (mobile browsers often prevent it),
+      // show a "done" state so the user knows to go back.
+      setTimeout(() => setDone(true), 300);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Sign-in failed";
       if (msg.includes("popup-closed")) {
@@ -47,6 +50,24 @@ export default function PortalGoogleOAuthPage() {
       setError(msg);
       setLoading(false);
     }
+  }
+
+  if (done) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-gray-50 p-6">
+        <div className="w-full max-w-sm space-y-4 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
+            <svg className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+          </div>
+          <h1 className="text-xl font-semibold text-gray-900">Signed in!</h1>
+          <p className="text-sm text-gray-500">
+            You can close this window and go back to the website.
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

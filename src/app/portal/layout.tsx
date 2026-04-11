@@ -24,6 +24,7 @@ export default async function PortalLayout({ children }: { children: React.React
     pathname.startsWith("/portal/oauth/");
 
   if (!session && !isAuthPage) redirect("/portal/sign-in");
+  if (session && isAuthPage) redirect("/portal");
   if (isAuthPage)
     return (
       <>

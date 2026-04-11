@@ -93,6 +93,7 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
     const pollTimer = setInterval(() => {
       if (popup.closed) {
         cleanup();
+        router.push(redirectTo);
         router.refresh();
       }
     }, 500);

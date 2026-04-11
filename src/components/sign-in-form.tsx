@@ -90,6 +90,7 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
     const pollTimer = setInterval(() => {
       if (popup.closed) {
         cleanup();
+        router.push(redirectTo);
         router.refresh();
       }
     }, 500);
