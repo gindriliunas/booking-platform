@@ -2,7 +2,7 @@ import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { clientPackages, packages, clientSubscriptions, subscriptionPlans } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { getPortalClient } from "@/lib/portal";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -40,13 +40,13 @@ export default async function PortalPackagesPage({
       .from(clientPackages)
       .innerJoin(packages, eq(clientPackages.packageId, packages.id))
       .where(eq(clientPackages.clientId, client.id))
-      .orderBy(clientPackages.purchasedAt),
+      .orderBy(desc(clientPackages.purchasedAt)),
     db
       .select({ cs: clientSubscriptions, plan: subscriptionPlans })
       .from(clientSubscriptions)
       .innerJoin(subscriptionPlans, eq(clientSubscriptions.planId, subscriptionPlans.id))
       .where(eq(clientSubscriptions.clientId, client.id))
-      .orderBy(clientSubscriptions.createdAt),
+      .orderBy(desc(clientSubscriptions.createdAt)),
     db
       .select()
       .from(packages)
@@ -69,22 +69,32 @@ export default async function PortalPackagesPage({
 
   const payment = sp.payment;
 
+  const ownedPackageIds = new Set(myPkgRows.map(({ cp }) => cp.packageId));
+  const purchasablePkgs = availablePkgs.filter(
+    (p) => (p.stripePriceId || parseFloat(p.price) === 0) && !ownedPackageIds.has(p.id)
+  );
+
   return (
     <div className="space-y-8 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">My Plan</h1>
         {payment === "success" && (
           <div className="mt-2 rounded-lg bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700">
-            Payment successful! Your package will be activated shortly.
+            Payment successful! Your new package is listed below (newest first).
           </div>
         )}
       </div>
 
       {/* Packages */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          <PackageIcon className="h-5 w-5 text-orange-500" /> Packages
-        </h2>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <PackageIcon className="h-5 w-5 text-orange-500" /> Packages
+          </h2>
+          <p className="mt-1 text-xs text-gray-500">
+            Session packages on your account (not only your latest purchase). Newest first.
+          </p>
+        </div>
         {sortedMyPkgs.length === 0 ? (
           <p className="text-sm text-gray-500">No packages yet.</p>
         ) : (
@@ -98,6 +108,9 @@ export default async function PortalPackagesPage({
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium text-gray-900">{pkg.name}</p>
+                      {pkg.isFreeTrialSession && (
+                        <Badge className="bg-green-100 text-green-700 border-green-200">Free trial</Badge>
+                      )}
                       <Badge
                         variant={cp.status === "active" ? "default" : "secondary"}
                         className={
@@ -160,12 +173,10 @@ export default async function PortalPackagesPage({
         )}
 
         {/* Available packages to buy */}
-        {availablePkgs.filter((p) => p.stripePriceId || parseFloat(p.price) === 0).length > 0 && (
+        {purchasablePkgs.length > 0 && (
           <div className="pt-4 space-y-2">
             <p className="text-sm font-medium text-gray-600">Available to purchase</p>
-            {availablePkgs
-              .filter((p) => p.stripePriceId || parseFloat(p.price) === 0)
-              .map((pkg) => (
+            {purchasablePkgs.map((pkg) => (
                 <Card key={pkg.id}>
                   <CardContent className="p-4 flex items-center justify-between gap-4">
                     <div>
@@ -187,9 +198,14 @@ export default async function PortalPackagesPage({
 
       {/* Subscriptions */}
       <div className="space-y-3">
-        <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-          <Repeat className="h-5 w-5 text-purple-500" /> Subscriptions
-        </h2>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+            <Repeat className="h-5 w-5 text-purple-500" /> Subscriptions
+          </h2>
+          <p className="mt-1 text-xs text-gray-500">
+            Recurring plans on your account (separate from one-off packages). Newest first.
+          </p>
+        </div>
         {sortedMySubs.length === 0 ? (
           <p className="text-sm text-gray-500">No subscriptions yet.</p>
         ) : (

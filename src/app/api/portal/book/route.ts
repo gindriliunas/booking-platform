@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
 import { db } from "@/lib/db";
 import { bookings, clientPackages, packages, providers } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc, count, or, isNull, gte } from "drizzle-orm";
 import { getPortalClient } from "@/lib/portal";
 import {
   TRIGGERS,
@@ -11,6 +11,21 @@ import {
   getClientTriggerContext,
   getLocationIdForProvider,
 } from "@/lib/ghl/triggers";
+
+/** Credits are deducted when sessions complete; scheduled bookings still reserve credits. */
+async function countScheduledIndividualForPackage(clientPackageId: string) {
+  const [{ n }] = await db
+    .select({ n: count() })
+    .from(bookings)
+    .where(
+      and(
+        eq(bookings.clientPackageId, clientPackageId),
+        eq(bookings.status, "scheduled"),
+        eq(bookings.sessionType, "individual")
+      )
+    );
+  return Number(n ?? 0);
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -38,23 +53,59 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Client must have an active package to book
-    const [activePkgRow] = await db
+    const now = new Date();
+
+    // Active self-bookable packages: must have spare credits vs already-scheduled sessions
+    const candidateRows = await db
       .select({ clientPackage: clientPackages, pkg: packages })
       .from(clientPackages)
       .innerJoin(packages, eq(clientPackages.packageId, packages.id))
-      .where(and(eq(clientPackages.clientId, client.id), eq(clientPackages.status, "active")));
+      .where(
+        and(
+          eq(clientPackages.clientId, client.id),
+          eq(clientPackages.status, "active"),
+          eq(packages.providerId, client.providerId),
+          eq(packages.sessionType, "individual"),
+          or(isNull(clientPackages.expiresAt), gte(clientPackages.expiresAt, now))
+        )
+      )
+      .orderBy(asc(clientPackages.purchasedAt));
 
-    if (!activePkgRow) {
-      return NextResponse.json(
-        { error: "No active session package found. Please purchase a package to book a session." },
-        { status: 403 }
-      );
+    let activePkgRow: (typeof candidateRows)[number] | undefined;
+    for (const row of candidateRows) {
+      if (!row.pkg.allowSelfBook) continue;
+      const scheduled = await countScheduledIndividualForPackage(row.clientPackage.id);
+      if (row.clientPackage.sessionsRemaining > scheduled) {
+        activePkgRow = row;
+        break;
+      }
     }
 
-    if (!activePkgRow.pkg.allowSelfBook) {
+    if (!activePkgRow) {
+      if (candidateRows.length === 0) {
+        return NextResponse.json(
+          {
+            error:
+              "No active session package found. Please purchase a package to book a session.",
+          },
+          { status: 403 }
+        );
+      }
+      const anySelfBook = candidateRows.some((r) => r.pkg.allowSelfBook);
+      if (!anySelfBook) {
+        return NextResponse.json(
+          {
+            error:
+              "Self-booking is not enabled for your package(s). Please contact your provider to schedule a session.",
+          },
+          { status: 403 }
+        );
+      }
       return NextResponse.json(
-        { error: "Self-booking is not enabled for your current package. Please contact your provider to schedule a session." },
+        {
+          error:
+            "No session credits available for new bookings. Your upcoming sessions may be using your credits, or your package may be empty — contact your provider if you need help.",
+        },
         { status: 403 }
       );
     }
