@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   signInWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GoogleAuthProvider,
 } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
+import {
+  isEmbeddedInIframe,
+  prefersGoogleRedirectOverPopup,
+} from "@/lib/firebase/google-auth-ui";
 import Link from "next/link";
 
 interface SignInFormProps {
@@ -21,15 +27,53 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [iframeGoogleHint, setIframeGoogleHint] = useState(false);
+  const [embeddedInIframe, setEmbeddedInIframe] = useState(false);
 
-  async function exchangeToken(idToken: string) {
+  const exchangeToken = useCallback(async (idToken: string) => {
     const res = await fetch("/api/auth/session", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ idToken }),
     });
     if (!res.ok) throw new Error("Session creation failed");
-  }
+  }, []);
+
+  useEffect(() => {
+    setEmbeddedInIframe(isEmbeddedInIframe());
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (cancelled || !result?.user) return;
+        const idToken = await result.user.getIdToken();
+        await exchangeToken(idToken);
+        router.push(redirectTo);
+        router.refresh();
+      } catch {
+        // No pending redirect or user cancelled
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [exchangeToken, redirectTo, router]);
+
+  useEffect(() => {
+    if (!iframeGoogleHint) return;
+    function refresh() {
+      if (document.visibilityState === "visible") router.refresh();
+    }
+    document.addEventListener("visibilitychange", refresh);
+    window.addEventListener("focus", refresh);
+    return () => {
+      document.removeEventListener("visibilitychange", refresh);
+      window.removeEventListener("focus", refresh);
+    };
+  }, [iframeGoogleHint, router]);
 
   async function handleEmailSignIn(e: React.FormEvent) {
     e.preventDefault();
@@ -53,7 +97,17 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
     setError("");
     setLoading(true);
     try {
+      if (isEmbeddedInIframe()) {
+        const url = `${window.location.origin}${window.location.pathname}${window.location.search}`;
+        window.open(url, "_blank", "noopener,noreferrer");
+        setIframeGoogleHint(true);
+        return;
+      }
       const provider = new GoogleAuthProvider();
+      if (prefersGoogleRedirectOverPopup()) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
       const cred = await signInWithPopup(auth, provider);
       const idToken = await cred.user.getIdToken();
       await exchangeToken(idToken);
@@ -130,8 +184,15 @@ export function SignInForm({ redirectTo, signUpHref }: SignInFormProps) {
         className="w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
       >
         <GoogleIcon />
-        Continue with Google
+        {embeddedInIframe ? "Continue with Google (new tab)" : "Continue with Google"}
       </button>
+
+      {iframeGoogleHint && (
+        <p className="text-center text-sm text-gray-600">
+          Complete Google sign-in in the new tab, then return here — this window updates when you
+          come back.
+        </p>
+      )}
 
       {signUpHref && (
         <p className="text-center text-sm text-gray-500">
