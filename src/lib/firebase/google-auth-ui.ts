@@ -1,3 +1,6 @@
+/** Full-page route that starts Google redirect outside the embed (see portal/oauth/google). */
+export const PORTAL_GOOGLE_OAUTH_PATH = "/portal/oauth/google";
+
 /**
  * Google OAuth cannot run inside most cross-origin iframes (Google blocks it),
  * and signInWithPopup is unreliable on mobile. These helpers pick a safe strategy.

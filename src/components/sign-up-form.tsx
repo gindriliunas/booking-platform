@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   createUserWithEmailAndPassword,
@@ -11,6 +11,7 @@ import {
 } from "firebase/auth";
 import { auth } from "@/lib/firebase/client";
 import {
+  PORTAL_GOOGLE_OAUTH_PATH,
   isEmbeddedInIframe,
   prefersGoogleRedirectOverPopup,
 } from "@/lib/firebase/google-auth-ui";
@@ -28,6 +29,11 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [embeddedInIframe, setEmbeddedInIframe] = useState(false);
+
+  useEffect(() => {
+    setEmbeddedInIframe(isEmbeddedInIframe());
+  }, []);
 
   const exchangeToken = useCallback(async (idToken: string) => {
     const res = await fetch("/api/auth/session", {
@@ -63,7 +69,7 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      if (isEmbeddedInIframe() || prefersGoogleRedirectOverPopup()) {
+      if (prefersGoogleRedirectOverPopup()) {
         await signInWithRedirect(auth, provider);
         return;
       }
@@ -151,14 +157,33 @@ export function SignUpForm({ redirectTo, signInHref }: SignUpFormProps) {
         </div>
       </div>
 
-      <button
-        onClick={handleGoogleSignUp}
-        disabled={loading}
-        className="w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
-      >
-        <GoogleIcon />
-        Continue with Google
-      </button>
+      {embeddedInIframe ? (
+        <a
+          href={PORTAL_GOOGLE_OAUTH_PATH}
+          target="_top"
+          rel="noopener noreferrer"
+          className="w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          <GoogleIcon />
+          Continue with Google
+        </a>
+      ) : (
+        <button
+          type="button"
+          onClick={handleGoogleSignUp}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-3 rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 transition-colors"
+        >
+          <GoogleIcon />
+          Continue with Google
+        </button>
+      )}
+
+      {embeddedInIframe && (
+        <p className="text-center text-xs text-gray-500">
+          Opens in this tab to sign in with Google (required for embedded sites).
+        </p>
+      )}
 
       <p className="text-center text-sm text-gray-500">
         Already have an account?{" "}

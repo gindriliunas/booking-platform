@@ -19,7 +19,9 @@ export default async function PortalLayout({ children }: { children: React.React
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") ?? "";
   const isAuthPage =
-    pathname.startsWith("/portal/sign-in") || pathname.startsWith("/portal/sign-up");
+    pathname.startsWith("/portal/sign-in") ||
+    pathname.startsWith("/portal/sign-up") ||
+    pathname.startsWith("/portal/oauth/");
 
   if (!session && !isAuthPage) redirect("/portal/sign-in");
   if (isAuthPage)

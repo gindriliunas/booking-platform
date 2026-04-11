@@ -1065,7 +1065,7 @@ export default function SettingsPage() {
               <div className="space-y-1.5">
                 <Label>Embed on your website</Label>
                 <p className="text-xs text-gray-400">
-                  Paste this snippet into any page on your website. The portal loads inside an inline frame. Google sign-in runs in the same frame (full redirect inside the iframe, not a new tab). Use a min-height so the iframe stays visible on small screens.
+                  Paste this snippet into any page on your website. The portal loads inside an inline frame. Google does not allow sign-in inside another site&apos;s frame; the button continues in the full browser tab (same tab, not a popup). Use a min-height so the iframe stays visible on small screens.
                 </p>
                 <pre className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-xs font-mono text-gray-700 overflow-x-auto whitespace-pre-wrap">{`<iframe\n  src="https://book.viv-z.com/portal"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border:none;border-radius:12px;min-height:70vh;"\n  allow="payment"\n></iframe>`}</pre>
                 <Button
