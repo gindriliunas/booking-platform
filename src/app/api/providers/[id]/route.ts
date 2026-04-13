@@ -3,6 +3,11 @@ import { db } from "@/lib/db";
 import { providers, packages, subscriptionPlans } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { requireAdminProvider } from "@/lib/auth-provider";
+import {
+  isProbablyDataUrlImage,
+  parseInvoiceImageDataUrl,
+} from "@/lib/security/image-data-url";
+import { scanUploadedBytesBeforeStorage } from "@/lib/security/file-scan";
 
 export async function PATCH(
   req: NextRequest,
@@ -44,7 +49,34 @@ export async function PATCH(
   if (invoiceBusinessName !== undefined) updateData.invoiceBusinessName = invoiceBusinessName || null;
   if (invoiceAddress !== undefined) updateData.invoiceAddress = invoiceAddress || null;
   if (invoiceTaxId !== undefined) updateData.invoiceTaxId = invoiceTaxId || null;
-  if (invoiceLogoUrl !== undefined) updateData.invoiceLogoUrl = invoiceLogoUrl || null;
+  if (invoiceLogoUrl !== undefined) {
+    if (typeof invoiceLogoUrl === "string" && invoiceLogoUrl && isProbablyDataUrlImage(invoiceLogoUrl)) {
+      const parsed = parseInvoiceImageDataUrl(invoiceLogoUrl);
+      if (!parsed.ok) {
+        return NextResponse.json({ error: parsed.error }, { status: 400 });
+      }
+      const scan = await scanUploadedBytesBeforeStorage(parsed.buffer, {
+        context: "invoice_logo",
+        mime: parsed.mime,
+      });
+      if (scan.status === "infected") {
+        return NextResponse.json(
+          {
+            error: "File failed malware scan and was not stored",
+            detail: scan.signature,
+          },
+          { status: 422 }
+        );
+      }
+      if (scan.status === "error") {
+        return NextResponse.json(
+          { error: "Virus scan could not complete", detail: scan.message },
+          { status: 503 }
+        );
+      }
+    }
+    updateData.invoiceLogoUrl = invoiceLogoUrl || null;
+  }
   if (invoiceFooterNote !== undefined) updateData.invoiceFooterNote = invoiceFooterNote || null;
   if (autoSendInvoiceOnPackage !== undefined) updateData.autoSendInvoiceOnPackage = autoSendInvoiceOnPackage;
   if (autoSendInvoiceOnSubscription !== undefined) updateData.autoSendInvoiceOnSubscription = autoSendInvoiceOnSubscription;

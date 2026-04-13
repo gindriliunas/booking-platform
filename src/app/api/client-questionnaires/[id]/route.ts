@@ -7,6 +7,7 @@ import {
   questionnaireQuestions,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
+import { normalizeQuestionnaireAnswersForLlm } from "@/lib/llm/prompt-security";
 
 export async function GET(
   _req: NextRequest,
@@ -42,18 +43,38 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await req.json();
-  const { answers } = body; // [{ questionId, value }]
+  const { answers } = body as { answers?: { questionId: string; value: string }[] };
+
+  if (answers && !Array.isArray(answers)) {
+    return NextResponse.json({ error: "answers must be an array" }, { status: 400 });
+  }
+
+  const normalized =
+    answers && answers.length > 0
+      ? normalizeQuestionnaireAnswersForLlm(answers)
+      : { ok: true as const, answers: [] as { questionId: string; value: string | null }[] };
+
+  if (!normalized.ok) {
+    return NextResponse.json(
+      {
+        error: "Answer content was rejected for safety",
+        detail: normalized.error,
+        questionId: normalized.questionId,
+      },
+      { status: 400 }
+    );
+  }
 
   await db
     .delete(clientQuestionnaireAnswers)
     .where(eq(clientQuestionnaireAnswers.clientQuestionnaireId, id));
 
-  if (answers?.length) {
+  if (normalized.answers.length > 0) {
     await db.insert(clientQuestionnaireAnswers).values(
-      answers.map((a: { questionId: string; value: string }) => ({
+      normalized.answers.map((a) => ({
         clientQuestionnaireId: id,
         questionId: a.questionId,
-        value: a.value ?? null,
+        value: a.value,
       }))
     );
   }
