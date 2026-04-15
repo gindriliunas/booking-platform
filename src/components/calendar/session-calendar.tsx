@@ -38,6 +38,9 @@ export type CalendarEvent = {
   clientId?: string;
   notes?: string;
   sessionType?: "individual" | "group";
+  clientPackageId?: string | null;
+  clientSubscriptionId?: string | null;
+  sessionSource?: "package" | "subscription" | "single" | null;
   participantCount?: number;
   maxParticipants?: number;
   bookingSeriesId?: string | null;

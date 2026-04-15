@@ -41,9 +41,48 @@ async function resolvePackageForDeduction(booking: typeof bookings.$inferSelect)
   // Persist link so future updates and audit trails stay consistent.
   await db
     .update(bookings)
-    .set({ clientPackageId: fallbackPkg.id, updatedAt: new Date() })
+    .set({
+      clientPackageId: fallbackPkg.id,
+      sessionSource: "package",
+      updatedAt: new Date(),
+    })
     .where(eq(bookings.id, booking.id));
   return fallbackPkg;
+}
+
+async function resolveSubscriptionForDeduction(booking: typeof bookings.$inferSelect) {
+  if (booking.clientSubscriptionId) {
+    const [sub] = await db
+      .select()
+      .from(clientSubscriptions)
+      .where(eq(clientSubscriptions.id, booking.clientSubscriptionId));
+    return sub ?? null;
+  }
+  if (!booking.clientId) return null;
+
+  const [fallbackSub] = await db
+    .select()
+    .from(clientSubscriptions)
+    .where(
+      and(
+        eq(clientSubscriptions.clientId, booking.clientId),
+        eq(clientSubscriptions.status, "active")
+      )
+    )
+    .orderBy(asc(clientSubscriptions.createdAt));
+
+  if (!fallbackSub) return null;
+  if (fallbackSub.sessionsUsedThisPeriod >= fallbackSub.sessionsPerPeriod) return null;
+
+  await db
+    .update(bookings)
+    .set({
+      clientSubscriptionId: fallbackSub.id,
+      sessionSource: "subscription",
+      updatedAt: new Date(),
+    })
+    .where(eq(bookings.id, booking.id));
+  return fallbackSub;
 }
 
 // Deducts a session credit for a single individual booking
@@ -59,20 +98,17 @@ async function deductIndividualSession(booking: typeof bookings.$inferSelect) {
         status: newRemaining <= 0 ? "exhausted" : "active",
       })
       .where(eq(clientPackages.id, pkg.id));
+    return;
   }
-  if (booking.clientSubscriptionId) {
-    const [sub] = await db
-      .select()
-      .from(clientSubscriptions)
-      .where(eq(clientSubscriptions.id, booking.clientSubscriptionId));
-    if (sub) {
-      await db
-        .update(clientSubscriptions)
-        .set({
-          sessionsUsedThisPeriod: sub.sessionsUsedThisPeriod + 1,
-        })
-        .where(eq(clientSubscriptions.id, sub.id));
-    }
+
+  const sub = await resolveSubscriptionForDeduction(booking);
+  if (sub) {
+    await db
+      .update(clientSubscriptions)
+      .set({
+        sessionsUsedThisPeriod: sub.sessionsUsedThisPeriod + 1,
+      })
+      .where(eq(clientSubscriptions.id, sub.id));
   }
 }
 

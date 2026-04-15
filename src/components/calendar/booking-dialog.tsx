@@ -87,7 +87,7 @@ export function BookingDialog({
       setStatus(event.status ?? "scheduled");
       setNotes(event.notes ?? "");
       setMaxParticipants(String(event.maxParticipants ?? 10));
-      setSelectedPackageId("none");
+      setSelectedPackageId(event.clientPackageId ?? "none");
     } else if (slot) {
       setSessionType(initialSessionType);
       setClientId("");
