@@ -7,31 +7,58 @@ import {
   clientSubscriptions,
   bookingParticipants,
 } from "@/lib/db/schema";
-import { eq, and, gte, asc } from "drizzle-orm";
+import { eq, and, gte, asc, gt } from "drizzle-orm";
 import {
   TRIGGERS,
   fireGhlTrigger,
   getClientTriggerContext,
 } from "@/lib/ghl/triggers";
 
-// Deducts a session credit for a single individual booking
-async function deductIndividualSession(booking: typeof bookings.$inferSelect) {
+async function resolvePackageForDeduction(booking: typeof bookings.$inferSelect) {
   if (booking.clientPackageId) {
     const [pkg] = await db
       .select()
       .from(clientPackages)
       .where(eq(clientPackages.id, booking.clientPackageId));
-    if (pkg) {
-      const newRemaining = Math.max(0, pkg.sessionsRemaining - 1);
-      await db
-        .update(clientPackages)
-        .set({
-          sessionsUsed: pkg.sessionsUsed + 1,
-          sessionsRemaining: newRemaining,
-          status: newRemaining <= 0 ? "exhausted" : "active",
-        })
-        .where(eq(clientPackages.id, pkg.id));
-    }
+    return pkg ?? null;
+  }
+  if (booking.sessionSource !== "package" || !booking.clientId) return null;
+
+  const [fallbackPkg] = await db
+    .select()
+    .from(clientPackages)
+    .where(
+      and(
+        eq(clientPackages.clientId, booking.clientId),
+        eq(clientPackages.status, "active"),
+        gt(clientPackages.sessionsRemaining, 0)
+      )
+    )
+    .orderBy(asc(clientPackages.purchasedAt));
+
+  if (!fallbackPkg) return null;
+
+  // Persist link so future updates and audit trails stay consistent.
+  await db
+    .update(bookings)
+    .set({ clientPackageId: fallbackPkg.id, updatedAt: new Date() })
+    .where(eq(bookings.id, booking.id));
+  return fallbackPkg;
+}
+
+// Deducts a session credit for a single individual booking
+async function deductIndividualSession(booking: typeof bookings.$inferSelect) {
+  const pkg = await resolvePackageForDeduction(booking);
+  if (pkg) {
+    const newRemaining = Math.max(0, pkg.sessionsRemaining - 1);
+    await db
+      .update(clientPackages)
+      .set({
+        sessionsUsed: pkg.sessionsUsed + 1,
+        sessionsRemaining: newRemaining,
+        status: newRemaining <= 0 ? "exhausted" : "active",
+      })
+      .where(eq(clientPackages.id, pkg.id));
   }
   if (booking.clientSubscriptionId) {
     const [sub] = await db
@@ -189,6 +216,8 @@ export async function PATCH(
         status: status ?? undefined,
         notes: b.id === id ? notes ?? undefined : undefined,
         clientId: sessionType === "group" ? null : clientId ?? undefined,
+        clientPackageId:
+          sessionType === "group" ? null : clientPackageId ?? undefined,
         maxParticipants:
           maxParticipants != null ? parseInt(maxParticipants) : undefined,
         updatedAt: new Date(),
