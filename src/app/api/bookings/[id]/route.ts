@@ -22,7 +22,7 @@ async function resolvePackageForDeduction(booking: typeof bookings.$inferSelect)
       .where(eq(clientPackages.id, booking.clientPackageId));
     return pkg ?? null;
   }
-  if (booking.sessionSource !== "package" || !booking.clientId) return null;
+  if (!booking.clientId) return null;
 
   const [fallbackPkg] = await db
     .select()
@@ -131,6 +131,8 @@ export async function PATCH(
     editScope = "one", // "one" | "this_and_future" | "all"
   } = body;
 
+  const bodySpecifiesClientPackage = Object.hasOwn(body, "clientPackageId");
+
   const [existing] = await db
     .select()
     .from(bookings)
@@ -230,6 +232,10 @@ export async function PATCH(
   const updatedBookings: (typeof bookings.$inferSelect)[] = [];
 
   for (const b of affectedBookings) {
+    const effectiveSessionType = (sessionType ?? b.sessionType ?? "individual") as
+      | "individual"
+      | "group";
+
     const shiftedStart =
       editScope !== "one" && deltaMs !== 0
         ? new Date(b.startTime.getTime() + deltaMs)
@@ -243,21 +249,27 @@ export async function PATCH(
       ? new Date(endTime)
       : undefined;
 
+    const updateRow: Record<string, unknown> = {
+      title: title ?? undefined,
+      startTime: shiftedStart,
+      endTime: shiftedEnd,
+      status: status ?? undefined,
+      notes: b.id === id ? notes ?? undefined : undefined,
+      clientId: effectiveSessionType === "group" ? null : clientId ?? undefined,
+      maxParticipants:
+        maxParticipants != null ? parseInt(String(maxParticipants)) : undefined,
+      updatedAt: new Date(),
+    };
+
+    if (effectiveSessionType === "group") {
+      updateRow.clientPackageId = null;
+    } else if (bodySpecifiesClientPackage) {
+      updateRow.clientPackageId = clientPackageId ?? null;
+    }
+
     const [updated] = await db
       .update(bookings)
-      .set({
-        title: title ?? undefined,
-        startTime: shiftedStart,
-        endTime: shiftedEnd,
-        status: status ?? undefined,
-        notes: b.id === id ? notes ?? undefined : undefined,
-        clientId: sessionType === "group" ? null : clientId ?? undefined,
-        clientPackageId:
-          sessionType === "group" ? null : clientPackageId ?? undefined,
-        maxParticipants:
-          maxParticipants != null ? parseInt(maxParticipants) : undefined,
-        updatedAt: new Date(),
-      })
+      .set(updateRow as typeof bookings.$inferInsert)
       .where(eq(bookings.id, b.id))
       .returning();
 

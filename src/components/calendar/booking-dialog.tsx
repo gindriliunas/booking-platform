@@ -124,8 +124,15 @@ export function BookingDialog({
         notes,
         sessionType,
         maxParticipants: sessionType === "group" ? maxParticipants : null,
-        clientPackageId: sessionType === "individual" && selectedPackageId !== "none" ? selectedPackageId : null,
       };
+
+      if (sessionType === "individual") {
+        if (selectedPackageId !== "none") {
+          body.clientPackageId = selectedPackageId;
+        } else if (!isEdit) {
+          body.clientPackageId = null;
+        }
+      }
 
       if (isEdit) {
         body.editScope = editScope;
