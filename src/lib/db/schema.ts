@@ -430,6 +430,47 @@ export const reminderLogs = pgTable(
   (t) => [unique().on(t.bookingId, t.reminderType)]
 );
 
+export const websiteClientStatusEnum = pgEnum("website_client_status", [
+  "building",
+  "preview_live",
+  "active",
+  "suspended",
+  "cancelled",
+]);
+
+export const websiteStyleEnum = pgEnum("website_style", [
+  "clean_minimal",
+  "bold_modern",
+  "cinematic_3d",
+]);
+
+export const websiteClients = pgTable("website_clients", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  email: text("email").notNull(),
+  phone: text("phone"),
+  businessName: text("business_name").notNull(),
+  businessType: text("business_type").notNull(),
+  brandColours: text("brand_colours").notNull(),
+  hasLogo: boolean("has_logo").notNull().default(false),
+  logoUrl: text("logo_url"),
+  description: text("description").notNull(),
+  referralSource: text("referral_source"),
+  preferredStyle: websiteStyleEnum("preferred_style").notNull().default("clean_minimal"),
+  vercelProjectId: text("vercel_project_id"),
+  previewUrl: text("preview_url"),
+  customDomain: text("custom_domain"),
+  stripeCustomerId: text("stripe_customer_id"),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  stripeCheckoutSessionId: text("stripe_checkout_session_id"),
+  status: websiteClientStatusEnum("status").notNull().default("building"),
+  bookingAppEnabled: boolean("booking_app_enabled").notNull().default(false),
+  bookingAppStripeSubscriptionId: text("booking_app_stripe_subscription_id"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
 // Relations
 export const installationsRelations = relations(installations, ({ one }) => ({
   provider: one(providers, {

@@ -1,565 +1,726 @@
 import Link from "next/link";
-import { VivZLogo } from "@/components/marketing/logo";
-import { RevenueCalculator } from "@/components/marketing/revenue-calculator";
+import { VivZWordmark } from "@/components/marketing/logo";
+import { CustomCursor } from "@/components/marketing/cursor";
+import { HeroSpotlight, HeroBgBlobs } from "@/components/marketing/hero-interactive";
+import { Tilt } from "@/components/marketing/tilt";
+import { Counter } from "@/components/marketing/counter";
 
+// ─── palette ──────────────────────────────────────────────────
+const INK    = "#0a0a0b";
+const PAPER  = "#f5f5f7";
+const ACCENT = "#ff5b04";
+const MUTED  = "rgba(245,245,247,0.45)";
+const BORDER = "rgba(255,255,255,0.08)";
+
+// ─── data ─────────────────────────────────────────────────────
 const features = [
-  {
-    icon: "🌐",
-    title: "Professional Website",
-    description:
-      "Custom-designed, mobile-first website built to convert visitors into paying clients. Looks premium from day one.",
-  },
-  {
-    icon: "📅",
-    title: "Online Booking",
-    description:
-      "Clients book and pay for sessions 24/7 — no back-and-forth texts. Packages, subscriptions, and group classes all supported.",
-  },
-  {
-    icon: "📍",
-    title: "Google My Business Setup",
-    description:
-      "We set up and optimise your Google Business Profile so you appear in local search results and on Google Maps. More visibility, more calls, more clients.",
-  },
-  {
-    icon: "👥",
-    title: "CRM & Client Management",
-    description:
-      "Every lead, enquiry, and client tracked automatically. See their history, notes, and session records in one place.",
-  },
-  {
-    icon: "📱",
-    title: "Social Media Scheduler",
-    description:
-      "Plan and publish posts to Instagram, Facebook, Google and more from a single dashboard. Stay consistent without the effort.",
-  },
-  {
-    icon: "✉️",
-    title: "Business Email Address",
-    description:
-      "yourname@yourdomain.com included. Look professional and keep work separate from your personal inbox.",
-  },
-  {
-    icon: "⭐",
-    title: "Reviews & Reputation",
-    description:
-      "Automatically request Google reviews after sessions. Display them on your site to build trust and win new clients.",
-  },
-  {
-    icon: "📞",
-    title: "Missed Call Text-Back",
-    description:
-      "If you miss a call while you're with a client, an automatic text fires back instantly. You never lose a lead because you were busy.",
-  },
-  {
-    icon: "💬",
-    title: "Unified Inbox",
-    description:
-      "SMS, email, web chat, Facebook DMs, and Instagram messages — all in one inbox. Respond to everyone from one place.",
-  },
-  {
-    icon: "📧",
-    title: "Email Marketing & Newsletters",
-    description:
-      "Send branded email campaigns to your client list. Promote offers, share tips, and stay top of mind — all with ready-made templates.",
-  },
-  {
-    icon: "🎯",
-    title: "Lead Pipeline",
-    description:
-      "Visualise every prospect from first enquiry to paying client. Know exactly where each lead is and what action to take next.",
-  },
-  {
-    icon: "📋",
-    title: "Smart Forms",
-    description:
-      "Intake forms, consultation requests, PAR-Q, and lead capture all built in. Responses feed straight into your CRM.",
-  },
-  {
-    icon: "⚡",
-    title: "Automations",
-    description:
-      "Appointment reminders, follow-up sequences, no-show handling, and welcome messages — running on autopilot.",
-  },
-  {
-    icon: "🌍",
-    title: "Domain Name",
-    description:
-      "Your own .co.uk or .com domain included. No separate registrar accounts to manage.",
-  },
-  {
-    icon: "🖥️",
-    title: "Hosting",
-    description:
-      "Fast, reliable hosting with SSL included. Your site is always live, always secure — we handle the tech.",
-  },
+  { num: "01", title: "Mobile-first", desc: "Tested on real devices — every pixel perfect on any screen size." },
+  { num: "02", title: "Brand-accurate design", desc: "Your colours, fonts, tone. Not a theme — a real site built for you." },
+  { num: "03", title: "SEO from day one", desc: "Structured data, Core Web Vitals, sitemap — baked in on every build." },
+  { num: "04", title: "Contact form included", desc: "Leads straight to your inbox. No third-party tools, no monthly add-ons." },
+  { num: "05", title: "Edge-hosted globally", desc: "CDN-deployed. Sub-second loads worldwide, every time." },
+  { num: "06", title: "Your domain, connected", desc: "Use your existing domain or we'll help you get one. Done in minutes." },
 ];
 
-const painPoints = [
+const caseStudies = [
   {
-    problem: "Paying for 5+ separate tools",
-    detail:
-      "Wix, Calendly, Mailchimp, a separate CRM, and a social scheduler — adding up to £150–£200+ a month and none of them talk to each other.",
+    name: "Felipe Rodas",
+    type: "Personal Trainer · London",
+    quote: "I had my website live within 24 hours. It looks incredible and I've already had new enquiries from Google.",
+    url: "https://www.feliperodas.co.uk",
+    domain: "feliperodas.co.uk",
+    accent: "#ff5b04",
+    bg: `radial-gradient(ellipse at 30% 30%, rgba(255,91,4,0.25) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(120,50,255,0.12) 0%, transparent 60%), #0d0d10`,
   },
   {
-    problem: "Website that doesn't get you clients",
-    detail:
-      "A basic template site with no SEO, no booking, and no clear call to action. Visitors land and bounce straight to a competitor.",
+    name: "GI Training",
+    type: "Personal Training · UK",
+    quote: "Couldn't believe they built the whole thing before I paid anything. The design is exactly what I wanted.",
+    url: "https://www.gitraining.co.uk",
+    domain: "gitraining.co.uk",
+    accent: "#22c55e",
+    bg: `radial-gradient(ellipse at 70% 20%, rgba(34,197,94,0.2) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(255,91,4,0.1) 0%, transparent 60%), #0d100d`,
   },
   {
-    problem: "Hours lost to admin every week",
-    detail:
-      "Manually chasing enquiries, sending reminders, posting on social media, and handling bookings by DM. Time you should be spending with clients.",
+    name: "Skills 4 2 U",
+    type: "First Aid Training · UK-wide",
+    quote: "Professional, fast, and genuinely helpful. Our new site has made a huge difference to how people perceive us.",
+    url: "https://www.skills42u.com",
+    domain: "skills42u.com",
+    accent: "#3b82f6",
+    bg: `radial-gradient(ellipse at 60% 30%, rgba(59,130,246,0.2) 0%, transparent 60%), radial-gradient(ellipse at 20% 70%, rgba(255,91,4,0.08) 0%, transparent 60%), #0d0f14`,
   },
-  {
-    problem: "No follow-up system",
-    detail:
-      "Leads come in, you get busy, they go cold. Without an automated system you're leaving money on the table every single day.",
-  },
-];
-
-const personas = [
-  { icon: "🏋️", title: "Personal Trainers", desc: "1-to-1, small group, and online coaching" },
-  { icon: "💆", title: "Massage Therapists", desc: "Sports massage, deep tissue, relaxation" },
-  { icon: "🦴", title: "Physiotherapists", desc: "Injury rehab and movement specialists" },
-  { icon: "🥗", title: "Nutritionists & Dietitians", desc: "Dietary coaching and health plans" },
-  { icon: "🧘", title: "Yoga & Pilates Instructors", desc: "Studio, online, and retreat-based" },
-  { icon: "🧠", title: "Life & Wellness Coaches", desc: "Mindset, stress, and performance" },
 ];
 
 const faqs = [
+  { q: "Is the website build really free?", a: "Yes — completely free. We design and build your full website before you pay anything. You only start paying when you've seen the finished result and decided to go live." },
+  { q: "What are the running costs?", a: "£24/month covers everything — hosting, SSL certificate, your custom domain connected, and the site staying live. No hidden fees, no setup charges." },
+  { q: "How long does it take?", a: "We'll have your live preview ready within 24 hours of receiving your details. Most clients are live on their domain the same day they subscribe." },
+  { q: "What if I don't like the design?", a: "Tell us what you'd like changed and we'll revise it — before you pay anything. You only subscribe once you're happy." },
+  { q: "I already have a website. Can you replace it?", a: "Yes. We'll build you a new one, you review the preview, and when you're ready just connect your domain. Your old site is replaced seamlessly." },
+  { q: "Can I use my own domain?", a: "Absolutely. Once you subscribe, just let us know your domain and we'll connect it. If you don't have one, a .co.uk costs around £8/year from Namecheap." },
+  { q: "What happens if I cancel?", a: "Cancel anytime — no penalties, no contracts. Your site goes offline when you stop your subscription." },
+  { q: "Do I need any technical knowledge?", a: "None at all. Fill in a short form, view your preview, and if you love it just tell us your domain. We handle everything else." },
+];
+
+const marqueeItems = [
+  "Free to build", "Preview within 24 hours", "£24/month", "100+ websites delivered",
+  "Mobile-optimised", "SEO-ready", "No contracts", "Cancel anytime",
+  "Professional design", "Edge hosting", "SSL included", "Domain connected",
+];
+
+const styles = [
   {
-    q: "Do I need any technical skills?",
-    a: "None at all. We build and set everything up for you. You log in to a simple dashboard to manage your bookings and clients. That's it.",
+    key: "minimal",
+    label: "Clean & Minimal",
+    desc: "Lots of space, clean lines, confident typography. Timeless.",
+    bg: "#f7f6f1",
+    text: "#111",
+    accent: "#1d4ed8",
+    mockBg: "linear-gradient(135deg, #f7f6f1 0%, #ece9e0 100%)",
+    navColor: "#111",
+    headColor: "#111",
+    btnColor: "#1d4ed8",
   },
   {
-    q: "I already have a website — do I need to replace it?",
-    a: "If your current site isn't bringing in clients, ranking on Google, or letting people book and pay online, then yes — it's costing you money. We replace it with something that actually works. If you love your existing site, we can still connect the CRM, booking, and marketing tools to it.",
+    key: "bold",
+    label: "Bold & Modern",
+    desc: "Strong type, vivid colour hits, high contrast. Unforgettable.",
+    bg: "#0f0f0f",
+    text: "#fff",
+    accent: "#ff5b04",
+    mockBg: "linear-gradient(135deg, #0f0f0f 0%, #1a0a00 100%)",
+    navColor: "rgba(255,255,255,0.7)",
+    headColor: "#fff",
+    btnColor: "#ff5b04",
   },
   {
-    q: "Will this actually help me get more clients?",
-    a: "A professional website that ranks on Google, an optimised Google Business Profile, automated review requests, and a system that follows up every enquiry — yes, it's designed to bring clients in. Most service providers lose leads simply because they don't follow up fast enough. This system does it automatically.",
-  },
-  {
-    q: "Do you manage everything, or will I have to learn a complicated system?",
-    a: "We handle the full setup. Day-to-day you just manage your bookings and reply to messages — both are straightforward. You don't need to touch the technical side at all unless you want to.",
-  },
-  {
-    q: "What if I don't have a logo or professional photos yet?",
-    a: "Don't let that hold you back. We can work with what you have and advise on simple, affordable ways to get photos taken. A clean, well-structured site with decent photos will outperform a fancy site with nothing on it every time.",
-  },
-  {
-    q: "How long does setup take?",
-    a: "Your website and full platform are typically live within 3–5 working days of us receiving your content and branding details.",
-  },
-  {
-    q: "Is the booking software included?",
-    a: "Yes — a fully branded client booking portal is included. Your clients can book sessions, buy packages, and manage their appointments without any third-party app.",
-  },
-  {
-    q: "Can I keep my existing domain?",
-    a: "Absolutely. We can connect your existing domain or provide a new one as part of your subscription.",
-  },
-  {
-    q: "Is there a long-term contract?",
-    a: "No. Cancel anytime with 30 days' notice. Your domain and all your data can be exported on request — you're never locked in.",
-  },
-  {
-    q: "£79 a month seems expensive — is it worth it?",
-    a: "Consider what you're replacing: a web designer, an SEO expert, a CRM, a booking tool, a social scheduler, business email, SMS, review management, and hosting. That stack costs £500–£1,000+ per month when bought separately — or thousands upfront just for the website alone. At £79/month all-in, it pays for itself the moment it brings you one extra client.",
-  },
-  {
-    q: "Is there a guarantee?",
-    a: "Yes. If your website isn't live within the agreed timeframe, or you're not completely satisfied in your first 30 days, we'll give you a full refund. No questions asked. We're confident in what we deliver — and we want you to feel zero risk signing up.",
-  },
-  {
-    q: "How is this different from other all-in-one tools?",
-    a: "Most all-in-one platforms require you to build everything yourself — the website, the automations, all of it. VIV-Z is done-for-you. We design, build, and configure everything specifically for your health & fitness business. You're live in days, not months, and you never have to touch the technical side.",
-  },
-  {
-    q: "I already have clients — why would I need this?",
-    a: "If your calendar isn't consistently full, or you're spending hours each week on admin, or you're losing leads because you didn't follow up fast enough — this system fixes all of that. Most clients don't just get more bookings, they get back 5–10 hours a week they were wasting on manual tasks.",
+    key: "cinematic",
+    label: "Cinematic 3D",
+    desc: "Immersive animations, depth layers, premium studio feel.",
+    bg: "#050509",
+    text: "#e8e8f0",
+    accent: "#a78bfa",
+    mockBg: "linear-gradient(135deg, #050509 0%, #0d0520 100%)",
+    navColor: "rgba(232,232,240,0.6)",
+    headColor: "#e8e8f0",
+    btnColor: "#a78bfa",
   },
 ];
 
+// ─── sub-components ────────────────────────────────────────────
+
+function NoiseOverlay() {
+  return (
+    <>
+      <svg style={{ position: "fixed", width: 0, height: 0 }}>
+        <defs>
+          <filter id="noise-filter">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+            <feColorMatrix type="saturate" values="0" />
+          </filter>
+        </defs>
+      </svg>
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          filter: "url(#noise-filter)",
+          opacity: 0.032,
+          pointerEvents: "none",
+          zIndex: 9998,
+          mixBlendMode: "overlay",
+        }}
+      />
+    </>
+  );
+}
+
+function BrowserMockup({
+  domain,
+  bg,
+  accent,
+  className,
+  style,
+}: {
+  domain: string;
+  bg: string;
+  accent: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <div
+      className={className}
+      style={{
+        borderRadius: 14,
+        overflow: "hidden",
+        border: `1px solid ${BORDER}`,
+        boxShadow: `0 48px 96px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.08)`,
+        ...style,
+      }}
+    >
+      {/* Chrome bar */}
+      <div
+        style={{
+          background: "rgba(20,20,22,0.95)",
+          backdropFilter: "blur(12px)",
+          padding: "10px 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          borderBottom: `1px solid ${BORDER}`,
+        }}
+      >
+        <div style={{ display: "flex", gap: 6 }}>
+          {["#ff5f57", "#ffbd2e", "#28ca41"].map((c) => (
+            <div key={c} style={{ width: 11, height: 11, borderRadius: "50%", background: c, boxShadow: `0 0 6px ${c}66` }} />
+          ))}
+        </div>
+        <div
+          style={{
+            flex: 1,
+            background: "rgba(255,255,255,0.06)",
+            borderRadius: 7,
+            padding: "4px 12px",
+            fontSize: 11,
+            color: "rgba(255,255,255,0.3)",
+            fontFamily: "monospace",
+            letterSpacing: "0.02em",
+          }}
+        >
+          {domain}
+        </div>
+      </div>
+
+      {/* Website content */}
+      <div
+        className="shimmer"
+        style={{ background: bg, height: 380, position: "relative", overflow: "hidden" }}
+      >
+        {/* Fake nav */}
+        <div
+          style={{
+            position: "relative",
+            padding: "14px 20px",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+          }}
+        >
+          <div style={{ width: 64, height: 9, borderRadius: 5, background: "rgba(255,255,255,0.35)" }} />
+          <div style={{ display: "flex", gap: 14 }}>
+            {[40, 32, 44].map((w, i) => (
+              <div key={i} style={{ width: w, height: 7, borderRadius: 4, background: "rgba(255,255,255,0.18)" }} />
+            ))}
+          </div>
+          <div style={{ width: 76, height: 26, borderRadius: 13, background: accent, opacity: 0.9 }} />
+        </div>
+
+        {/* Fake hero */}
+        <div style={{ padding: "28px 22px" }}>
+          <div style={{ width: "55%", height: 9, borderRadius: 5, background: "rgba(255,255,255,0.14)", marginBottom: 12 }} />
+          <div style={{ width: "82%", height: 22, borderRadius: 7, background: "rgba(255,255,255,0.55)", marginBottom: 8 }} />
+          <div style={{ width: "68%", height: 22, borderRadius: 7, background: accent, opacity: 0.75, marginBottom: 18 }} />
+          <div style={{ width: "60%", height: 8, borderRadius: 4, background: "rgba(255,255,255,0.22)", marginBottom: 5 }} />
+          <div style={{ width: "50%", height: 8, borderRadius: 4, background: "rgba(255,255,255,0.15)", marginBottom: 22 }} />
+          <div style={{ display: "flex", gap: 10 }}>
+            <div style={{ width: 130, height: 38, borderRadius: 19, background: accent }} />
+            <div style={{ width: 110, height: 38, borderRadius: 19, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }} />
+          </div>
+        </div>
+
+        {/* Bottom cards strip */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            borderTop: "1px solid rgba(255,255,255,0.06)",
+            background: "rgba(0,0,0,0.2)",
+            padding: "14px 20px",
+            display: "flex",
+            gap: 10,
+          }}
+        >
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              style={{
+                flex: 1,
+                height: 48,
+                borderRadius: 10,
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.07)",
+              }}
+            />
+          ))}
+        </div>
+
+        {/* Gradient overlay at top */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: 80,
+            background: `radial-gradient(ellipse at 50% 0%, ${accent}22 0%, transparent 80%)`,
+            pointerEvents: "none",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function StyleCard({ s }: { s: typeof styles[0] }) {
+  return (
+    <Tilt
+      style={{
+        borderRadius: 20,
+        overflow: "hidden",
+        border: `1px solid ${BORDER}`,
+        background: "rgba(255,255,255,0.02)",
+        cursor: "pointer",
+      }}
+    >
+      {/* Mini mockup */}
+      <div style={{ background: s.mockBg, padding: "18px 18px 0", position: "relative" }}>
+        {/* Mini browser chrome */}
+        <div
+          style={{
+            background: "rgba(0,0,0,0.3)",
+            borderRadius: "10px 10px 0 0",
+            padding: "8px 12px",
+            display: "flex",
+            alignItems: "center",
+            gap: 7,
+          }}
+        >
+          <div style={{ display: "flex", gap: 5 }}>
+            {["#ff5f57", "#ffbd2e", "#28ca41"].map((c) => (
+              <div key={c} style={{ width: 8, height: 8, borderRadius: "50%", background: c }} />
+            ))}
+          </div>
+          <div
+            style={{
+              flex: 1,
+              height: 16,
+              background: "rgba(255,255,255,0.07)",
+              borderRadius: 5,
+            }}
+          />
+        </div>
+        {/* Mini content */}
+        <div
+          style={{
+            background: s.bg,
+            borderRadius: 0,
+            padding: "14px 14px 18px",
+            minHeight: 130,
+          }}
+        >
+          {/* Fake nav line */}
+          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14 }}>
+            <div style={{ width: 40, height: 6, borderRadius: 3, background: s.navColor, opacity: 0.6 }} />
+            <div style={{ display: "flex", gap: 8 }}>
+              {[24, 18, 28].map((w, i) => (
+                <div key={i} style={{ width: w, height: 5, borderRadius: 3, background: s.navColor, opacity: 0.3 }} />
+              ))}
+            </div>
+          </div>
+          {/* Fake headline */}
+          <div style={{ width: "85%", height: 10, borderRadius: 5, background: s.headColor, opacity: 0.7, marginBottom: 6 }} />
+          <div style={{ width: "65%", height: 10, borderRadius: 5, background: s.accent, marginBottom: 14 }} />
+          {/* Fake subtext */}
+          {[75, 60].map((w, i) => (
+            <div key={i} style={{ width: `${w}%`, height: 6, borderRadius: 3, background: s.headColor, opacity: 0.25, marginBottom: 5 }} />
+          ))}
+          {/* Fake button */}
+          <div style={{ width: 80, height: 22, borderRadius: 11, background: s.btnColor, marginTop: 10 }} />
+        </div>
+      </div>
+
+      {/* Label */}
+      <div style={{ padding: "20px 22px 22px" }}>
+        <p style={{ fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.02em", color: PAPER, marginBottom: 6 }}>
+          {s.label}
+        </p>
+        <p style={{ fontSize: "0.85rem", color: MUTED, lineHeight: 1.6 }}>{s.desc}</p>
+      </div>
+    </Tilt>
+  );
+}
+
+// ─── page ──────────────────────────────────────────────────────
+
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      {/* NAV */}
-      <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-gray-950/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-          <Link href="/" aria-label="VIV-Z Home">
-            <VivZLogo size="sm" className="[&_span]:text-white" />
+    <div style={{ background: INK, color: PAPER, overflowX: "hidden" }}>
+      <CustomCursor />
+      <NoiseOverlay />
+      <HeroSpotlight />
+
+      {/* ── NAV ─────────────────────────────────────────────── */}
+      <header
+        className="sticky top-0 z-50 w-full backdrop-blur-xl"
+        style={{ borderBottom: `1px solid ${BORDER}`, background: "rgba(10,10,11,0.85)" }}
+      >
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <Link href="/" aria-label="VIV-Z Home" className="opacity-90 hover:opacity-100 transition-opacity duration-300">
+            <VivZWordmark size="sm" />
           </Link>
-          <nav className="hidden items-center gap-6 text-sm font-medium text-gray-300 md:flex">
-            <Link href="#features" className="transition hover:text-emerald-400">Features</Link>
-            <Link href="#who" className="transition hover:text-emerald-400">Who it&apos;s for</Link>
-            <Link href="#pricing" className="transition hover:text-emerald-400">Pricing</Link>
-            <Link href="#calculator" className="transition hover:text-emerald-400">Calculator</Link>
-            <Link href="#faq" className="transition hover:text-emerald-400">FAQ</Link>
-            <Link href="/sign-in" className="transition hover:text-emerald-400">Business Login</Link>
+          <nav className="hidden items-center gap-8 text-sm md:flex" style={{ color: "rgba(245,245,247,0.45)" }}>
+            <Link href="#how-it-works" className="transition-colors duration-300 hover:text-[#f5f5f7]">How it works</Link>
+            <Link href="#examples" className="transition-colors duration-300 hover:text-[#f5f5f7]">Examples</Link>
+            <Link href="#pricing" className="transition-colors duration-300 hover:text-[#f5f5f7]">Pricing</Link>
+            <Link href="#faq" className="transition-colors duration-300 hover:text-[#f5f5f7]">FAQ</Link>
           </nav>
           <Link
-            href="#pricing"
-            className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-white shadow transition hover:bg-emerald-400"
+            href="/get-a-website"
+            className="rounded-full px-5 py-2.5 text-sm font-bold text-white transition-all duration-500 hover:scale-105 hover:brightness-110"
+            style={{ background: ACCENT }}
           >
-            Get Started — £79/mo
+            Get started free
           </Link>
         </div>
       </header>
 
-      {/* HERO */}
-      <section className="relative overflow-hidden bg-gray-950 px-6 pb-24 pt-20 text-white md:pb-36 md:pt-28">
-        {/* Background glow */}
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute -left-40 -top-40 h-[600px] w-[600px] rounded-full bg-emerald-600/20 blur-3xl" />
-          <div className="absolute -bottom-40 -right-40 h-[500px] w-[500px] rounded-full bg-teal-500/15 blur-3xl" />
+      {/* ── HERO ────────────────────────────────────────────── */}
+      <section className="relative min-h-screen overflow-hidden px-6 pt-24 pb-20">
+        <HeroBgBlobs />
+
+        {/* Floating geometric accents */}
+        <div className="pointer-events-none absolute" style={{ top: "12%", right: "8%", width: 180, height: 180, opacity: 0.06 }}>
+          <div className="spin-slow" style={{ width: "100%", height: "100%", border: `1px solid ${ACCENT}`, borderRadius: "30% 70% 70% 30% / 30% 30% 70% 70%" }} />
+        </div>
+        <div className="pointer-events-none absolute" style={{ bottom: "15%", left: "3%", width: 120, height: 120, opacity: 0.04 }}>
+          <div className="float-slow" style={{ width: "100%", height: "100%", border: "1px solid rgba(245,245,247,0.6)", borderRadius: "50%" }} />
         </div>
 
-        <div className="relative mx-auto max-w-5xl">
-          {/* Badge */}
-          <div className="mb-6 flex justify-center">
-            <span className="inline-flex items-center gap-2 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-4 py-1.5 text-sm font-semibold text-emerald-400">
-              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
-              Built for health &amp; fitness professionals
-            </span>
-          </div>
+        <div className="relative z-10 mx-auto grid max-w-6xl items-center gap-16 lg:grid-cols-2 lg:gap-8">
+          {/* Left — copy */}
+          <div>
+            <p className="hero-eyebrow mb-8 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: "rgba(245,245,247,0.3)" }}>
+              Website Design Studio
+            </p>
 
-          <h1 className="mb-6 text-center text-4xl font-black leading-tight tracking-tight md:text-6xl lg:text-7xl">
-            More clients. Less admin.
-            <br />
-            <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-              A business that runs itself.
-            </span>
-          </h1>
-
-          <p className="mx-auto mb-4 max-w-3xl text-center text-lg text-gray-300 md:text-xl">
-            Personal trainers, coaches, and therapists use VIV-Z to fill their calendar, stop losing leads, and free up hours every week —{" "}
-            <strong className="text-white">without stitching together 10 different tools.</strong>
-          </p>
-
-          <p className="mb-10 text-center text-2xl font-black text-emerald-400">
-            £79 / month. Everything included. No setup fees.
-          </p>
-
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Link
-              href="#pricing"
-              className="rounded-xl bg-emerald-500 px-8 py-4 text-base font-bold text-white shadow-lg transition hover:bg-emerald-400"
+            <h1
+              className="hero-h1"
+              style={{
+                fontSize: "clamp(3rem, 8vw, 7rem)",
+                fontWeight: 900,
+                letterSpacing: "-0.04em",
+                lineHeight: 0.92,
+                color: PAPER,
+              }}
             >
-              Get my website built in 3–5 days →
-            </Link>
-            <Link
-              href="#features"
-              className="rounded-xl border border-white/20 bg-white/5 px-8 py-4 text-base font-semibold text-white backdrop-blur transition hover:bg-white/10"
+              Your website,
+              <br />
+              <span style={{ color: ACCENT }}>built free.</span>
+            </h1>
+
+            <p
+              className="hero-sub mt-8 font-light leading-relaxed"
+              style={{ fontSize: "clamp(1.05rem, 1.6vw, 1.25rem)", color: MUTED, maxWidth: "46ch" }}
             >
-              See everything included
-            </Link>
-          </div>
-          <p className="mt-4 text-center text-xs text-gray-500">30-day money-back guarantee · No setup fee · Cancel anytime</p>
-
-          {/* Trust bar */}
-          <div className="mt-14 flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500">
-            {["No long contracts", "Live within 3–5 days", "UK-based support", "30-day money-back guarantee"].map((t) => (
-              <span key={t} className="flex items-center gap-1.5">
-                <span className="text-emerald-500">✓</span> {t}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* SOCIAL PROOF — CLIENT PORTFOLIO */}
-      <section className="bg-white px-6 py-20">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
-            <span className="mb-3 inline-block rounded-full bg-emerald-50 px-4 py-1 text-sm font-semibold text-emerald-700">
-              Real businesses. Real results.
-            </span>
-            <h2 className="mb-3 text-3xl font-black md:text-4xl">
-              See it in action — built in days, not months
-            </h2>
-            <p className="text-lg text-gray-500">
-              These are real health &amp; fitness businesses running on VIV-Z right now.
+              We design and build your complete professional website before you
+              pay a penny. Preview it. Love it. Go live for £24/month.
             </p>
-          </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {/* Client 1 */}
-            <div className="group rounded-2xl border border-gray-100 bg-gray-50 p-6 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-xl">🏋️</div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Felipe Rodas</h3>
-                  <p className="text-xs text-gray-500">Personal Trainer · Stockwell, London</p>
-                </div>
-              </div>
-              <p className="mb-4 text-sm text-gray-500">Professional site with online booking, client portal, and automated follow-ups — live within days.</p>
-              <a
-                href="https://www.feliperodas.co.uk"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-500"
+            <div className="hero-cta mt-12 flex flex-wrap items-center gap-5">
+              <Link
+                href="/get-a-website"
+                className="group relative inline-flex items-center gap-3 overflow-hidden rounded-full px-8 py-4 text-sm font-bold text-white transition-all duration-500 hover:gap-5 hover:scale-[1.03] hover:brightness-110"
+                style={{ background: ACCENT }}
               >
-                View site →
+                <span className="relative z-10">Claim your free website</span>
+                <span className="relative z-10 transition-transform duration-300 group-hover:translate-x-1">→</span>
+              </Link>
+              <a
+                href="#examples"
+                className="inline-flex items-center gap-2 text-sm transition-colors duration-300 hover:text-[#f5f5f7]"
+                style={{ color: "rgba(245,245,247,0.3)" }}
+              >
+                See our work
+                <span style={{ fontSize: "0.7rem" }}>↓</span>
               </a>
             </div>
 
-            {/* Client 2 */}
-            <div className="group rounded-2xl border border-gray-100 bg-gray-50 p-6 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-xl">💪</div>
-                <div>
-                  <h3 className="font-bold text-gray-900">GI Training</h3>
-                  <p className="text-xs text-gray-500">Personal Training · Launching this week</p>
-                </div>
-              </div>
-              <p className="mb-4 text-sm text-gray-500">Full platform setup including website, CRM, booking system, and automations — built and ready to go live.</p>
-              <a
-                href="https://www.gitraining.co.uk"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-500"
-              >
-                View site →
-              </a>
-            </div>
-
-            {/* Client 3 */}
-            <div className="group rounded-2xl border border-gray-100 bg-gray-50 p-6 shadow-sm transition hover:border-emerald-200 hover:shadow-md">
-              <div className="mb-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-xl">🩺</div>
-                <div>
-                  <h3 className="font-bold text-gray-900">Skills 4 2 U</h3>
-                  <p className="text-xs text-gray-500">First Aid Training · UK-wide</p>
-                </div>
-              </div>
-              <p className="mb-4 text-sm text-gray-500">Training provider with online booking, course management, and automated client communications.</p>
-              <a
-                href="https://www.skills42u.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-600 hover:text-emerald-500"
-              >
-                View site →
-              </a>
-            </div>
-
-            {/* Your business here */}
-            <div className="flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-emerald-200 bg-emerald-50/50 p-6 text-center">
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-xl">✨</div>
-              <h3 className="mb-1 font-bold text-emerald-800">Your business here</h3>
-              <p className="mb-4 text-sm text-emerald-600">We're onboarding new clients now — limited spots available each month.</p>
-              <a
-                href="#pricing"
-                className="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-bold text-white transition hover:bg-emerald-400"
-              >
-                Get started →
-              </a>
-            </div>
-          </div>
-
-          {/* Stats bar */}
-          <div className="mt-10 flex flex-wrap items-center justify-center gap-8 rounded-2xl border border-gray-100 bg-gray-50 px-8 py-5 text-sm font-medium text-gray-600">
-            {[
-              "Live in 3–5 working days",
-              "Mobile-first, built to rank on Google",
-              "Bookings & payments from day one",
-            ].map((s) => (
-              <span key={s} className="flex items-center gap-2">
-                <span className="text-emerald-500">✓</span> {s}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PAIN POINTS */}
-      <section className="bg-gray-50 px-6 py-20">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
-            <h2 className="mb-3 text-3xl font-black md:text-4xl">Sound familiar?</h2>
-            <p className="text-lg text-gray-500">
-              These are the problems most fitness and therapy professionals are dealing with right now.
-            </p>
-          </div>
-          <div className="grid gap-6 md:grid-cols-2">
-            {painPoints.map((p) => (
-              <div
-                key={p.problem}
-                className="rounded-2xl border border-red-100 bg-white p-6 shadow-sm"
-              >
-                <div className="mb-2 flex items-center gap-2">
-                  <span className="text-red-400">✗</span>
-                  <h3 className="font-bold text-gray-900">{p.problem}</h3>
-                </div>
-                <p className="text-sm text-gray-500">{p.detail}</p>
-              </div>
-            ))}
-          </div>
-          <div className="mt-10 rounded-2xl border border-emerald-100 bg-emerald-50 p-8 text-center">
-            <p className="text-lg font-bold text-emerald-900">
-              VIV-Z replaces all of it — one platform, one login, one monthly price.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* BUILT BY FITNESS PROS */}
-      <section className="bg-white px-6 py-20">
-        <div className="mx-auto max-w-4xl">
-          <div className="rounded-3xl border border-violet-100 bg-gradient-to-br from-violet-50 to-blue-50 p-10 md:p-14">
-            <div className="flex flex-col items-start gap-8 md:flex-row md:items-center">
-              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-violet-600 text-3xl shadow-md">
-                🏋️
-              </div>
-              <div>
-                <span className="mb-3 inline-block rounded-full bg-violet-100 px-3 py-1 text-xs font-semibold text-violet-700">
-                  Built by fitness professionals
-                </span>
-                <h2 className="mb-3 text-2xl font-black text-gray-900 md:text-3xl">
-                  We know the industry because we&apos;ve worked in it.
-                </h2>
-                <p className="leading-relaxed text-gray-600">
-                  VIV-Z was built by health and fitness professionals who got
-                  tired of stitching together tools that weren&apos;t designed
-                  for this industry. We&apos;ve experienced the admin overload,
-                  the no-shows, the leads that go cold — and we built the
-                  platform we always wished existed. Everything in VIV-Z is
-                  designed specifically around how fitness and wellness
-                  businesses actually run.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* REVENUE CALCULATOR */}
-      <RevenueCalculator />
-
-      {/* FEATURES */}
-      <section id="features" className="px-6 py-20">
-        <div className="mx-auto max-w-6xl">
-          <div className="mb-12 text-center">
-            <span className="mb-3 inline-block rounded-full bg-emerald-50 px-4 py-1 text-sm font-semibold text-emerald-700">
-              Everything included
-            </span>
-            <h2 className="mb-3 text-3xl font-black md:text-4xl">
-              One platform. 15+ tools. Zero headaches.
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-gray-500">
-              Everything you need to attract clients, look professional, and run your business — under one roof.
-            </p>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((f) => (
-              <div
-                key={f.title}
-                className="group rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition hover:border-emerald-200 hover:shadow-md"
-              >
-                <div className="mb-3 text-3xl">{f.icon}</div>
-                <h3 className="mb-2 font-bold text-gray-900">{f.title}</h3>
-                <p className="text-sm leading-relaxed text-gray-500">{f.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* WHAT HAPPENS NEXT */}
-      <section className="bg-gray-950 px-6 py-20 text-white">
-        <div className="mx-auto max-w-4xl">
-          <div className="mb-14 text-center">
-            <h2 className="mb-3 text-3xl font-black md:text-4xl">What happens after you sign up</h2>
-            <p className="text-gray-400">
-              From payment to your business being live — here&apos;s exactly what to expect.
-            </p>
-          </div>
-
-          <div className="relative">
-            {/* Vertical line */}
-            <div className="absolute left-6 top-0 hidden h-full w-px bg-white/10 md:left-1/2 md:block" />
-
-            <div className="space-y-10">
+            {/* Stats */}
+            <div className="hero-stats mt-20 flex flex-wrap gap-10">
               {[
-                {
-                  step: "01",
-                  icon: "💳",
-                  title: "Make payment",
-                  timing: "Today",
-                  desc: "Subscribe for £79/month — no setup fee, no long contract. Your subscription starts immediately and you can cancel anytime with 30 days' notice.",
-                },
-                {
-                  step: "02",
-                  icon: "📋",
-                  title: "Fill out your business info form",
-                  timing: "Same day",
-                  desc: "Right after payment you'll receive a short onboarding form. We'll ask for your logo, brand colours, photos, service details, and any existing accounts. Takes around 10 minutes to complete.",
-                },
-                {
-                  step: "03",
-                  icon: "🎨",
-                  title: "We build your website",
-                  timing: "Within 3–5 working days",
-                  desc: "Our team designs and builds your professional website based on your branding and services. We'll send you a preview link to review before anything goes live. Revisions included.",
-                },
-                {
-                  step: "04",
-                  icon: "🚀",
-                  title: "Full platform access",
-                  timing: "Live and ready",
-                  desc: "Your website is published, your domain is connected, and your entire platform is configured — CRM, booking system, automations, social scheduler, business email, and more. We walk you through everything on a handover call.",
-                },
-              ].map((s, i) => (
-                <div key={s.step} className={`relative flex flex-col gap-6 md:flex-row md:items-start ${i % 2 === 1 ? "md:flex-row-reverse" : ""}`}>
-                  {/* Icon bubble */}
-                  <div className="flex shrink-0 items-center gap-4 md:w-1/2 md:justify-end md:pr-12">
-                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-2xl ${i % 2 === 1 ? "md:order-last" : ""}`}>
-                      {s.icon}
-                    </div>
-                    <div className={`md:hidden`}>
-                      <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">{s.timing}</p>
-                      <h3 className="mt-0.5 text-lg font-bold">{s.title}</h3>
-                      <p className="mt-1 text-sm leading-relaxed text-gray-400">{s.desc}</p>
-                    </div>
-                  </div>
-
-                  {/* Center dot */}
-                  <div className="absolute left-6 top-4 hidden h-3 w-3 -translate-x-1.5 rounded-full bg-emerald-500 ring-4 ring-gray-950 md:left-1/2 md:block md:-translate-x-1.5 md:top-4" />
-
-                  {/* Text — desktop */}
-                  <div className={`hidden md:block md:w-1/2 ${i % 2 === 1 ? "md:pr-12 md:text-right" : "md:pl-12"}`}>
-                    <p className="text-xs font-semibold uppercase tracking-wider text-emerald-400">{s.timing}</p>
-                    <h3 className="mt-0.5 text-lg font-bold">{s.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-gray-400">{s.desc}</p>
-                  </div>
+                { value: 100, suffix: "+", label: "websites built" },
+                { value: 24, suffix: "h", label: "avg build time" },
+              ].map((s) => (
+                <div key={s.label}>
+                  <p style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 900, letterSpacing: "-0.04em", color: PAPER, lineHeight: 1 }}>
+                    <Counter to={s.value} suffix={s.suffix} />
+                  </p>
+                  <p className="mt-1.5 text-xs uppercase tracking-[0.2em]" style={{ color: "rgba(245,245,247,0.3)" }}>{s.label}</p>
                 </div>
               ))}
+              <div>
+                <p style={{ fontSize: "clamp(1.3rem, 2.5vw, 1.8rem)", fontWeight: 900, color: ACCENT, lineHeight: 1 }}>★★★★★</p>
+                <p className="mt-1.5 text-xs uppercase tracking-[0.2em]" style={{ color: "rgba(245,245,247,0.3)" }}>5-star reviews</p>
+              </div>
+            </div>
+
+            {/* Scroll indicator */}
+            <div className="mt-16 hidden lg:flex items-center gap-3" style={{ color: "rgba(245,245,247,0.2)" }}>
+              <div style={{ width: 24, height: 40, borderRadius: 12, border: "1px solid rgba(245,245,247,0.15)", position: "relative", overflow: "hidden" }}>
+                <div className="scroll-dot" style={{ position: "absolute", left: "50%", top: 6, transform: "translateX(-50%)", width: 4, height: 4, borderRadius: "50%", background: ACCENT }} />
+              </div>
+              <span className="text-xs tracking-[0.25em] uppercase">Scroll to explore</span>
+            </div>
+          </div>
+
+          {/* Right — floating browser mockup */}
+          <div className="hidden lg:block relative">
+            {/* Glow behind the mockup */}
+            <div
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: "translate(-50%, -50%)",
+                width: 500,
+                height: 400,
+                background: `radial-gradient(ellipse, ${ACCENT}20 0%, transparent 70%)`,
+                filter: "blur(60px)",
+                pointerEvents: "none",
+              }}
+            />
+            <div className="float-browser">
+              <BrowserMockup
+                domain="yourwebsite.co.uk"
+                bg={`radial-gradient(ellipse at 35% 25%, ${ACCENT}33 0%, transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(124,58,237,0.15) 0%, transparent 55%), #0d0d10`}
+                accent={ACCENT}
+              />
+            </div>
+            {/* Floating badge */}
+            <div
+              className="float-medium absolute -bottom-6 -left-8 rounded-2xl px-5 py-4"
+              style={{ background: "rgba(255,255,255,0.04)", backdropFilter: "blur(16px)", border: `1px solid ${BORDER}`, boxShadow: "0 20px 40px rgba(0,0,0,0.4)" }}
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: MUTED }}>Built & delivered</p>
+              <p style={{ fontSize: "1.4rem", fontWeight: 900, letterSpacing: "-0.03em", color: PAPER, lineHeight: 1.1 }}>in 24 hours</p>
+            </div>
+            {/* Free badge */}
+            <div
+              className="float-slow absolute -top-4 -right-6 rounded-2xl px-5 py-4"
+              style={{ background: `${ACCENT}18`, backdropFilter: "blur(16px)", border: `1px solid ${ACCENT}33`, boxShadow: "0 20px 40px rgba(255,91,4,0.15)" }}
+            >
+              <p className="text-xs font-semibold uppercase tracking-[0.2em]" style={{ color: ACCENT }}>Build price</p>
+              <p style={{ fontSize: "1.6rem", fontWeight: 900, letterSpacing: "-0.04em", color: PAPER, lineHeight: 1.1 }}>FREE</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* WHO IT'S FOR */}
-      <section id="who" className="px-6 py-20">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
-            <h2 className="mb-3 text-3xl font-black md:text-4xl">Built for you</h2>
-            <p className="text-lg text-gray-500">
-              Whether you work in a studio, at home, or online — VIV-Z works for your business.
+      {/* ── MARQUEE ─────────────────────────────────────────── */}
+      <div
+        className="relative overflow-hidden py-5"
+        style={{ borderTop: `1px solid ${BORDER}`, borderBottom: `1px solid ${BORDER}`, background: "rgba(255,91,4,0.03)" }}
+      >
+        <div className="marquee-track flex w-max gap-14 whitespace-nowrap">
+          {[...marqueeItems, ...marqueeItems].map((item, i) => (
+            <span key={i} className="flex items-center gap-14">
+              <span className="text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: "rgba(245,245,247,0.35)" }}>{item}</span>
+              <span style={{ color: `${ACCENT}55`, fontSize: "0.35rem" }}>◆</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ── WEBSITE STYLES SHOWCASE ──────────────────────────── */}
+      <section className="px-6 py-32" style={{ borderBottom: `1px solid ${BORDER}` }}>
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-16 grid lg:grid-cols-2 lg:items-end gap-8">
+            <div>
+              <p className="reveal mb-4 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>What we build</p>
+              <h2 className="reveal" style={{ fontSize: "clamp(2rem, 5vw, 4rem)", fontWeight: 800, letterSpacing: "-0.035em", lineHeight: 1.05, color: PAPER }}>
+                Three styles.<br />
+                <span style={{ color: "rgba(245,245,247,0.25)" }}>All stunning.</span>
+              </h2>
+            </div>
+            <p className="reveal" style={{ color: MUTED, lineHeight: 1.7, maxWidth: "46ch", fontSize: "1.05rem" }}>
+              When you apply, tell us which style you'd like. We'll build it
+              around your brand — colours, fonts, voice, everything.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {personas.map((p) => (
-              <div
-                key={p.title}
-                className="flex items-center gap-4 rounded-2xl border border-gray-100 bg-gray-50 p-5 shadow-sm"
+
+          <div className="grid gap-5 sm:grid-cols-3">
+            {styles.map((s, i) => (
+              <div key={s.key} className={`reveal${i > 0 ? `-delay-${i}` : ""}`}>
+                <StyleCard s={s} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── HOW IT WORKS ─────────────────────────────────────── */}
+      <section id="how-it-works" className="px-6 py-32">
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-20">
+            <p className="reveal mb-4 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>The process</p>
+            <h2 className="reveal" style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.035em", lineHeight: 1.05, color: PAPER }}>
+              Zero risk.<br />
+              <span style={{ color: "rgba(245,245,247,0.25)" }}>Four steps.</span>
+            </h2>
+          </div>
+
+          <div className="grid gap-px" style={{ background: BORDER }}>
+            {[
+              { num: "01", title: "Tell us about your business", desc: "Fill in a short form — your name, brand colours, what you do, and your preferred style. Five minutes, zero commitment." },
+              { num: "02", title: "We build your website", desc: "Our designers build your complete, custom site. Not a template — a real site built around your brand, your voice, your clients." },
+              { num: "03", title: "Preview it. For free.", desc: "Within 24 hours you receive a link to your live preview. Browse it on your phone. Ask for changes. You owe us nothing." },
+              { num: "04", title: "Go live for £24/month", desc: "Happy? Subscribe, connect your domain, and your site goes live. Not happy? Walk away. No invoice, no awkward conversation." },
+            ].map((step, i) => (
+              <Tilt
+                key={step.num}
+                intensity={3}
+                className={`reveal${i > 0 ? `-delay-${Math.min(i, 3)}` : ""}`}
+                style={{
+                  background: INK,
+                  borderRadius: 0,
+                  cursor: "default",
+                }}
               >
-                <span className="text-4xl">{p.icon}</span>
+                <div
+                  className="flex gap-8 p-8 md:p-12 transition-colors duration-500 hover:bg-white/[0.025]"
+                  style={{ position: "relative" }}
+                >
+                  {/* Step number large */}
+                  <span
+                    style={{
+                      fontSize: "clamp(2.5rem, 5vw, 4.5rem)",
+                      fontWeight: 900,
+                      letterSpacing: "-0.05em",
+                      color: `${ACCENT}22`,
+                      lineHeight: 1,
+                      flexShrink: 0,
+                      minWidth: "3.5rem",
+                      userSelect: "none",
+                    }}
+                  >
+                    {step.num}
+                  </span>
+                  <div className="pt-1">
+                    <h3 className="mb-3" style={{ fontSize: "clamp(1.1rem, 1.8vw, 1.4rem)", fontWeight: 700, letterSpacing: "-0.02em", color: PAPER }}>
+                      {step.title}
+                    </h3>
+                    <p style={{ color: MUTED, lineHeight: 1.75, maxWidth: "58ch" }}>{step.desc}</p>
+                  </div>
+                  {/* Accent line on hover */}
+                  <div
+                    style={{
+                      position: "absolute",
+                      left: 0,
+                      top: 0,
+                      bottom: 0,
+                      width: 2,
+                      background: `linear-gradient(to bottom, transparent, ${ACCENT}66, transparent)`,
+                      opacity: 0,
+                      transition: "opacity 0.4s",
+                    }}
+                    className="step-accent-line"
+                  />
+                </div>
+              </Tilt>
+            ))}
+          </div>
+
+          <div className="reveal mt-14 text-center">
+            <Link
+              href="/get-a-website"
+              className="inline-flex items-center gap-3 rounded-full px-10 py-4 text-sm font-bold text-white transition-all duration-500 hover:scale-[1.04] hover:brightness-110"
+              style={{ background: ACCENT }}
+            >
+              Start now — it&apos;s free →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FEATURES ─────────────────────────────────────────── */}
+      <section className="px-6 py-32" style={{ borderTop: `1px solid ${BORDER}` }}>
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-20">
+            <p className="reveal mb-4 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>What's included</p>
+            <h2 className="reveal" style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.035em", lineHeight: 1.05, color: PAPER }}>
+              Everything.<br />
+              <span style={{ color: "rgba(245,245,247,0.25)" }}>No extras.</span>
+            </h2>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {features.map((f, i) => (
+              <Tilt
+                key={f.num}
+                className={`reveal${i > 0 ? `-delay-${Math.min(i % 3 + 1, 3)}` : ""}`}
+                style={{
+                  borderRadius: 18,
+                  border: `1px solid ${BORDER}`,
+                  background: "rgba(255,255,255,0.02)",
+                  cursor: "default",
+                }}
+              >
+                <div className="p-7">
+                  <p className="mb-4 text-xs font-bold tracking-[0.35em]" style={{ color: `${ACCENT}66` }}>{f.num}</p>
+                  <h3 className="mb-3" style={{ fontSize: "1.05rem", fontWeight: 700, letterSpacing: "-0.02em", color: PAPER }}>{f.title}</h3>
+                  <p style={{ fontSize: "0.88rem", color: MUTED, lineHeight: 1.75 }}>{f.desc}</p>
+                </div>
+              </Tilt>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CASE STUDIES ─────────────────────────────────────── */}
+      <section id="examples" className="px-6 py-32" style={{ borderTop: `1px solid ${BORDER}` }}>
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-20">
+            <p className="reveal mb-4 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>Real clients</p>
+            <h2 className="reveal" style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.035em", lineHeight: 1.05, color: PAPER }}>
+              Real websites.<br />
+              <span style={{ color: "rgba(245,245,247,0.25)" }}>Real results.</span>
+            </h2>
+          </div>
+
+          <div className="grid gap-12 lg:grid-cols-3">
+            {caseStudies.map((c, i) => (
+              <div key={c.name} className={`reveal${i > 0 ? `-delay-${i}` : ""} flex flex-col gap-8`}>
+                {/* Browser mockup */}
+                <Tilt intensity={6} style={{ cursor: "default" }}>
+                  <BrowserMockup domain={c.domain} bg={c.bg} accent={c.accent} />
+                </Tilt>
+
+                {/* Testimonial */}
                 <div>
-                  <h3 className="font-bold text-gray-900">{p.title}</h3>
-                  <p className="text-sm text-gray-500">{p.desc}</p>
+                  <div className="mb-3 flex gap-0.5 text-sm" style={{ color: c.accent }}>★★★★★</div>
+                  <p className="mb-4 italic leading-relaxed" style={{ color: "rgba(245,245,247,0.65)", fontSize: "0.95rem" }}>
+                    &ldquo;{c.quote}&rdquo;
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-semibold text-sm" style={{ color: PAPER }}>{c.name}</p>
+                      <p className="text-xs mt-0.5" style={{ color: "rgba(245,245,247,0.3)" }}>{c.type}</p>
+                    </div>
+                    <a
+                      href={c.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs font-bold transition-opacity hover:opacity-70"
+                      style={{ color: c.accent }}
+                    >
+                      Visit →
+                    </a>
+                  </div>
                 </div>
               </div>
             ))}
@@ -567,219 +728,292 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* PRICING */}
-      <section id="pricing" className="bg-gray-950 px-6 py-20 text-white">
-        <div className="mx-auto max-w-5xl">
-          <div className="mb-12 text-center">
-            <h2 className="mb-3 text-3xl font-black md:text-4xl">Simple, honest pricing</h2>
-            <p className="text-gray-400">
-              One price. Everything included. No surprises.
-            </p>
-          </div>
-          <div className="mx-auto grid max-w-4xl gap-8 md:grid-cols-2">
-            {/* Value stack */}
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-8">
-              <h3 className="mb-2 text-lg font-bold text-gray-300">What this is worth</h3>
-              <p className="mb-6 text-sm text-gray-500">The real value of everything included in VIV-Z:</p>
-              <ul className="space-y-3 text-sm">
+      {/* ── PRICING ──────────────────────────────────────────── */}
+      <section id="pricing" className="px-6 py-32" style={{ borderTop: `1px solid ${BORDER}` }}>
+        <div className="mx-auto max-w-6xl">
+          <div className="grid gap-16 lg:grid-cols-2 lg:items-center">
+            <div>
+              <p className="reveal mb-4 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>Pricing</p>
+              <h2 className="reveal" style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.035em", lineHeight: 1.05, color: PAPER }}>
+                Transparent.<br />
+                <span style={{ color: "rgba(245,245,247,0.25)" }}>Simple.</span>
+              </h2>
+              <p className="reveal mt-6 leading-relaxed" style={{ color: MUTED, maxWidth: "46ch" }}>
+                We take the financial risk so you don&apos;t have to. The build is completely
+                free. If you love it, £24/month to stay live — that&apos;s it.
+              </p>
+
+              {/* Comparison */}
+              <div className="reveal mt-10 space-y-3">
                 {[
-                  ["Professional Website Design", "£1,200 one-off"],
-                  ["Google My Business Setup", "£300 one-off"],
-                  ["Full CRM & Contact Management", "£80/mo"],
-                  ["Online Booking System", "£20/mo"],
-                  ["Social Media Scheduler", "£30/mo"],
-                  ["Business Email Address", "£6/mo"],
-                  ["Automated Reviews System", "£40/mo"],
-                  ["Unified Inbox (SMS, Email, DMs)", "£25/mo"],
-                  ["Email Marketing Platform", "£20/mo"],
-                  ["Domain Name", "£15/mo"],
-                  ["Hosting & SSL", "£20/mo"],
-                  ["UK Setup Support & Handover Call", "£200 one-off"],
-                ].map(([item, cost]) => (
-                  <li key={item} className="flex items-center justify-between border-b border-white/5 pb-2">
-                    <span className="text-gray-400">{item}</span>
-                    <span className="font-semibold text-gray-300">{cost}</span>
-                  </li>
+                  { label: "Traditional agency", price: "£1,000–£8,000", strikethrough: true },
+                  { label: "DIY website builder", price: "£15–£40/mo + your time", strikethrough: true },
+                  { label: "VIV-Z", price: "Free build + £24/mo", accent: true },
+                ].map((row) => (
+                  <div
+                    key={row.label}
+                    className="flex items-center justify-between rounded-xl px-5 py-3"
+                    style={{
+                      background: row.accent ? `${ACCENT}10` : "rgba(255,255,255,0.02)",
+                      border: `1px solid ${row.accent ? `${ACCENT}33` : BORDER}`,
+                    }}
+                  >
+                    <span className="text-sm" style={{ color: row.accent ? PAPER : MUTED, textDecoration: row.strikethrough ? "line-through" : "none" }}>
+                      {row.label}
+                    </span>
+                    <span className="text-sm font-semibold" style={{ color: row.accent ? ACCENT : "rgba(245,245,247,0.3)", textDecoration: row.strikethrough ? "line-through" : "none" }}>
+                      {row.price}
+                    </span>
+                  </div>
                 ))}
-                <li className="flex items-center justify-between pt-2">
-                  <span className="font-bold text-white">Total value</span>
-                  <span className="text-right text-sm font-black text-white">£1,700+ up front<br /><span className="text-red-400">+ £256+/mo ongoing</span></span>
-                </li>
-              </ul>
+              </div>
             </div>
 
-            {/* VIV-Z card */}
-            <div className="relative rounded-2xl border-2 border-emerald-500 bg-emerald-950/50 p-8">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-emerald-500 px-4 py-1 text-xs font-bold text-white uppercase tracking-wider">
-                Best value
-              </div>
-              <h3 className="mb-1 text-lg font-bold text-white">VIV-Z All-in-One</h3>
-              <p className="mb-6 text-sm text-emerald-300">Everything. One subscription.</p>
+            <Tilt
+              intensity={4}
+              className="reveal"
+              style={{
+                borderRadius: 24,
+                border: `1px solid ${BORDER}`,
+                background: "rgba(255,255,255,0.025)",
+                cursor: "default",
+              }}
+            >
+              <div className="p-10">
+                <div className="mb-6 flex items-center justify-between">
+                  <span className="rounded-full px-3 py-1 text-xs font-bold" style={{ background: `${ACCENT}18`, color: ACCENT }}>Build price</span>
+                  <span className="text-xs" style={{ color: "rgba(245,245,247,0.25)", textDecoration: "line-through" }}>Others charge £500–£5,000</span>
+                </div>
 
-              <div className="mb-2">
-                <span className="text-6xl font-black text-white">£79</span>
-                <span className="ml-2 text-gray-400">/month</span>
-              </div>
-              <p className="mb-6 text-sm font-semibold text-emerald-400">You save £177+/month vs doing it yourself</p>
+                <p style={{ fontSize: "clamp(3.5rem, 7vw, 5.5rem)", fontWeight: 900, letterSpacing: "-0.05em", color: ACCENT, lineHeight: 1 }}>FREE</p>
+                <p className="mt-1 mb-7" style={{ color: "rgba(245,245,247,0.3)", fontSize: "0.9rem" }}>to design and build</p>
 
-              <ul className="mb-6 space-y-2.5 text-sm">
-                {[
-                  "Professional website (custom designed)",
-                  "Online booking & client portal",
-                  "Google My Business setup & optimisation",
-                  "Full CRM & contact management",
-                  "Lead pipeline & prospect tracking",
-                  "Social media scheduler",
-                  "Business email address",
-                  "Email marketing & newsletters",
-                  "Automated review requests",
-                  "Unified inbox (SMS, email, DMs)",
-                  "Missed call text-back",
-                  "Smart forms & intake questionnaires",
-                  "Automated follow-ups & reminders",
-                  "Domain name included",
-                  "Hosting & SSL included",
-                  "UK-based support",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2 text-gray-200">
-                    <span className="mt-0.5 shrink-0 text-emerald-400">✓</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
+                <div style={{ height: 1, background: BORDER }} />
 
-              {/* Bonuses */}
-              <div className="mb-6 rounded-xl border border-emerald-400/30 bg-emerald-900/40 p-4">
-                <p className="mb-2 text-xs font-bold uppercase tracking-wider text-emerald-400">🎁 Sign up this month — FREE bonuses:</p>
-                <ul className="space-y-1.5 text-sm text-gray-200">
+                <div className="mt-7 mb-2 flex items-baseline gap-2">
+                  <span style={{ fontSize: "clamp(2.5rem, 4vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.04em", color: PAPER, lineHeight: 1 }}>£24</span>
+                  <span style={{ color: "rgba(245,245,247,0.35)" }}>/month to stay live</span>
+                </div>
+                <p className="mb-8 text-xs" style={{ color: "rgba(245,245,247,0.25)" }}>Hosting · SSL · domain connected · no hidden fees</p>
+
+                <ul className="mb-8 space-y-3">
                   {[
-                    "30-min onboarding strategy call (value: £150)",
-                    "First month's social media content calendar (value: £100)",
-                    "Custom intake form setup — PAR-Q / consultation",
-                  ].map((b) => (
-                    <li key={b} className="flex items-start gap-2">
-                      <span className="mt-0.5 shrink-0 text-emerald-400">✓</span>
-                      {b}
+                    "Custom site built at no cost",
+                    "Live preview before you subscribe",
+                    "Unlimited revisions until you&apos;re happy",
+                    "Global CDN hosting",
+                    "SSL certificate included",
+                    "Your domain connected",
+                    "Cancel anytime",
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-3 text-sm" style={{ color: "rgba(245,245,247,0.65)" }}>
+                      <span style={{ color: ACCENT, flexShrink: 0 }}>✓</span>
+                      <span dangerouslySetInnerHTML={{ __html: item }} />
                     </li>
                   ))}
                 </ul>
+
+                <Link
+                  href="/get-a-website"
+                  className="block w-full rounded-full py-4 text-center text-sm font-bold text-white transition-all duration-500 hover:brightness-110 hover:scale-[1.01]"
+                  style={{ background: ACCENT }}
+                >
+                  Claim your free website →
+                </Link>
+                <p className="mt-3 text-center text-xs" style={{ color: "rgba(245,245,247,0.2)" }}>
+                  No card required · Preview first · Pay only if you love it
+                </p>
               </div>
-
-              {/* Scarcity */}
-              <p className="mb-4 flex items-center gap-2 rounded-lg bg-amber-500/10 px-3 py-2 text-xs font-semibold text-amber-400">
-                <span>⚡</span> Limited spots — we onboard a small number of clients each month to guarantee quality.
-              </p>
-
-              <Link
-                href="https://link.fastpaydirect.com/payment-link/69d56afca6c96e61a84603da"
-                className="block w-full rounded-xl bg-emerald-500 py-4 text-center font-bold text-white shadow-lg transition hover:bg-emerald-400"
-              >
-                Start filling my calendar →
-              </Link>
-              <p className="mt-3 text-center text-xs text-gray-500">30-day money-back guarantee · No setup fee · Cancel anytime</p>
-            </div>
+            </Tilt>
           </div>
         </div>
       </section>
 
+      {/* ── RISK REVERSAL ────────────────────────────────────── */}
+      <section
+        className="relative overflow-hidden px-6 py-36"
+        style={{ borderTop: `1px solid ${BORDER}`, background: "#0d0d0f" }}
+      >
+        {/* Background texture */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: "radial-gradient(rgba(255,91,4,0.08) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 800,
+            height: 500,
+            background: `radial-gradient(ellipse, ${ACCENT}10 0%, transparent 65%)`,
+            filter: "blur(80px)",
+            pointerEvents: "none",
+          }}
+        />
 
-      {/* GUARANTEE */}
-      <section className="bg-white px-6 py-16">
-        <div className="mx-auto max-w-3xl">
-          <div className="rounded-3xl border-2 border-emerald-200 bg-emerald-50 p-10 text-center">
-            <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-100 text-4xl">🛡️</div>
-            </div>
-            <h2 className="mb-3 text-2xl font-black text-gray-900 md:text-3xl">
-              Try it risk-free for 30 days.
+        <div className="relative z-10 mx-auto max-w-4xl text-center">
+          <p className="reveal mb-6 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>Our promise</p>
+          <h2
+            className="reveal"
+            style={{ fontSize: "clamp(2.2rem, 7vw, 6rem)", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 0.95, color: PAPER }}
+          >
+            We take the risk
+            <br />
+            <span style={{ color: "rgba(245,245,247,0.25)" }}>so you don&apos;t have to.</span>
+          </h2>
+          <p
+            className="reveal mx-auto mt-8 leading-relaxed"
+            style={{ color: MUTED, fontSize: "clamp(1rem, 1.5vw, 1.2rem)", maxWidth: "54ch" }}
+          >
+            We build your complete website before asking for anything. If you
+            love it — great. If you don&apos;t — you owe us nothing. That&apos;s how
+            confident we are in our work.
+          </p>
+          <div className="reveal mt-12">
+            <Link
+              href="/get-a-website"
+              className="inline-flex items-center gap-3 rounded-full px-10 py-5 text-base font-black text-white transition-all duration-500 hover:scale-[1.04] hover:brightness-110"
+              style={{ background: ACCENT }}
+            >
+              Get started — it&apos;s free →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── FAQ ──────────────────────────────────────────────── */}
+      <section id="faq" className="px-6 py-32" style={{ borderTop: `1px solid ${BORDER}` }}>
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-20">
+            <p className="reveal mb-4 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>FAQ</p>
+            <h2 className="reveal" style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.035em", lineHeight: 1.05, color: PAPER }}>
+              Common<br />
+              <span style={{ color: "rgba(245,245,247,0.25)" }}>questions.</span>
             </h2>
-            <p className="mx-auto max-w-xl leading-relaxed text-gray-600">
-              If your website isn&apos;t live and you&apos;re not completely happy within 30 days of signing up, contact us and we&apos;ll refund every penny. No questions. No drama. You have nothing to lose.
-            </p>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-sm font-semibold text-emerald-700">
-              <span className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Full refund if not satisfied</span>
-              <span className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> No questions asked</span>
-              <span className="flex items-center gap-1.5"><span className="text-emerald-500">✓</span> Your data is always exportable</span>
-            </div>
           </div>
-        </div>
-      </section>
 
-      <section id="faq" className="px-6 py-20">
-        <div className="mx-auto max-w-3xl">
-          <div className="mb-12 text-center">
-            <h2 className="mb-3 text-3xl font-black md:text-4xl">Common questions</h2>
-          </div>
-          <div className="space-y-4">
-            {faqs.map((faq) => (
-              <div key={faq.q} className="rounded-2xl border border-gray-100 bg-gray-50 p-6">
-                <h3 className="mb-2 font-bold text-gray-900">{faq.q}</h3>
-                <p className="text-sm leading-relaxed text-gray-600">{faq.a}</p>
+          <div style={{ borderTop: `1px solid ${BORDER}` }}>
+            {faqs.map((faq, i) => (
+              <div
+                key={faq.q}
+                className={`reveal${i > 0 ? `-delay-${Math.min(i % 3 + 1, 3)}` : ""} group py-8 transition-colors duration-300`}
+                style={{ borderBottom: `1px solid ${BORDER}` }}
+              >
+                <h3 className="mb-3" style={{ fontSize: "1.05rem", fontWeight: 600, letterSpacing: "-0.01em", color: PAPER }}>{faq.q}</h3>
+                <p style={{ color: MUTED, lineHeight: 1.8, maxWidth: "70ch", fontSize: "0.93rem" }}>{faq.a}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FINAL CTA */}
-      <section className="bg-gradient-to-br from-emerald-600 to-teal-700 px-6 py-24 text-white">
-        <div className="mx-auto max-w-3xl text-center">
-          <h2 className="mb-4 text-3xl font-black leading-tight md:text-5xl">
-            Stop losing clients to competitors with a better website.
-          </h2>
-          <p className="mb-8 text-lg text-emerald-100">
-            Get your professional online presence set up in days — not months.
-            Everything included for £79/month.
-          </p>
-          <Link
-            href="https://link.fastpaydirect.com/payment-link/69d56afca6c96e61a84603da"
-            className="inline-block rounded-xl bg-white px-10 py-5 text-base font-black text-emerald-700 shadow-xl transition hover:bg-emerald-50"
+      {/* ── FINAL CTA ────────────────────────────────────────── */}
+      <section className="relative overflow-hidden px-6 py-40 text-center" style={{ borderTop: `1px solid ${BORDER}` }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage: "linear-gradient(rgba(255,255,255,0.018) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.018) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+          }}
+        />
+        <div
+          style={{
+            position: "absolute",
+            bottom: "-20%",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: 700,
+            height: 500,
+            background: `radial-gradient(ellipse, ${ACCENT}12 0%, transparent 70%)`,
+            filter: "blur(80px)",
+            pointerEvents: "none",
+          }}
+        />
+
+        <div className="relative z-10 mx-auto max-w-3xl">
+          <p className="reveal mb-6 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>Ready?</p>
+          <h2
+            className="reveal"
+            style={{ fontSize: "clamp(2.5rem, 8vw, 7rem)", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 0.93, color: PAPER }}
           >
-            Build my online business for £79/month →
-          </Link>
-          <p className="mt-4 text-sm text-emerald-200">
-            30-day money-back guarantee · No setup fee · Setup in 3–5 working days
+            See your new
+            <br />
+            website tomorrow.
+          </h2>
+          <p
+            className="reveal mx-auto mt-8"
+            style={{ color: MUTED, fontSize: "clamp(1rem, 1.5vw, 1.15rem)", maxWidth: "50ch", lineHeight: 1.7 }}
+          >
+            Fill in your details and we&apos;ll get to work today. Your live preview
+            will be ready within 24 hours — no card, no commitment.
+          </p>
+          <div className="reveal mt-12">
+            <Link
+              href="/get-a-website"
+              className="group inline-flex items-center gap-3 rounded-full px-12 py-5 text-lg font-black text-white transition-all duration-500 hover:scale-[1.04] hover:gap-5 hover:brightness-110"
+              style={{ background: ACCENT }}
+            >
+              Claim your free website
+              <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+            </Link>
+          </div>
+          <p className="reveal mt-5 text-xs" style={{ color: "rgba(245,245,247,0.2)" }}>
+            No card required · No contracts · £24/month after you approve
           </p>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-gray-100 bg-white px-6 py-12">
+      {/* ── FOOTER ───────────────────────────────────────────── */}
+      <footer className="px-6 py-16" style={{ borderTop: `1px solid ${BORDER}`, background: "#060607" }}>
         <div className="mx-auto max-w-6xl">
-          <div className="grid gap-10 md:grid-cols-4">
+          <div className="grid gap-12 md:grid-cols-3">
             <div>
-              <VivZLogo size="sm" />
-              <p className="mt-3 text-sm text-gray-500">
-                The complete online platform for personal trainers, massage therapists, physiotherapists, and other health &amp; fitness professionals.
+              <VivZWordmark size="sm" />
+              <p className="mt-4 text-sm leading-relaxed" style={{ color: "rgba(245,245,247,0.3)", maxWidth: "30ch" }}>
+                Professional websites built for free. £24/month to stay live. See your site before you pay a penny.
               </p>
             </div>
             <div>
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Platform</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li><Link href="#features" className="hover:text-emerald-600">Features</Link></li>
-                <li><Link href="#who" className="hover:text-emerald-600">Who it&apos;s for</Link></li>
-                <li><Link href="#pricing" className="hover:text-emerald-600">Pricing</Link></li>
-                <li><Link href="#faq" className="hover:text-emerald-600">FAQ</Link></li>
+              <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: "rgba(245,245,247,0.2)" }}>Product</h3>
+              <ul className="space-y-2.5 text-sm" style={{ color: "rgba(245,245,247,0.4)" }}>
+                <li><Link href="#how-it-works" className="transition-colors hover:text-[#f5f5f7]">How it works</Link></li>
+                <li><Link href="#examples" className="transition-colors hover:text-[#f5f5f7]">Examples</Link></li>
+                <li><Link href="#faq" className="transition-colors hover:text-[#f5f5f7]">FAQ</Link></li>
+                <li><Link href="/get-a-website" className="transition-colors hover:text-[#ff5b04]">Get started free</Link></li>
+                <li><Link href="/booking-app" className="transition-colors hover:text-[#f5f5f7]">Bookings App</Link></li>
+                <li>
+                  <Link href="/dashboard" className="inline-flex items-center gap-1.5 transition-colors hover:text-[#f5f5f7]">
+                    Login
+                    <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ opacity: 0.5 }}>
+                      <path d="M2 8L8 2M8 2H4M8 2V6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                  </Link>
+                </li>
               </ul>
             </div>
             <div>
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Account</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li><Link href="/portal" className="hover:text-emerald-600">Client Booking Portal</Link></li>
-                <li><Link href="/contact" className="hover:text-emerald-600">Contact</Link></li>
-                <li><Link href="/sign-in" className="hover:text-emerald-600">Sign In</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Legal</h3>
-              <ul className="space-y-2 text-sm text-gray-600">
-                <li><Link href="/terms" className="hover:text-emerald-600">Terms &amp; Conditions</Link></li>
-                <li><Link href="/privacy" className="hover:text-emerald-600">Privacy Policy</Link></li>
+              <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: "rgba(245,245,247,0.2)" }}>Company</h3>
+              <ul className="space-y-2.5 text-sm" style={{ color: "rgba(245,245,247,0.4)" }}>
+                <li><Link href="/contact" className="transition-colors hover:text-[#f5f5f7]">Contact</Link></li>
+                <li><Link href="/terms" className="transition-colors hover:text-[#f5f5f7]">Terms &amp; Conditions</Link></li>
+                <li><Link href="/privacy" className="transition-colors hover:text-[#f5f5f7]">Privacy Policy</Link></li>
               </ul>
             </div>
           </div>
-          <div className="mt-10 border-t border-gray-100 pt-6 text-center text-xs text-gray-400">
-            © {new Date().getFullYear()} VIV-Z. All rights reserved.
+
+          <div
+            className="mt-12 flex flex-col items-center gap-2 pt-8 text-center text-xs sm:flex-row sm:justify-between"
+            style={{ borderTop: `1px solid ${BORDER}`, color: "rgba(245,245,247,0.18)" }}
+          >
+            <p>© {new Date().getFullYear()} VIV-Z. All rights reserved.</p>
+            <p>VAT No. 471 2850 92</p>
           </div>
         </div>
       </footer>
