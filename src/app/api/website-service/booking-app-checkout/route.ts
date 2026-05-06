@@ -4,11 +4,11 @@ import { websiteClients } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.vivz.co.uk";
-const PRICE_ID = process.env.BOOKING_APP_STRIPE_PRICE_ID!;
-
 export async function POST(req: NextRequest) {
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+  const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.vivz.co.uk";
+  const PRICE_ID = process.env.BOOKING_APP_STRIPE_PRICE_ID!;
+
   try {
     const { email } = await req.json();
 
