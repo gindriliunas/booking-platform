@@ -11,9 +11,10 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.vivz.co.uk";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const { domain } = await req.json();
     if (!domain || typeof domain !== "string") {
       return NextResponse.json({ error: "domain is required" }, { status: 400 });
@@ -24,7 +25,7 @@ export async function POST(
     const [client] = await db
       .select()
       .from(websiteClients)
-      .where(eq(websiteClients.id, params.id));
+      .where(eq(websiteClients.id, id));
 
     if (!client) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });

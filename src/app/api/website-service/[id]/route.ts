@@ -7,7 +7,7 @@ const ADMIN_TOKEN = process.env.WEBSITE_SERVICE_ADMIN_TOKEN;
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = req.headers.get("authorization");
   if (!ADMIN_TOKEN || auth !== `Bearer ${ADMIN_TOKEN}`) {
@@ -15,6 +15,7 @@ export async function PATCH(
   }
 
   try {
+    const { id } = await params;
     const body = await req.json();
     const allowed = ["notes", "status", "vercelProjectId", "previewUrl", "customDomain"] as const;
     const updates: Record<string, unknown> = { updatedAt: new Date() };
@@ -26,7 +27,7 @@ export async function PATCH(
     const [client] = await db
       .update(websiteClients)
       .set(updates)
-      .where(eq(websiteClients.id, params.id))
+      .where(eq(websiteClients.id, id))
       .returning();
 
     if (!client) {
@@ -42,13 +43,14 @@ export async function PATCH(
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const [client] = await db
       .select()
       .from(websiteClients)
-      .where(eq(websiteClients.id, params.id));
+      .where(eq(websiteClients.id, id));
 
     if (!client) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });

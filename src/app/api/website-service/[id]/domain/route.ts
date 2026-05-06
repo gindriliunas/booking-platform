@@ -8,7 +8,7 @@ const ADMIN_TOKEN = process.env.WEBSITE_SERVICE_ADMIN_TOKEN;
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = req.headers.get("authorization");
   if (!ADMIN_TOKEN || auth !== `Bearer ${ADMIN_TOKEN}`) {
@@ -16,6 +16,7 @@ export async function POST(
   }
 
   try {
+    const { id } = await params;
     const { domain } = await req.json();
     if (!domain) {
       return NextResponse.json({ error: "domain is required" }, { status: 400 });
@@ -24,7 +25,7 @@ export async function POST(
     const [client] = await db
       .select()
       .from(websiteClients)
-      .where(eq(websiteClients.id, params.id));
+      .where(eq(websiteClients.id, id));
 
     if (!client) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });

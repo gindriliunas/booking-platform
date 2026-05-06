@@ -8,7 +8,7 @@ const ADMIN_TOKEN = process.env.WEBSITE_SERVICE_ADMIN_TOKEN;
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const auth = req.headers.get("authorization");
   if (!ADMIN_TOKEN || auth !== `Bearer ${ADMIN_TOKEN}`) {
@@ -16,6 +16,7 @@ export async function POST(
   }
 
   try {
+    const { id } = await params;
     const { vercelProjectId, previewUrl } = await req.json();
     if (!vercelProjectId || !previewUrl) {
       return NextResponse.json(
@@ -27,7 +28,7 @@ export async function POST(
     const [client] = await db
       .update(websiteClients)
       .set({ vercelProjectId, previewUrl, status: "preview_live", updatedAt: new Date() })
-      .where(eq(websiteClients.id, params.id))
+      .where(eq(websiteClients.id, id))
       .returning();
 
     if (!client) {
