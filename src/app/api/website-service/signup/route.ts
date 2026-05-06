@@ -9,7 +9,7 @@ export async function POST(req: NextRequest) {
     const {
       name, email, phone, businessName, businessType,
       brandColours, hasLogo, logoUrl, description,
-      referralSource, preferredStyle,
+      referralSource, preferredStyle, seoKeywords,
     } = body;
 
     if (!name || !email || !businessName || !businessType || !brandColours || !description) {
@@ -30,6 +30,7 @@ export async function POST(req: NextRequest) {
         description: description.trim(),
         referralSource: referralSource || null,
         preferredStyle: preferredStyle || "clean_minimal",
+        seoKeywords: seoKeywords?.trim() || null,
         status: "building",
       })
       .returning();

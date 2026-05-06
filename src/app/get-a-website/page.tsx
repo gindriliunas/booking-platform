@@ -58,6 +58,7 @@ export default function GetAWebsitePage() {
     hasLogo: false, logoUrl: "", logoFileData: "",
     preferredStyle: "clean_minimal",
     reviewsText: "", reviewsLink: "",
+    seoKeywords: "",
     referralSource: "",
   });
 
@@ -199,6 +200,21 @@ export default function GetAWebsitePage() {
                 placeholder="e.g. Family-run plumbing business serving Manchester since 2005. We specialise in boiler installations and emergency call-outs…"
                 onChange={(e) => set("description", e.target.value)}
                 className={inputBase} style={{ ...inputSt, resize: "vertical" }} />
+            </label>
+            <label className="block">
+              <span className="mb-2 block text-sm font-medium" style={labelSt}>
+                SEO keywords &amp; phrases (optional)
+              </span>
+              <input
+                value={form.seoKeywords}
+                onChange={(e) => set("seoKeywords", e.target.value)}
+                placeholder="e.g. personal trainer London, weight loss coach, online fitness coaching"
+                className={inputBase}
+                style={inputSt}
+              />
+              <p className="mt-1.5 text-xs" style={{ color: "rgba(245,245,247,0.25)" }}>
+                Words and phrases your customers search for — we&apos;ll optimise your site around them.
+              </p>
             </label>
           </section>
 

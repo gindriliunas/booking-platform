@@ -466,6 +466,7 @@ export const websiteClients = pgTable("website_clients", {
   status: websiteClientStatusEnum("status").notNull().default("building"),
   bookingAppEnabled: boolean("booking_app_enabled").notNull().default(false),
   bookingAppStripeSubscriptionId: text("booking_app_stripe_subscription_id"),
+  seoKeywords: text("seo_keywords"),
   notes: text("notes"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

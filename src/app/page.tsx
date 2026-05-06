@@ -1,9 +1,11 @@
 import Link from "next/link";
+import Image from "next/image";
 import { VivZWordmark } from "@/components/marketing/logo";
 import { CustomCursor } from "@/components/marketing/cursor";
 import { HeroSpotlight, HeroBgBlobs } from "@/components/marketing/hero-interactive";
 import { Tilt } from "@/components/marketing/tilt";
 import { Counter } from "@/components/marketing/counter";
+import { LiveBrowserMockup } from "@/components/marketing/live-mockup";
 
 // ─── palette ──────────────────────────────────────────────────
 const INK    = "#0a0a0b";
@@ -40,6 +42,7 @@ const caseStudies = [
     domain: "gitraining.co.uk",
     accent: "#22c55e",
     bg: `radial-gradient(ellipse at 70% 20%, rgba(34,197,94,0.2) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(255,91,4,0.1) 0%, transparent 60%), #0d100d`,
+    imageSrc: "/GI Training Website.png",
   },
   {
     name: "Skills 4 2 U",
@@ -49,6 +52,27 @@ const caseStudies = [
     domain: "skills42u.com",
     accent: "#3b82f6",
     bg: `radial-gradient(ellipse at 60% 30%, rgba(59,130,246,0.2) 0%, transparent 60%), radial-gradient(ellipse at 20% 70%, rgba(255,91,4,0.08) 0%, transparent 60%), #0d0f14`,
+    imageSrc: "/Skills42U Website.png",
+  },
+  {
+    name: "FleetGS",
+    type: "Fleet Management · UK",
+    quote: "From brief to live preview in under a day. Exactly what we needed — professional, clean, and built around our product.",
+    url: "https://www.fleetgs.com",
+    domain: "fleetgs.com",
+    accent: "#10b981",
+    bg: `radial-gradient(ellipse at 60% 20%, rgba(16,185,129,0.2) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(59,130,246,0.08) 0%, transparent 60%), #0d1210`,
+    imageSrc: "/FleetGS Website.png",
+  },
+  {
+    name: "Plumbing Boss",
+    type: "Plumbing & Heating · UK",
+    quote: "Our new site looks completely professional. We started getting enquiries through the contact form within the first week.",
+    url: "https://www.plumbingboss.co.uk",
+    domain: "plumbingboss.co.uk",
+    accent: "#06b6d4",
+    bg: `radial-gradient(ellipse at 60% 20%, rgba(6,182,212,0.2) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(59,130,246,0.1) 0%, transparent 60%), #0d1114`,
+    imageSrc: "/Plumbing Boss.png",
   },
 ];
 
@@ -140,12 +164,14 @@ function BrowserMockup({
   domain,
   bg,
   accent,
+  imageSrc,
   className,
   style,
 }: {
   domain: string;
   bg: string;
   accent: string;
+  imageSrc?: string;
   className?: string;
   style?: React.CSSProperties;
 }) {
@@ -160,117 +186,275 @@ function BrowserMockup({
         ...style,
       }}
     >
-      {/* Chrome bar */}
-      <div
-        style={{
-          background: "rgba(20,20,22,0.95)",
-          backdropFilter: "blur(12px)",
-          padding: "10px 16px",
-          display: "flex",
-          alignItems: "center",
-          gap: 10,
-          borderBottom: `1px solid ${BORDER}`,
-        }}
-      >
-        <div style={{ display: "flex", gap: 6 }}>
-          {["#ff5f57", "#ffbd2e", "#28ca41"].map((c) => (
-            <div key={c} style={{ width: 11, height: 11, borderRadius: "50%", background: c, boxShadow: `0 0 6px ${c}66` }} />
-          ))}
+      {imageSrc ? (
+        <div style={{ position: "relative", height: 418 }}>
+          <Image
+            src={imageSrc}
+            alt={domain}
+            fill
+            style={{ objectFit: "cover", objectPosition: "top" }}
+            sizes="(max-width: 768px) 100vw, 480px"
+          />
         </div>
-        <div
-          style={{
-            flex: 1,
-            background: "rgba(255,255,255,0.06)",
-            borderRadius: 7,
-            padding: "4px 12px",
-            fontSize: 11,
-            color: "rgba(255,255,255,0.3)",
-            fontFamily: "monospace",
-            letterSpacing: "0.02em",
-          }}
-        >
-          {domain}
-        </div>
-      </div>
-
-      {/* Website content */}
-      <div
-        className="shimmer"
-        style={{ background: bg, height: 380, position: "relative", overflow: "hidden" }}
-      >
-        {/* Fake nav */}
-        <div
-          style={{
-            position: "relative",
-            padding: "14px 20px",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            borderBottom: "1px solid rgba(255,255,255,0.06)",
-          }}
-        >
-          <div style={{ width: 64, height: 9, borderRadius: 5, background: "rgba(255,255,255,0.35)" }} />
-          <div style={{ display: "flex", gap: 14 }}>
-            {[40, 32, 44].map((w, i) => (
-              <div key={i} style={{ width: w, height: 7, borderRadius: 4, background: "rgba(255,255,255,0.18)" }} />
-            ))}
-          </div>
-          <div style={{ width: 76, height: 26, borderRadius: 13, background: accent, opacity: 0.9 }} />
-        </div>
-
-        {/* Fake hero */}
-        <div style={{ padding: "28px 22px" }}>
-          <div style={{ width: "55%", height: 9, borderRadius: 5, background: "rgba(255,255,255,0.14)", marginBottom: 12 }} />
-          <div style={{ width: "82%", height: 22, borderRadius: 7, background: "rgba(255,255,255,0.55)", marginBottom: 8 }} />
-          <div style={{ width: "68%", height: 22, borderRadius: 7, background: accent, opacity: 0.75, marginBottom: 18 }} />
-          <div style={{ width: "60%", height: 8, borderRadius: 4, background: "rgba(255,255,255,0.22)", marginBottom: 5 }} />
-          <div style={{ width: "50%", height: 8, borderRadius: 4, background: "rgba(255,255,255,0.15)", marginBottom: 22 }} />
-          <div style={{ display: "flex", gap: 10 }}>
-            <div style={{ width: 130, height: 38, borderRadius: 19, background: accent }} />
-            <div style={{ width: 110, height: 38, borderRadius: 19, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }} />
-          </div>
-        </div>
-
-        {/* Bottom cards strip */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            right: 0,
-            borderTop: "1px solid rgba(255,255,255,0.06)",
-            background: "rgba(0,0,0,0.2)",
-            padding: "14px 20px",
-            display: "flex",
-            gap: 10,
-          }}
-        >
-          {[1, 2, 3, 4].map((i) => (
+      ) : (
+        <>
+          {/* Chrome bar */}
+          <div
+            style={{
+              background: "rgba(20,20,22,0.95)",
+              backdropFilter: "blur(12px)",
+              padding: "10px 16px",
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              borderBottom: `1px solid ${BORDER}`,
+            }}
+          >
+            <div style={{ display: "flex", gap: 6 }}>
+              {["#ff5f57", "#ffbd2e", "#28ca41"].map((c) => (
+                <div key={c} style={{ width: 11, height: 11, borderRadius: "50%", background: c, boxShadow: `0 0 6px ${c}66` }} />
+              ))}
+            </div>
             <div
-              key={i}
               style={{
                 flex: 1,
-                height: 48,
-                borderRadius: 10,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
+                background: "rgba(255,255,255,0.06)",
+                borderRadius: 7,
+                padding: "4px 12px",
+                fontSize: 11,
+                color: "rgba(255,255,255,0.3)",
+                fontFamily: "monospace",
+                letterSpacing: "0.02em",
+              }}
+            >
+              {domain}
+            </div>
+          </div>
+
+          {/* Website content */}
+          <div
+            className="shimmer"
+            style={{ background: bg, height: 380, position: "relative", overflow: "hidden" }}
+          >
+            {/* Fake nav */}
+            <div
+              style={{
+                position: "relative",
+                padding: "14px 20px",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderBottom: "1px solid rgba(255,255,255,0.06)",
+              }}
+            >
+              <div style={{ width: 64, height: 9, borderRadius: 5, background: "rgba(255,255,255,0.35)" }} />
+              <div style={{ display: "flex", gap: 14 }}>
+                {[40, 32, 44].map((w, i) => (
+                  <div key={i} style={{ width: w, height: 7, borderRadius: 4, background: "rgba(255,255,255,0.18)" }} />
+                ))}
+              </div>
+              <div style={{ width: 76, height: 26, borderRadius: 13, background: accent, opacity: 0.9 }} />
+            </div>
+
+            {/* Fake hero */}
+            <div style={{ padding: "28px 22px" }}>
+              <div style={{ width: "55%", height: 9, borderRadius: 5, background: "rgba(255,255,255,0.14)", marginBottom: 12 }} />
+              <div style={{ width: "82%", height: 22, borderRadius: 7, background: "rgba(255,255,255,0.55)", marginBottom: 8 }} />
+              <div style={{ width: "68%", height: 22, borderRadius: 7, background: accent, opacity: 0.75, marginBottom: 18 }} />
+              <div style={{ width: "60%", height: 8, borderRadius: 4, background: "rgba(255,255,255,0.22)", marginBottom: 5 }} />
+              <div style={{ width: "50%", height: 8, borderRadius: 4, background: "rgba(255,255,255,0.15)", marginBottom: 22 }} />
+              <div style={{ display: "flex", gap: 10 }}>
+                <div style={{ width: 130, height: 38, borderRadius: 19, background: accent }} />
+                <div style={{ width: 110, height: 38, borderRadius: 19, background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }} />
+              </div>
+            </div>
+
+            {/* Bottom cards strip */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 0,
+                left: 0,
+                right: 0,
+                borderTop: "1px solid rgba(255,255,255,0.06)",
+                background: "rgba(0,0,0,0.2)",
+                padding: "14px 20px",
+                display: "flex",
+                gap: 10,
+              }}
+            >
+              {[1, 2, 3, 4].map((i) => (
+                <div
+                  key={i}
+                  style={{
+                    flex: 1,
+                    height: 48,
+                    borderRadius: 10,
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.07)",
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* Gradient overlay at top */}
+            <div
+              style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                height: 80,
+                background: `radial-gradient(ellipse at 50% 0%, ${accent}22 0%, transparent 80%)`,
+                pointerEvents: "none",
               }}
             />
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function MinimalPreview() {
+  return (
+    <div style={{ background: "#f9f8f4", padding: "18px 18px 0" }}>
+      {/* Light browser chrome */}
+      <div style={{ background: "#e8e6e0", borderRadius: "10px 10px 0 0", padding: "7px 12px", display: "flex", alignItems: "center", gap: 7 }}>
+        <div style={{ display: "flex", gap: 5 }}>
+          {["#ff5f57", "#ffbd2e", "#28ca41"].map((c) => (
+            <div key={c} style={{ width: 7, height: 7, borderRadius: "50%", background: c }} />
           ))}
         </div>
+        <div style={{ flex: 1, height: 13, background: "rgba(0,0,0,0.07)", borderRadius: 4 }} />
+      </div>
+      {/* Site content */}
+      <div style={{ background: "#f9f8f4", padding: "16px 16px 20px" }}>
+        {/* Nav */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div style={{ width: 32, height: 5, borderRadius: 2, background: "#111", opacity: 0.8 }} />
+          <div style={{ display: "flex", gap: 10 }}>
+            {[20, 14, 22].map((w, i) => (
+              <div key={i} style={{ width: w, height: 4, borderRadius: 2, background: "#111", opacity: 0.2 }} />
+            ))}
+          </div>
+          <div style={{ width: 52, height: 18, borderRadius: 9, border: "1px solid #1d4ed8", background: "transparent" }} />
+        </div>
+        {/* Two-column layout */}
+        <div style={{ display: "flex", gap: 14 }}>
+          {/* Left: text */}
+          <div style={{ flex: 1 }}>
+            <div style={{ width: "50%", height: 4, borderRadius: 2, background: "#1d4ed8", opacity: 0.6, marginBottom: 8 }} />
+            <div style={{ width: "95%", height: 8, borderRadius: 3, background: "#111", opacity: 0.75, marginBottom: 5 }} />
+            <div style={{ width: "80%", height: 8, borderRadius: 3, background: "#111", opacity: 0.75, marginBottom: 12 }} />
+            <div style={{ width: "100%", height: 1, background: "#111", opacity: 0.1, marginBottom: 10 }} />
+            {[90, 75, 60].map((w, i) => (
+              <div key={i} style={{ width: `${w}%`, height: 4, borderRadius: 2, background: "#111", opacity: 0.18, marginBottom: 5 }} />
+            ))}
+            <div style={{ marginTop: 14, width: 64, height: 20, borderRadius: 10, border: "1.5px solid #1d4ed8", background: "transparent" }} />
+          </div>
+          {/* Right: image placeholder */}
+          <div style={{
+            width: 80, flexShrink: 0, borderRadius: 8,
+            background: "linear-gradient(135deg, #e8e6e0 0%, #d4d0c8 100%)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <div style={{ width: 24, height: 24, borderRadius: "50%", background: "rgba(0,0,0,0.08)" }} />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-        {/* Gradient overlay at top */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            height: 80,
-            background: `radial-gradient(ellipse at 50% 0%, ${accent}22 0%, transparent 80%)`,
-            pointerEvents: "none",
-          }}
-        />
+function BoldPreview() {
+  return (
+    <div style={{ background: "#0a0a0a", padding: "18px 18px 0" }}>
+      {/* Dark chrome */}
+      <div style={{ background: "#1a1a1a", borderRadius: "10px 10px 0 0", padding: "7px 12px", display: "flex", alignItems: "center", gap: 7 }}>
+        <div style={{ display: "flex", gap: 5 }}>
+          {["#ff5f57", "#ffbd2e", "#28ca41"].map((c) => (
+            <div key={c} style={{ width: 7, height: 7, borderRadius: "50%", background: c }} />
+          ))}
+        </div>
+        <div style={{ flex: 1, height: 13, background: "rgba(255,255,255,0.06)", borderRadius: 4 }} />
+      </div>
+      {/* Site content */}
+      <div style={{ background: "#0a0a0a", padding: "16px 16px 20px", position: "relative", overflow: "hidden" }}>
+        {/* Top glow */}
+        <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: "radial-gradient(circle, rgba(255,91,4,0.3) 0%, transparent 70%)", pointerEvents: "none" }} />
+        {/* Nav */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+          <div style={{ width: 28, height: 6, borderRadius: 2, background: "#fff", opacity: 0.9 }} />
+          <div style={{ display: "flex", gap: 8 }}>
+            {[18, 14, 20].map((w, i) => (
+              <div key={i} style={{ width: w, height: 4, borderRadius: 2, background: "#fff", opacity: 0.2 }} />
+            ))}
+          </div>
+        </div>
+        {/* Massive headline */}
+        <div style={{ width: "100%", height: 16, borderRadius: 4, background: "#fff", opacity: 0.9, marginBottom: 6 }} />
+        <div style={{ width: "88%", height: 16, borderRadius: 4, background: "#fff", opacity: 0.9, marginBottom: 6 }} />
+        <div style={{ width: "70%", height: 16, borderRadius: 4, background: "#ff5b04", marginBottom: 14 }} />
+        {/* Subtext */}
+        <div style={{ width: "65%", height: 5, borderRadius: 2, background: "#fff", opacity: 0.25, marginBottom: 4 }} />
+        <div style={{ width: "50%", height: 5, borderRadius: 2, background: "#fff", opacity: 0.18, marginBottom: 16 }} />
+        {/* Big CTA */}
+        <div style={{ width: 110, height: 28, borderRadius: 14, background: "#ff5b04", boxShadow: "0 4px 20px rgba(255,91,4,0.45)" }} />
+      </div>
+    </div>
+  );
+}
+
+function CinematicPreview() {
+  return (
+    <div style={{ background: "#050509", padding: "18px 18px 0" }}>
+      {/* Very dark chrome */}
+      <div style={{ background: "#0d0d12", borderRadius: "10px 10px 0 0", padding: "7px 12px", display: "flex", alignItems: "center", gap: 7 }}>
+        <div style={{ display: "flex", gap: 5 }}>
+          {["#ff5f57", "#ffbd2e", "#28ca41"].map((c) => (
+            <div key={c} style={{ width: 7, height: 7, borderRadius: "50%", background: c, opacity: 0.7 }} />
+          ))}
+        </div>
+        <div style={{ flex: 1, height: 13, background: "rgba(255,255,255,0.04)", borderRadius: 4 }} />
+      </div>
+      {/* Site content */}
+      <div style={{ background: "#050509", padding: "16px 16px 20px", position: "relative", overflow: "hidden" }}>
+        {/* Purple blob glow */}
+        <div style={{ position: "absolute", top: -10, left: "20%", width: 120, height: 80, borderRadius: "50%", background: "radial-gradient(ellipse, rgba(167,139,250,0.35) 0%, transparent 70%)", filter: "blur(16px)", pointerEvents: "none" }} />
+        {/* Grid pattern */}
+        <div style={{ position: "absolute", inset: 0, backgroundImage: "linear-gradient(rgba(167,139,250,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(167,139,250,0.04) 1px, transparent 1px)", backgroundSize: "18px 18px", pointerEvents: "none" }} />
+        {/* Nav */}
+        <div style={{ position: "relative", display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div style={{ width: 28, height: 5, borderRadius: 2, background: "#e8e8f0", opacity: 0.7 }} />
+          <div style={{ width: 22, height: 16, borderRadius: 5, border: "1px solid rgba(167,139,250,0.4)", background: "rgba(167,139,250,0.08)" }} />
+        </div>
+        {/* Eyebrow */}
+        <div style={{ position: "relative", width: 55, height: 4, borderRadius: 2, background: "#a78bfa", opacity: 0.7, marginBottom: 10 }} />
+        {/* Headline */}
+        <div style={{ position: "relative", width: "95%", height: 11, borderRadius: 4, background: "#e8e8f0", opacity: 0.85, marginBottom: 5 }} />
+        <div style={{ position: "relative", width: "75%", height: 11, borderRadius: 4, background: "#a78bfa", opacity: 0.8, marginBottom: 14 }} />
+        {/* Floating card */}
+        <div style={{
+          position: "relative",
+          width: "100%",
+          height: 38,
+          borderRadius: 8,
+          background: "rgba(255,255,255,0.03)",
+          border: "1px solid rgba(167,139,250,0.2)",
+          padding: "8px 10px",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          boxShadow: "0 8px 24px rgba(0,0,0,0.5)",
+        }}>
+          <div style={{ width: 20, height: 20, borderRadius: 6, background: "rgba(167,139,250,0.2)", border: "1px solid rgba(167,139,250,0.3)", flexShrink: 0 }} />
+          <div style={{ flex: 1 }}>
+            <div style={{ width: "70%", height: 4, borderRadius: 2, background: "#e8e8f0", opacity: 0.5, marginBottom: 4 }} />
+            <div style={{ width: "45%", height: 3, borderRadius: 2, background: "#a78bfa", opacity: 0.5 }} />
+          </div>
+          <div style={{ width: 28, height: 14, borderRadius: 7, background: "rgba(167,139,250,0.3)", border: "1px solid rgba(167,139,250,0.4)" }} />
+        </div>
       </div>
     </div>
   );
@@ -282,74 +466,24 @@ function StyleCard({ s }: { s: typeof styles[0] }) {
       style={{
         borderRadius: 20,
         overflow: "hidden",
-        border: `1px solid ${BORDER}`,
-        background: "rgba(255,255,255,0.02)",
+        border: s.key === "minimal" ? "1px solid rgba(0,0,0,0.08)" : `1px solid ${BORDER}`,
         cursor: "pointer",
       }}
     >
-      {/* Mini mockup */}
-      <div style={{ background: s.mockBg, padding: "18px 18px 0", position: "relative" }}>
-        {/* Mini browser chrome */}
-        <div
-          style={{
-            background: "rgba(0,0,0,0.3)",
-            borderRadius: "10px 10px 0 0",
-            padding: "8px 12px",
-            display: "flex",
-            alignItems: "center",
-            gap: 7,
-          }}
-        >
-          <div style={{ display: "flex", gap: 5 }}>
-            {["#ff5f57", "#ffbd2e", "#28ca41"].map((c) => (
-              <div key={c} style={{ width: 8, height: 8, borderRadius: "50%", background: c }} />
-            ))}
-          </div>
-          <div
-            style={{
-              flex: 1,
-              height: 16,
-              background: "rgba(255,255,255,0.07)",
-              borderRadius: 5,
-            }}
-          />
-        </div>
-        {/* Mini content */}
-        <div
-          style={{
-            background: s.bg,
-            borderRadius: 0,
-            padding: "14px 14px 18px",
-            minHeight: 130,
-          }}
-        >
-          {/* Fake nav line */}
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 14 }}>
-            <div style={{ width: 40, height: 6, borderRadius: 3, background: s.navColor, opacity: 0.6 }} />
-            <div style={{ display: "flex", gap: 8 }}>
-              {[24, 18, 28].map((w, i) => (
-                <div key={i} style={{ width: w, height: 5, borderRadius: 3, background: s.navColor, opacity: 0.3 }} />
-              ))}
-            </div>
-          </div>
-          {/* Fake headline */}
-          <div style={{ width: "85%", height: 10, borderRadius: 5, background: s.headColor, opacity: 0.7, marginBottom: 6 }} />
-          <div style={{ width: "65%", height: 10, borderRadius: 5, background: s.accent, marginBottom: 14 }} />
-          {/* Fake subtext */}
-          {[75, 60].map((w, i) => (
-            <div key={i} style={{ width: `${w}%`, height: 6, borderRadius: 3, background: s.headColor, opacity: 0.25, marginBottom: 5 }} />
-          ))}
-          {/* Fake button */}
-          <div style={{ width: 80, height: 22, borderRadius: 11, background: s.btnColor, marginTop: 10 }} />
-        </div>
-      </div>
+      {s.key === "minimal" && <MinimalPreview />}
+      {s.key === "bold" && <BoldPreview />}
+      {s.key === "cinematic" && <CinematicPreview />}
 
       {/* Label */}
-      <div style={{ padding: "20px 22px 22px" }}>
-        <p style={{ fontWeight: 700, fontSize: "1rem", letterSpacing: "-0.02em", color: PAPER, marginBottom: 6 }}>
+      <div style={{
+        padding: "18px 20px 20px",
+        background: s.key === "minimal" ? "#f2f1ec" : "#0d0d10",
+        borderTop: s.key === "minimal" ? "1px solid rgba(0,0,0,0.06)" : `1px solid ${BORDER}`,
+      }}>
+        <p style={{ fontWeight: 700, fontSize: "0.95rem", letterSpacing: "-0.02em", color: s.key === "minimal" ? "#111" : PAPER, marginBottom: 4 }}>
           {s.label}
         </p>
-        <p style={{ fontSize: "0.85rem", color: MUTED, lineHeight: 1.6 }}>{s.desc}</p>
+        <p style={{ fontSize: "0.82rem", color: s.key === "minimal" ? "rgba(0,0,0,0.45)" : MUTED, lineHeight: 1.55 }}>{s.desc}</p>
       </div>
     </Tilt>
   );
@@ -694,10 +828,10 @@ export default function LandingPage() {
 
           <div className="grid gap-12 lg:grid-cols-3">
             {caseStudies.map((c, i) => (
-              <div key={c.name} className={`reveal${i > 0 ? `-delay-${i}` : ""} flex flex-col gap-8`}>
-                {/* Browser mockup */}
+              <div key={c.name} className={`reveal${i > 0 ? `-delay-${Math.min(i, 3)}` : ""} flex flex-col gap-8`}>
+                {/* Live site preview */}
                 <Tilt intensity={6} style={{ cursor: "default" }}>
-                  <BrowserMockup domain={c.domain} bg={c.bg} accent={c.accent} />
+                  <LiveBrowserMockup domain={c.domain} url={c.url} accent={c.accent} />
                 </Tilt>
 
                 {/* Testimonial */}
