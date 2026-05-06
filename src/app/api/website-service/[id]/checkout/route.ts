@@ -10,13 +10,14 @@ const PRICE_ID = process.env.WEBSITE_SERVICE_STRIPE_PRICE_ID!;
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const [client] = await db
       .select()
       .from(websiteClients)
-      .where(eq(websiteClients.id, params.id));
+      .where(eq(websiteClients.id, id));
 
     if (!client) {
       return NextResponse.json({ error: "Client not found" }, { status: 404 });

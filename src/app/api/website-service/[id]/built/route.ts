@@ -17,6 +17,7 @@ export async function POST(
 
   try {
     const { id } = await params;
+
     const { vercelProjectId, previewUrl } = await req.json();
     if (!vercelProjectId || !previewUrl) {
       return NextResponse.json(
