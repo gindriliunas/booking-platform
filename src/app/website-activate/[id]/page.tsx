@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { websiteClients } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import Link from "next/link";
-import { VivZLogo } from "@/components/marketing/logo";
+import { MarketingSiteHeader } from "@/components/marketing/site-header";
 import { DomainForm } from "./domain-form";
 import { CheckoutButton } from "./checkout-button";
 
@@ -25,13 +25,7 @@ export default async function WebsiteActivatePage({
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
-      <header className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
-          <Link href="/" aria-label="VIV-Z Home">
-            <VivZLogo size="sm" />
-          </Link>
-        </div>
-      </header>
+      <MarketingSiteHeader variant="light" />
 
       <main className="mx-auto max-w-lg px-6 py-16">
         {isActive ? (

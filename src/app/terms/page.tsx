@@ -32,8 +32,8 @@ export default function TermsPage() {
             </p>
             <p className="mt-2 leading-relaxed">
               These Terms apply to all users of the Service, including service
-              providers ("Providers") who install VIV-Z on their GoHighLevel
-              account, and end-users ("Clients") who use the client portal.
+              providers ("Providers") who install VIV-Z through their connected
+              web-builder account, and end-users ("Clients") who use the client portal.
             </p>
           </section>
 
@@ -51,8 +51,8 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-black text-gray-900">3. Account Registration</h2>
             <p className="mt-2 leading-relaxed">
-              Providers must have a valid GoHighLevel account to install and use
-              VIV-Z. You are responsible for maintaining the confidentiality of
+              Providers must have a compatible web-builder account to install and use
+              VIV-Z via the marketplace. You are responsible for maintaining the confidentiality of
               your account credentials and for all activity that occurs under
               your account.
             </p>
@@ -79,7 +79,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-black text-gray-900">5. GoHighLevel Integration</h2>
+            <h2 className="text-xl font-black text-gray-900">5. Web builder integration</h2>
             <p className="mt-2 leading-relaxed">
               VIV-Z integrates with your web builder via OAuth. By authorizing
               this connection, you grant VIV-Z permission to read and write

@@ -18,7 +18,7 @@ const sections = [
       "ORM: Drizzle",
       "Payments: Stripe (checkout, webhooks, subscriptions)",
       "Emails / reminders: Resend",
-      "GHL sync: OAuth 2.0 + REST API + webhooks",
+      "Platform sync: OAuth 2.0 + REST API + webhooks",
     ],
   },
   {
@@ -44,7 +44,7 @@ const sections = [
       "Packages — create session bundles with a fixed number of sessions and a price",
       "Subscriptions — set up recurring billing plans that renew monthly",
       "Questionnaires — build custom intake forms and assign them to clients",
-      "Settings — configure your Stripe account, notification preferences, and GHL sync",
+      "Settings — configure your Stripe account, notification preferences, and platform sync",
     ],
   },
   {

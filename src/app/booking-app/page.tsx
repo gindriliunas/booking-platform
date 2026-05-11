@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { VivZWordmark } from "@/components/marketing/logo";
+import { MarketingSiteHeader } from "@/components/marketing/site-header";
 import { HeroSpotlight, HeroBgBlobs } from "@/components/marketing/hero-interactive";
 import { Tilt } from "@/components/marketing/tilt";
 import { CustomCursor } from "@/components/marketing/cursor";
@@ -65,7 +65,7 @@ const features = [
 const faqs = [
   {
     q: "Do I need the website to use the Bookings App?",
-    a: "Yes — the Bookings App is an add-on for existing VIV-Z website subscribers. Your booking portal is hosted on your website domain.",
+    a: "Yes — the portal lives on your domain. Today it is included at no extra charge with standard website hosting (£24/mo). Legacy subscribers who signed up before bookings were bundled can still use the upgrade path below.",
   },
   {
     q: "What does my client see?",
@@ -81,7 +81,7 @@ const faqs = [
   },
   {
     q: "What happens if I cancel?",
-    a: "Cancel anytime. Your website stays live at £24/month — only the Bookings App addon stops.",
+    a: "Cancel anytime with no penalties. Hosting stops and your site — including the booking portal — goes offline until you resubscribe.",
   },
   {
     q: "How quickly can I get started?",
@@ -90,10 +90,10 @@ const faqs = [
 ];
 
 const steps = [
-  { num: "01", title: "Upgrade for £5/month", desc: "Enter your email below. We add the Bookings App to your existing subscription — your next invoice increases by £5." },
-  { num: "02", title: "We set up your portal", desc: "We configure your booking portal on your existing domain and send you login credentials." },
-  { num: "03", title: "Connect your Stripe account", desc: "Link the app to your Stripe account in one click so client payments land directly in your bank." },
-  { num: "04", title: "Share your booking link", desc: "Add your booking link to your website, Instagram bio, or email signature. Clients can book instantly." },
+  { num: "01", title: "Start with website hosting", desc: "Claim your free website build, then activate hosting — the client booking portal is included in that hosting package." },
+  { num: "02", title: "We set up your portal", desc: "We configure your booking portal on your domain and send login credentials or confirm auto-provisioning." },
+  { num: "03", title: "Connect your Stripe account", desc: "Link Stripe so client payments land directly in your bank." },
+  { num: "04", title: "Share your booking link", desc: "Add your booking link to your site, bio, or signature — clients book instantly." },
 ];
 
 export default function BookingAppPage() {
@@ -115,23 +115,23 @@ export default function BookingAppPage() {
       <HeroSpotlight />
 
       {/* ── NAV ─────────────────────────────────────────────── */}
-      <header
-        className="sticky top-0 z-50 w-full backdrop-blur-xl"
-        style={{ borderBottom: `1px solid ${BORDER}`, background: "rgba(10,10,11,0.85)" }}
+      <MarketingSiteHeader />
+
+      <div
+        className="border-b px-6 py-3 text-center text-sm"
+        style={{ borderColor: BORDER, background: `${ACCENT}10`, color: "rgba(245,245,247,0.75)" }}
       >
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="VIV-Z Home" className="opacity-90 hover:opacity-100 transition-opacity duration-300">
-            <VivZWordmark size="sm" />
-          </Link>
-          <a
-            href="#upgrade"
-            className="rounded-full px-5 py-2.5 text-sm font-bold text-white transition-all duration-500 hover:scale-105 hover:brightness-110"
-            style={{ background: ACCENT }}
-          >
-            Add to my website
-          </a>
-        </div>
-      </header>
+        <strong style={{ color: PAPER }}>Booking portal</strong> is now{" "}
+        <strong style={{ color: PAPER }}>included free</strong> with website hosting — no separate Bookings add-on.
+        Start with a{" "}
+        <Link href="/get-a-website" className="font-bold underline-offset-2 hover:underline" style={{ color: ACCENT }}>
+          free website build
+        </Link>
+        . Prefer legacy checkout?{" "}
+        <a href="#upgrade" className="font-bold underline-offset-2 hover:underline" style={{ color: ACCENT }}>
+          Upgrade path →
+        </a>
+      </div>
 
       {/* ── HERO ────────────────────────────────────────────── */}
       <section className="relative min-h-screen overflow-hidden px-6 pt-24 pb-20 flex items-center">
@@ -295,34 +295,14 @@ export default function BookingAppPage() {
           <div className="mb-20 text-center">
             <p className="reveal mb-4 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>Pricing</p>
             <h2 className="reveal" style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.035em", lineHeight: 1.05, color: PAPER }}>
-              Simple add-on pricing.
+              Hosting includes bookings.
             </h2>
+            <p className="reveal mx-auto mt-4 max-w-xl text-sm" style={{ color: MUTED }}>
+              One monthly hosting fee covers your live site and the client booking portal — no separate Bookings line item for new subscribers.
+            </p>
           </div>
 
-          <div className="reveal grid gap-5 sm:grid-cols-2 max-w-2xl mx-auto">
-            {/* Website only */}
-            <Tilt
-              intensity={4}
-              style={{ borderRadius: 22, border: `1px solid ${BORDER}`, background: "rgba(255,255,255,0.02)", cursor: "default" }}
-            >
-              <div className="p-8">
-                <p className="mb-4 text-xs font-bold uppercase tracking-[0.3em]" style={{ color: "rgba(245,245,247,0.3)" }}>Website only</p>
-                <div className="mb-1 flex items-baseline gap-2">
-                  <span style={{ fontSize: "3.5rem", fontWeight: 900, letterSpacing: "-0.05em", color: PAPER, lineHeight: 1 }}>£24</span>
-                  <span style={{ color: MUTED }}>/month</span>
-                </div>
-                <p className="mb-6 text-xs" style={{ color: "rgba(245,245,247,0.3)" }}>Professional website · hosting · SSL · domain</p>
-                <ul className="space-y-2.5 text-sm" style={{ color: MUTED }}>
-                  {["Custom website design", "Edge hosting globally", "SSL certificate", "Domain connected", "SEO optimised"].map((i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      <span style={{ color: ACCENT }}>✓</span>{i}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Tilt>
-
-            {/* Website + Bookings */}
+          <div className="reveal mx-auto max-w-md">
             <Tilt
               intensity={4}
               style={{
@@ -334,39 +314,37 @@ export default function BookingAppPage() {
             >
               <div className="p-8">
                 <div className="mb-4 flex items-center justify-between">
-                  <p className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: ACCENT }}>Website + Bookings</p>
-                  <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: `${ACCENT}20`, color: ACCENT }}>Popular</span>
+                  <p className="text-xs font-bold uppercase tracking-[0.3em]" style={{ color: ACCENT }}>Website hosting</p>
+                  <span className="rounded-full px-2.5 py-1 text-xs font-bold" style={{ background: `${ACCENT}20`, color: ACCENT }}>Bookings included</span>
                 </div>
                 <div className="mb-1 flex items-baseline gap-2">
-                  <span style={{ fontSize: "3.5rem", fontWeight: 900, letterSpacing: "-0.05em", color: PAPER, lineHeight: 1 }}>£29</span>
+                  <span style={{ fontSize: "3.5rem", fontWeight: 900, letterSpacing: "-0.05em", color: PAPER, lineHeight: 1 }}>£24</span>
                   <span style={{ color: MUTED }}>/month</span>
                 </div>
-                <p className="mb-6 text-xs" style={{ color: "rgba(245,245,247,0.3)" }}>Everything in Website + full Bookings App</p>
+                <p className="mb-6 text-xs" style={{ color: "rgba(245,245,247,0.3)" }}>Site live · SSL · domain · client booking portal</p>
                 <ul className="space-y-2.5 text-sm" style={{ color: MUTED }}>
                   {[
-                    "Everything in Website",
+                    "Custom website design",
+                    "Edge hosting globally",
+                    "SSL & domain connected",
+                    "SEO-ready foundation",
                     "Client self-booking portal",
-                    "Calendar management",
-                    "Packages & subscriptions",
-                    "Group classes & waitlists",
-                    "Stripe payments",
-                    "Intake questionnaires",
-                    "Automated reminders",
-                    "Google Calendar sync",
-                  ].map((item, i) => (
+                    "Packages & subscriptions · Stripe",
+                    "Group sessions · questionnaires · reminders",
+                  ].map((item) => (
                     <li key={item} className="flex items-center gap-2">
-                      <span style={{ color: i === 0 ? MUTED : ACCENT }}>{i === 0 ? "↳" : "✓"}</span>
-                      <span style={{ color: i === 0 ? "rgba(245,245,247,0.3)" : MUTED }}>{item}</span>
+                      <span style={{ color: ACCENT }}>✓</span>
+                      {item}
                     </li>
                   ))}
                 </ul>
-                <a
-                  href="#upgrade"
+                <Link
+                  href="/get-a-website"
                   className="mt-6 block w-full rounded-full py-3.5 text-center text-sm font-bold text-white transition-all duration-500 hover:brightness-110 hover:scale-[1.02]"
                   style={{ background: ACCENT }}
                 >
-                  Upgrade for +£5/month →
-                </a>
+                  Claim your free website →
+                </Link>
               </div>
             </Tilt>
           </div>
@@ -396,13 +374,13 @@ export default function BookingAppPage() {
           <div className="mb-12 text-center">
             <p className="reveal mb-4 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>Upgrade</p>
             <h2 className="reveal" style={{ fontSize: "clamp(2rem, 5vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1, color: PAPER }}>
-              Add the Bookings App
+              Legacy website-only?
               <br />
-              <span style={{ color: "rgba(245,245,247,0.3)" }}>to your website.</span>
+              <span style={{ color: "rgba(245,245,247,0.3)" }}>Enable bookings here.</span>
             </h2>
             <p className="reveal mt-4" style={{ color: MUTED, lineHeight: 1.7 }}>
-              Enter the email address on your VIV-Z website subscription. We&apos;ll
-              add the Bookings App for +£5/month — your next invoice will reflect the change.
+              On an older website-only subscription? Enter the email on your VIV-Z hosting account — we&apos;ll enable the
+              booking portal and align billing (+£5/mo where legacy pricing still applies).
             </p>
           </div>
 

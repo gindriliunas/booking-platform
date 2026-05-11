@@ -40,11 +40,15 @@ const wordmarkSizes = {
 export function VivZWordmark({
   size = "md",
   className = "",
+  tone = "onDark",
 }: {
   size?: "sm" | "md" | "lg" | "xl";
   className?: string;
+  /** `onDark` — light text for dark backgrounds. `onLight` — dark text for white/light footers & headers. */
+  tone?: "onDark" | "onLight";
 }) {
   const { fontSize, gap } = wordmarkSizes[size];
+  const vivColor = tone === "onDark" ? "#f5f5f7" : "#111827";
   return (
     <span
       className={`inline-flex items-center select-none ${className}`}
@@ -74,7 +78,7 @@ export function VivZWordmark({
           fontWeight: 900,
           letterSpacing: "-0.04em",
           lineHeight: 1,
-          color: "#f5f5f7",
+          color: vivColor,
           fontFamily: "system-ui, -apple-system, sans-serif",
         }}
       >

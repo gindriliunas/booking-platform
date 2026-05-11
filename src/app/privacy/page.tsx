@@ -37,7 +37,7 @@ export default function PrivacyPage() {
             <h3 className="mt-4 font-bold text-gray-800">2a. Provider data</h3>
             <ul className="mt-2 list-disc space-y-1 pl-6 text-sm">
               <li>Account information (name, email, business name)</li>
-              <li>GoHighLevel sub-account ID and OAuth tokens</li>
+              <li>Connected web-builder location ID and OAuth tokens</li>
               <li>Stripe Connect account ID</li>
               <li>Availability and calendar configuration</li>
               <li>Service packages and subscription plan details</li>
@@ -63,7 +63,7 @@ export default function PrivacyPage() {
             <ul className="mt-2 list-disc space-y-2 pl-6">
               <li>
                 <strong>Providing the Service:</strong> Processing bookings,
-                managing packages, syncing data with GoHighLevel, and processing
+                managing packages, syncing data with your connected web-builder account, and processing
                 payments.
               </li>
               <li>

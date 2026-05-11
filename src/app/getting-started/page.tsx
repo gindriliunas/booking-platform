@@ -44,13 +44,13 @@ const steps = [
     title: "Invite your first client",
     description:
       "Go to Clients and click 'Invite Client'. Enter their name and email address. They will receive an email with a link to the client portal where they can sign up, purchase a package, and book their first session.",
-    note: "Clients can also find your portal directly at your VIV-Z portal URL. You can share this link on your website, in GHL emails, or on social media.",
+    note: "Clients can also find your portal directly at your VIV-Z portal URL. You can share this link on your website, in automated campaigns from your CRM, or on social media.",
   },
   {
     step: 7,
-    title: "(Optional) Set up GHL workflow triggers",
+    title: "(Optional) Set up workflow triggers from VIV-Z events",
     description:
-      "In your web builder, create a workflow that listens for VIV-Z custom webhook events (e.g. booking_created, session_completed). Use these triggers to send follow-up messages, apply tags, or enroll clients in nurture sequences.",
+      "In your connected platform, create a workflow that listens for VIV-Z custom webhook events (e.g. booking_created, session_completed). Use these triggers to send follow-up messages, apply tags, or enroll clients in nurture sequences.",
     note: "The available trigger events are documented in the Docs page. You can combine multiple triggers to build powerful automated follow-up sequences.",
     cta: { label: "Read the full docs →", href: "/docs#ghl-sync" },
   },
@@ -58,7 +58,7 @@ const steps = [
 
 export const metadata = {
   title: "Getting Started — VIV-Z",
-  description: "Step-by-step guide to setting up VIV-Z on your GoHighLevel account.",
+  description: "Step-by-step guide to installing and configuring VIV-Z with your connected platform.",
 };
 
 export default function GettingStartedPage() {

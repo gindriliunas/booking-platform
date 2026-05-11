@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { VivZWordmark } from "@/components/marketing/logo";
+import { MarketingSiteHeader } from "@/components/marketing/site-header";
 
 export const metadata = {
   title: "Bookings App activated — VIV-Z",
@@ -15,16 +15,7 @@ const steps = [
 export default function BookingAppSuccessPage() {
   return (
     <div className="min-h-screen" style={{ background: "#0a0a0b", color: "#f5f5f7" }}>
-      <header
-        className="sticky top-0 z-50 w-full backdrop-blur-xl"
-        style={{ borderBottom: "1px solid rgba(255,255,255,0.07)", background: "rgba(10,10,11,0.88)" }}
-      >
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="VIV-Z Home" className="opacity-90 hover:opacity-100 transition-opacity">
-            <VivZWordmark size="sm" />
-          </Link>
-        </div>
-      </header>
+      <MarketingSiteHeader />
 
       <main className="mx-auto flex max-w-lg flex-col items-center px-6 py-28 text-center">
         {/* Icon */}

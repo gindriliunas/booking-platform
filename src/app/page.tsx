@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { VivZWordmark } from "@/components/marketing/logo";
+import { MarketingSiteHeader } from "@/components/marketing/site-header";
 import { CustomCursor } from "@/components/marketing/cursor";
 import { HeroSpotlight, HeroBgBlobs } from "@/components/marketing/hero-interactive";
 import { Tilt } from "@/components/marketing/tilt";
@@ -78,7 +79,7 @@ const caseStudies = [
 
 const faqs = [
   { q: "Is the website build really free?", a: "Yes — completely free. We design and build your full website before you pay anything. You only start paying when you've seen the finished result and decided to go live." },
-  { q: "What are the running costs?", a: "£24/month covers everything — hosting, SSL certificate, your custom domain connected, and the site staying live. No hidden fees, no setup charges." },
+  { q: "What are the running costs?", a: "You only pay for hosting to keep your website active — that includes SSL, your custom domain connected, and the site staying online. No hidden fees, no setup charges." },
   { q: "How long does it take?", a: "We'll have your live preview ready within 24 hours of receiving your details. Most clients are live on their domain the same day they subscribe." },
   { q: "What if I don't like the design?", a: "Tell us what you'd like changed and we'll revise it — before you pay anything. You only subscribe once you're happy." },
   { q: "I already have a website. Can you replace it?", a: "Yes. We'll build you a new one, you review the preview, and when you're ready just connect your domain. Your old site is replaced seamlessly." },
@@ -88,8 +89,8 @@ const faqs = [
 ];
 
 const marqueeItems = [
-  "Free to build", "Preview within 24 hours", "£24/month", "100+ websites delivered",
-  "Mobile-optimised", "SEO-ready", "No contracts", "Cancel anytime",
+  "Free to build", "Preview within 24 hours", "Hosting when you go live", "Booking portal included with hosting",
+  "100+ websites delivered", "Mobile-optimised", "SEO-ready", "No contracts",
   "Professional design", "Edge hosting", "SSL included", "Domain connected",
 ];
 
@@ -499,29 +500,7 @@ export default function LandingPage() {
       <HeroSpotlight />
 
       {/* ── NAV ─────────────────────────────────────────────── */}
-      <header
-        className="sticky top-0 z-50 w-full backdrop-blur-xl"
-        style={{ borderBottom: `1px solid ${BORDER}`, background: "rgba(10,10,11,0.85)" }}
-      >
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <Link href="/" aria-label="VIV-Z Home" className="opacity-90 hover:opacity-100 transition-opacity duration-300">
-            <VivZWordmark size="sm" />
-          </Link>
-          <nav className="hidden items-center gap-8 text-sm md:flex" style={{ color: "rgba(245,245,247,0.45)" }}>
-            <Link href="#how-it-works" className="transition-colors duration-300 hover:text-[#f5f5f7]">How it works</Link>
-            <Link href="#examples" className="transition-colors duration-300 hover:text-[#f5f5f7]">Examples</Link>
-            <Link href="#pricing" className="transition-colors duration-300 hover:text-[#f5f5f7]">Pricing</Link>
-            <Link href="#faq" className="transition-colors duration-300 hover:text-[#f5f5f7]">FAQ</Link>
-          </nav>
-          <Link
-            href="/get-a-website"
-            className="rounded-full px-5 py-2.5 text-sm font-bold text-white transition-all duration-500 hover:scale-105 hover:brightness-110"
-            style={{ background: ACCENT }}
-          >
-            Get started free
-          </Link>
-        </div>
-      </header>
+      <MarketingSiteHeader />
 
       {/* ── HERO ────────────────────────────────────────────── */}
       <section className="relative min-h-screen overflow-hidden px-6 pt-24 pb-20">
@@ -562,7 +541,8 @@ export default function LandingPage() {
               style={{ fontSize: "clamp(1.05rem, 1.6vw, 1.25rem)", color: MUTED, maxWidth: "46ch" }}
             >
               We design and build your complete professional website before you
-              pay a penny. Preview it. Love it. Go live for £24/month.
+              pay a penny. Preview it. Love it. Hosting keeps your site live — and includes our{" "}
+              <strong style={{ color: PAPER }}>client booking portal free</strong>, no separate add-on.
             </p>
 
             <div className="hero-cta mt-12 flex flex-wrap items-center gap-5">
@@ -713,7 +693,7 @@ export default function LandingPage() {
               { num: "01", title: "Tell us about your business", desc: "Fill in a short form — your name, brand colours, what you do, and your preferred style. Five minutes, zero commitment." },
               { num: "02", title: "We build your website", desc: "Our designers build your complete, custom site. Not a template — a real site built around your brand, your voice, your clients." },
               { num: "03", title: "Preview it. For free.", desc: "Within 24 hours you receive a link to your live preview. Browse it on your phone. Ask for changes. You owe us nothing." },
-              { num: "04", title: "Go live for £24/month", desc: "Happy? Subscribe, connect your domain, and your site goes live. Not happy? Walk away. No invoice, no awkward conversation." },
+              { num: "04", title: "Go live — hosting keeps it active", desc: "Happy? Subscribe for hosting, connect your domain, and your site stays live. Not happy? Walk away. No invoice, no awkward conversation." },
             ].map((step, i) => (
               <Tilt
                 key={step.num}
@@ -874,15 +854,15 @@ export default function LandingPage() {
               </h2>
               <p className="reveal mt-6 leading-relaxed" style={{ color: MUTED, maxWidth: "46ch" }}>
                 We take the financial risk so you don&apos;t have to. The build is completely
-                free. If you love it, £24/month to stay live — that&apos;s it.
+                free. If you love it, you just pay for hosting to keep your website active — that&apos;s it.
               </p>
 
               {/* Comparison */}
               <div className="reveal mt-10 space-y-3">
                 {[
                   { label: "Traditional agency", price: "£1,000–£8,000", strikethrough: true },
-                  { label: "DIY website builder", price: "£15–£40/mo + your time", strikethrough: true },
-                  { label: "VIV-Z", price: "Free build + £24/mo", accent: true },
+                  { label: "DIY website builder", price: "Your valuable time", strikethrough: true },
+                  { label: "VIV-Z", price: "Free website build", accent: true },
                 ].map((row) => (
                   <div
                     key={row.label}
@@ -924,11 +904,20 @@ export default function LandingPage() {
 
                 <div style={{ height: 1, background: BORDER }} />
 
-                <div className="mt-7 mb-2 flex items-baseline gap-2">
-                  <span style={{ fontSize: "clamp(2.5rem, 4vw, 3.5rem)", fontWeight: 900, letterSpacing: "-0.04em", color: PAPER, lineHeight: 1 }}>£24</span>
-                  <span style={{ color: "rgba(245,245,247,0.35)" }}>/month to stay live</span>
-                </div>
-                <p className="mb-8 text-xs" style={{ color: "rgba(245,245,247,0.25)" }}>Hosting · SSL · domain connected · no hidden fees</p>
+                <p
+                  className="mt-7 mb-2"
+                  style={{
+                    fontSize: "clamp(1.15rem, 2.5vw, 1.55rem)",
+                    fontWeight: 800,
+                    letterSpacing: "-0.02em",
+                    color: PAPER,
+                    lineHeight: 1.35,
+                    maxWidth: "22ch",
+                  }}
+                >
+                  Just pay for hosting to keep your website active
+                </p>
+                <p className="mb-8 text-xs" style={{ color: "rgba(245,245,247,0.25)" }}>Hosting · SSL · domain · client booking portal · no hidden fees</p>
 
                 <ul className="mb-8 space-y-3">
                   {[
@@ -938,7 +927,7 @@ export default function LandingPage() {
                     "Global CDN hosting",
                     "SSL certificate included",
                     "Your domain connected",
-                    "Cancel anytime",
+                    "Client booking portal included — no add-on fee",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-sm" style={{ color: "rgba(245,245,247,0.65)" }}>
                       <span style={{ color: ACCENT, flexShrink: 0 }}>✓</span>
@@ -955,7 +944,7 @@ export default function LandingPage() {
                   Claim your free website →
                 </Link>
                 <p className="mt-3 text-center text-xs" style={{ color: "rgba(245,245,247,0.2)" }}>
-                  No card required · Preview first · Pay only if you love it
+                  Pay for hosting only if you love it
                 </p>
               </div>
             </Tilt>
@@ -1099,7 +1088,7 @@ export default function LandingPage() {
             </Link>
           </div>
           <p className="reveal mt-5 text-xs" style={{ color: "rgba(245,245,247,0.2)" }}>
-            No card required · No contracts · £24/month after you approve
+            No card required · No contracts · Pay for hosting only if you love it
           </p>
         </div>
       </section>
@@ -1110,18 +1099,20 @@ export default function LandingPage() {
           <div className="grid gap-12 md:grid-cols-3">
             <div>
               <VivZWordmark size="sm" />
-              <p className="mt-4 text-sm leading-relaxed" style={{ color: "rgba(245,245,247,0.3)", maxWidth: "30ch" }}>
-                Professional websites built for free. £24/month to stay live. See your site before you pay a penny.
+              <p className="mt-4 text-sm leading-relaxed" style={{ color: "rgba(245,245,247,0.3)", maxWidth: "34ch" }}>
+                Professional websites built for free. Hosting keeps your site active and includes the client booking portal at no extra charge.
               </p>
             </div>
             <div>
               <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.3em]" style={{ color: "rgba(245,245,247,0.2)" }}>Product</h3>
               <ul className="space-y-2.5 text-sm" style={{ color: "rgba(245,245,247,0.4)" }}>
-                <li><Link href="#how-it-works" className="transition-colors hover:text-[#f5f5f7]">How it works</Link></li>
-                <li><Link href="#examples" className="transition-colors hover:text-[#f5f5f7]">Examples</Link></li>
-                <li><Link href="#faq" className="transition-colors hover:text-[#f5f5f7]">FAQ</Link></li>
+                <li><Link href="/" className="transition-colors hover:text-[#f5f5f7]">Home</Link></li>
+                <li><Link href="/business-management-saas" className="transition-colors hover:text-[#f5f5f7]">CRM</Link></li>
+                <li><Link href="/internal-systems" className="transition-colors hover:text-[#f5f5f7]">Ops &amp; AI</Link></li>
+                <li><Link href="/marketing-advertising" className="transition-colors hover:text-[#f5f5f7]">Marketing &amp; advertising</Link></li>
+                <li><Link href="/contact" className="transition-colors hover:text-[#f5f5f7]">Contact</Link></li>
                 <li><Link href="/get-a-website" className="transition-colors hover:text-[#ff5b04]">Get started free</Link></li>
-                <li><Link href="/booking-app" className="transition-colors hover:text-[#f5f5f7]">Bookings App</Link></li>
+                <li><Link href="/services" className="transition-colors hover:text-[#f5f5f7]">More services</Link></li>
                 <li>
                   <Link href="/dashboard" className="inline-flex items-center gap-1.5 transition-colors hover:text-[#f5f5f7]">
                     Login
