@@ -796,9 +796,9 @@ export default function LandingPage() {
       </section>
 
       {/* ── CASE STUDIES ─────────────────────────────────────── */}
-      <section id="examples" className="px-6 py-32" style={{ borderTop: `1px solid ${BORDER}` }}>
+      <section id="examples" className="overflow-hidden px-6 py-16 lg:py-32" style={{ borderTop: `1px solid ${BORDER}` }}>
         <div className="mx-auto max-w-6xl">
-          <div className="mb-20">
+          <div className="mb-10 lg:mb-20">
             <p className="reveal mb-4 text-xs font-semibold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>Real clients</p>
             <h2 className="reveal" style={{ fontSize: "clamp(2rem, 5vw, 4.5rem)", fontWeight: 800, letterSpacing: "-0.035em", lineHeight: 1.05, color: PAPER }}>
               Real websites.<br />
@@ -806,11 +806,11 @@ export default function LandingPage() {
             </h2>
           </div>
 
-          <div className="grid gap-12 lg:grid-cols-3">
+          <div className="grid gap-8 lg:gap-12 lg:grid-cols-3">
             {caseStudies.map((c, i) => (
-              <div key={c.name} className={`reveal${i > 0 ? `-delay-${Math.min(i, 3)}` : ""} flex flex-col gap-8`}>
+              <div key={c.name} className={`reveal${i > 0 ? `-delay-${Math.min(i, 3)}` : ""} flex flex-col gap-6`}>
                 {/* Live site preview */}
-                <Tilt intensity={6} style={{ cursor: "default" }}>
+                <Tilt intensity={6} className="w-full" style={{ cursor: "default" }}>
                   <LiveBrowserMockup domain={c.domain} url={c.url} accent={c.accent} />
                 </Tilt>
 

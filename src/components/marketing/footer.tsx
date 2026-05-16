@@ -60,23 +60,8 @@ export function MarketingFooter({ variant = "light" }: MarketingFooterProps) {
               </h3>
               <ul className="space-y-2 text-sm" style={{ color: "rgba(245,245,247,0.45)" }}>
                 <li>
-                  <Link href="/docs" className="transition-colors hover:text-[#f5f5f7]">
-                    Documentation
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/support" className="transition-colors hover:text-[#f5f5f7]">
-                    Support
-                  </Link>
-                </li>
-                <li>
                   <Link href="/contact" className="transition-colors hover:text-[#f5f5f7]">
                     Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/getting-started" className="transition-colors hover:text-[#f5f5f7]">
-                    Getting Started Guide
                   </Link>
                 </li>
               </ul>
@@ -159,23 +144,8 @@ export function MarketingFooter({ variant = "light" }: MarketingFooterProps) {
             </h3>
             <ul className="space-y-2 text-sm text-gray-600">
               <li>
-                <Link href="/docs" className="hover:text-orange-600">
-                  Documentation
-                </Link>
-              </li>
-              <li>
-                <Link href="/support" className="hover:text-orange-600">
-                  Support
-                </Link>
-              </li>
-              <li>
                 <Link href="/contact" className="hover:text-orange-600">
                   Contact
-                </Link>
-              </li>
-              <li>
-                <Link href="/getting-started" className="hover:text-orange-600">
-                  Getting Started Guide
                 </Link>
               </li>
             </ul>

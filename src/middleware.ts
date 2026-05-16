@@ -3,11 +3,8 @@ import { SESSION_COOKIE } from "@/lib/auth-constants";
 
 const PUBLIC_ROUTES = [
   /^\/$/,
-  /^\/docs(\/.*)?$/,
-  /^\/support(\/.*)?$/,
   /^\/terms(\/.*)?$/,
   /^\/privacy(\/.*)?$/,
-  /^\/getting-started(\/.*)?$/,
   /^\/portal(\/.*)?$/,
   /^\/sign-in(\/.*)?$/,
   /^\/sign-up(\/.*)?$/,

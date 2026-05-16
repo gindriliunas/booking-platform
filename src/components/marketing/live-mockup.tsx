@@ -20,19 +20,21 @@ export function LiveBrowserMockup({
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.3);
-  const DISPLAY_HEIGHT = 360;
+  const [displayHeight, setDisplayHeight] = useState(260);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
-      setScale(entry.contentRect.width / IFRAME_NATURAL_WIDTH);
+      const w = entry.contentRect.width;
+      setScale(w / IFRAME_NATURAL_WIDTH);
+      setDisplayHeight(w < 480 ? 220 : 360);
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
-  const iframeHeight = Math.ceil(DISPLAY_HEIGHT / scale);
+  const iframeHeight = Math.ceil(displayHeight / scale);
 
   return (
     <div
@@ -106,7 +108,7 @@ export function LiveBrowserMockup({
         ref={containerRef}
         style={{
           position: "relative",
-          height: DISPLAY_HEIGHT,
+          height: displayHeight,
           overflow: "hidden",
           background: "#111",
         }}
