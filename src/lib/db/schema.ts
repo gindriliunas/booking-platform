@@ -472,6 +472,33 @@ export const websiteClients = pgTable("website_clients", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+export const partnerSpots = pgTable("partner_spots", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  position: integer("position").notNull().unique(),
+  businessName: text("business_name").notNull(),
+  logoUrl: text("logo_url"),
+  description: text("description").notNull(),
+  visitUrl: text("visit_url").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const adClicks = pgTable("ad_clicks", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  partnerSpotId: uuid("partner_spot_id").references(() => partnerSpots.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const pageViews = pgTable("page_views", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  websiteClientId: uuid("website_client_id").references(() => websiteClients.id, { onDelete: "cascade" }),
+  path: text("path").notNull().default("/"),
+  referrer: text("referrer"),
+  country: text("country"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
 // Relations
 export const installationsRelations = relations(installations, ({ one }) => ({
   provider: one(providers, {
@@ -656,5 +683,12 @@ export const reminderLogsRelations = relations(reminderLogs, ({ one }) => ({
   booking: one(bookings, {
     fields: [reminderLogs.bookingId],
     references: [bookings.id],
+  }),
+}));
+
+export const pageViewsRelations = relations(pageViews, ({ one }) => ({
+  websiteClient: one(websiteClients, {
+    fields: [pageViews.websiteClientId],
+    references: [websiteClients.id],
   }),
 }));

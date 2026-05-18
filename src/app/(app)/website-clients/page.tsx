@@ -2,6 +2,7 @@ import { db } from "@/lib/db";
 import { websiteClients } from "@/lib/db/schema";
 import { desc } from "drizzle-orm";
 import { ExternalLink, Globe, Mail } from "lucide-react";
+import { SnippetButton } from "@/app/admin/snippet-modal";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export default async function WebsiteClientsPage() {
           <table className="w-full text-sm">
             <thead className="border-b border-gray-100 bg-gray-50">
               <tr>
-                {["Business", "Contact", "Style", "Status", "Preview / Domain", "Actions"].map((h) => (
+                {["Business", "Contact", "Style", "Status", "Preview / Domain", "Actions", "Tracking"].map((h) => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-400">
                     {h}
                   </th>
@@ -90,6 +91,9 @@ export default async function WebsiteClientsPage() {
                       className="text-xs text-gray-500 hover:text-indigo-600 underline underline-offset-2">
                       Client view
                     </a>
+                  </td>
+                  <td className="px-4 py-3">
+                    <SnippetButton siteId={c.id} />
                   </td>
                 </tr>
               ))}

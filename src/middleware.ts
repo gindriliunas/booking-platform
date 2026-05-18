@@ -15,6 +15,8 @@ const PUBLIC_ROUTES = [
   /^\/api\/providers$/,
   /^\/api\/stripe\/webhook(\/.*)?$/,
   /^\/api\/auth(\/.*)?$/,
+  /^\/api\/track$/,
+  /^\/api\/ads(\/.*)?$/,
 ];
 
 function isPublicRoute(pathname: string) {
