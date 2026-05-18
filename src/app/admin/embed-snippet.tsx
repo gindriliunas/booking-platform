@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Copy, Check, X, Code2 } from "lucide-react";
 
 const SNIPPET = `<!-- Partner ads — paste before </body> -->
-<div id="vz-partners" style="padding:48px 24px;background:#f9fafb"></div>
+<div id="vz-partners" style="padding:64px 24px"></div>
 <script>
 (function(){
   fetch('https://www.viv-z.com/api/ads')
@@ -13,17 +13,19 @@ const SNIPPET = `<!-- Partner ads — paste before </body> -->
       var el=document.getElementById('vz-partners');
       if(!el||!ads.length)return;
       var grid=document.createElement('div');
-      grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;max-width:1100px;margin:0 auto';
+      grid.style.cssText='display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;max-width:1100px;margin:0 auto';
       ads.forEach(function(a){
         var card=document.createElement('div');
-        card.style.cssText='background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:12px';
-        card.innerHTML=(a.logoUrl
-          ?'<img src="'+a.logoUrl+'" style="height:48px;object-fit:contain" alt="'+a.businessName+'">'
-          :'<p style="font-weight:700;font-size:16px;margin:0">'+a.businessName+'</p>')
-          +'<p style="color:#6b7280;font-size:14px;line-height:1.5;flex:1;margin:0">'+a.description+'</p>'
+        card.style.cssText='background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);border-radius:20px;padding:32px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px';
+        card.innerHTML='<div style="width:96px;height:96px;border-radius:16px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">'
+          +(a.logoUrl?'<img src="'+a.logoUrl+'" style="width:80px;height:80px;object-fit:contain" alt="'+a.businessName+'">'
+          :'<span style="font-weight:800;font-size:28px;color:#fff;text-transform:uppercase">'+a.businessName[0]+'</span>')
+          +'</div>'
+          +'<p style="font-weight:700;font-size:17px;margin:0;color:inherit;line-height:1.3">'+a.businessName+'</p>'
+          +'<p style="font-size:14px;line-height:1.6;margin:0;opacity:0.75;flex:1">'+a.description+'</p>'
           +'<a href="'+a.visitUrl+'" target="_blank" rel="noopener"'
           +' onclick="fetch(\'https://www.viv-z.com/api/ads/click\',{method:\'POST\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({id:\''+a.id+'\'}),keepalive:true})"'
-          +' style="display:inline-flex;align-items:center;gap:6px;border-radius:8px;background:#4f46e5;color:#fff;font-size:13px;font-weight:600;padding:8px 16px;text-decoration:none;align-self:flex-start">Visit ↗</a>';
+          +' style="display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;background:#fff;color:#111;font-size:13px;font-weight:700;padding:10px 24px;text-decoration:none;width:100%;box-sizing:border-box;letter-spacing:0.01em">Visit ↗</a>';
         grid.appendChild(card);
       });
       el.appendChild(grid);
