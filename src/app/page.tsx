@@ -75,6 +75,15 @@ const caseStudies = [
     bg: `radial-gradient(ellipse at 60% 20%, rgba(6,182,212,0.2) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(59,130,246,0.1) 0%, transparent 60%), #0d1114`,
     imageSrc: "/Plumbing Boss.png",
   },
+  {
+    name: "Leaf It Out",
+    type: "Gardening & Landscaping · UK",
+    quote: "The site looks exactly how I imagined it. Clean, professional, and I was live within a day.",
+    url: "https://www.leaf-it-out.co.uk",
+    domain: "leaf-it-out.co.uk",
+    accent: "#4ade80",
+    bg: `radial-gradient(ellipse at 40% 20%, rgba(74,222,128,0.22) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(16,185,129,0.1) 0%, transparent 60%), #0a1009`,
+  },
 ];
 
 const faqs = [
