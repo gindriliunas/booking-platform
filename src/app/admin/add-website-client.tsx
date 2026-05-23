@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Plus, Pencil, X, Loader2 } from "lucide-react";
-import { createWebsiteClient, updateWebsiteClient } from "./actions";
+import { Plus, Pencil, Trash2, X, Loader2 } from "lucide-react";
+import { createWebsiteClient, updateWebsiteClient, deleteWebsiteClient } from "./actions";
 
 type WebsiteClient = {
   id: string;
@@ -46,6 +46,54 @@ export function EditWebsiteClientButton({ client }: { client: WebsiteClient }) {
       </button>
       {open && <WebsiteClientModal initial={client} onClose={() => setOpen(false)} />}
     </>
+  );
+}
+
+export function DeleteWebsiteClientButton({ id, name }: { id: string; name: string }) {
+  const [confirming, setConfirming] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  async function handleDelete() {
+    setLoading(true);
+    await deleteWebsiteClient(id);
+    setLoading(false);
+    setConfirming(false);
+  }
+
+  if (confirming) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setConfirming(false)}>
+        <div className="w-full max-w-sm rounded-2xl bg-white shadow-2xl p-6" onClick={(e) => e.stopPropagation()}>
+          <h3 className="text-sm font-semibold text-gray-900 mb-1">Delete website client?</h3>
+          <p className="text-xs text-gray-400 mb-5">
+            This will permanently delete <span className="font-medium text-gray-700">{name}</span> and all their traffic data. This cannot be undone.
+          </p>
+          <div className="flex items-center justify-end gap-3">
+            <button onClick={() => setConfirming(false)} className="rounded-lg px-4 py-2 text-sm text-gray-500 hover:bg-gray-100 transition-colors">
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={loading}
+              className="inline-flex items-center gap-2 rounded-lg bg-red-500 hover:bg-red-600 disabled:opacity-60 px-4 py-2 text-sm font-medium text-white transition-colors"
+            >
+              {loading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              {loading ? "Deleting..." : "Yes, delete"}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => setConfirming(true)}
+      className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+      title="Delete"
+    >
+      <Trash2 className="h-3.5 w-3.5" />
+    </button>
   );
 }
 

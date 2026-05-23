@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { count, gte, desc, eq, sql, asc } from "drizzle-orm";
 import { Users, Building2, Globe, TrendingUp, Eye, Activity } from "lucide-react";
 import { SnippetButton } from "./snippet-modal";
-import { AddWebsiteClientButton, EditWebsiteClientButton } from "./add-website-client";
+import { AddWebsiteClientButton, EditWebsiteClientButton, DeleteWebsiteClientButton } from "./add-website-client";
 import { PartnerSpotsManager } from "./partner-spots";
 import { EmbedSnippetButton } from "./embed-snippet";
 
@@ -232,7 +232,10 @@ export default async function AdminPage() {
                         <SnippetButton siteId={site.id} />
                       </td>
                       <td className="px-5 py-3">
-                        <EditWebsiteClientButton client={site} />
+                        <div className="flex items-center gap-1">
+                          <EditWebsiteClientButton client={site} />
+                          <DeleteWebsiteClientButton id={site.id} name={site.businessName} />
+                        </div>
                       </td>
                     </tr>
                   ))}

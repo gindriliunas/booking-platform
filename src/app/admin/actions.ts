@@ -39,6 +39,11 @@ export async function createWebsiteClient(formData: FormData) {
   revalidatePath("/admin");
 }
 
+export async function deleteWebsiteClient(id: string) {
+  await db.delete(websiteClients).where(eq(websiteClients.id, id));
+  revalidatePath("/admin");
+}
+
 export async function updateWebsiteClient(id: string, formData: FormData) {
   const name = formData.get("name") as string;
   const email = formData.get("email") as string;
