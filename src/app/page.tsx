@@ -84,6 +84,15 @@ const caseStudies = [
     accent: "#4ade80",
     bg: `radial-gradient(ellipse at 40% 20%, rgba(74,222,128,0.22) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(16,185,129,0.1) 0%, transparent 60%), #0a1009`,
   },
+  {
+    name: "A Cut Above Hair Salon",
+    type: "Hair Salon · UK",
+    quote: "Absolutely love the website. It's elegant, easy to navigate, and our clients keep complimenting it.",
+    url: "https://www.acutabovehairsalon.co.uk",
+    domain: "acutabovehairsalon.co.uk",
+    accent: "#f472b6",
+    bg: `radial-gradient(ellipse at 50% 20%, rgba(244,114,182,0.22) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(168,85,247,0.1) 0%, transparent 60%), #110a10`,
+  },
 ];
 
 const faqs = [
