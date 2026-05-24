@@ -6,7 +6,6 @@ import { CustomCursor } from "@/components/marketing/cursor";
 import { HeroSpotlight, HeroBgBlobs } from "@/components/marketing/hero-interactive";
 import { Tilt } from "@/components/marketing/tilt";
 import { Counter } from "@/components/marketing/counter";
-import { LiveBrowserMockup } from "@/components/marketing/live-mockup";
 
 // ─── palette ──────────────────────────────────────────────────
 const INK    = "#0a0a0b";
@@ -202,11 +201,12 @@ function BrowserMockup({
         overflow: "hidden",
         border: `1px solid ${BORDER}`,
         boxShadow: `0 48px 96px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.08)`,
+        width: "100%",
         ...style,
       }}
     >
       {imageSrc ? (
-        <div style={{ position: "relative", height: 418 }}>
+        <div style={{ position: "relative", aspectRatio: "16/10", width: "100%" }}>
           <Image
             src={imageSrc}
             alt={domain}
@@ -827,9 +827,9 @@ export default function LandingPage() {
           <div className="grid gap-8 lg:gap-12 lg:grid-cols-3">
             {caseStudies.map((c, i) => (
               <div key={c.name} className={`reveal${i > 0 ? `-delay-${Math.min(i, 3)}` : ""} flex flex-col gap-6`}>
-                {/* Live site preview */}
+                {/* Site preview */}
                 <Tilt intensity={6} className="w-full" style={{ cursor: "default" }}>
-                  <LiveBrowserMockup domain={c.domain} url={c.url} accent={c.accent} />
+                  <BrowserMockup domain={c.domain} bg={c.bg} accent={c.accent} imageSrc={c.imageSrc} />
                 </Tilt>
 
                 {/* Testimonial */}

@@ -18,26 +18,42 @@ export function LiveBrowserMockup({
   className?: string;
   style?: React.CSSProperties;
 }) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.3);
   const [displayHeight, setDisplayHeight] = useState(260);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    if (!root) return;
+    const io = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setVisible(true); io.disconnect(); } },
+      { rootMargin: "200px" },
+    );
+    io.observe(root);
+    return () => io.disconnect();
+  }, []);
 
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
       const w = entry.contentRect.width;
-      setScale(w / IFRAME_NATURAL_WIDTH);
-      setDisplayHeight(w < 480 ? 220 : 360);
+      if (w > 0) {
+        setScale(w / IFRAME_NATURAL_WIDTH);
+        setDisplayHeight(w < 480 ? 220 : 360);
+      }
     });
     ro.observe(el);
     return () => ro.disconnect();
   }, []);
 
-  const iframeHeight = Math.ceil(displayHeight / scale);
+  const iframeHeight = scale > 0 ? Math.ceil(displayHeight / scale) : 900;
 
   return (
     <div
+      ref={rootRef}
       className={className}
       style={{
         borderRadius: 14,
@@ -113,20 +129,21 @@ export function LiveBrowserMockup({
           background: "#111",
         }}
       >
-        <iframe
-          src={url}
-          title={domain}
-          loading="lazy"
-          style={{
-            width: IFRAME_NATURAL_WIDTH,
-            height: iframeHeight,
-            transform: `scale(${scale})`,
-            transformOrigin: "top left",
-            border: "none",
-            pointerEvents: "none",
-            display: "block",
-          }}
-        />
+        {visible && (
+          <iframe
+            src={url}
+            title={domain}
+            style={{
+              width: IFRAME_NATURAL_WIDTH,
+              height: iframeHeight,
+              transform: `scale(${scale})`,
+              transformOrigin: "top left",
+              border: "none",
+              pointerEvents: "none",
+              display: "block",
+            }}
+          />
+        )}
         {/* Live badge */}
         <div
           style={{
