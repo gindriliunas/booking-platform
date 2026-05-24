@@ -33,6 +33,7 @@ const caseStudies = [
     domain: "feliperodas.co.uk",
     accent: "#ff5b04",
     bg: `radial-gradient(ellipse at 30% 30%, rgba(255,91,4,0.25) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(120,50,255,0.12) 0%, transparent 60%), #0d0d10`,
+    imageSrc: "https://image.thum.io/get/width/1280/crop/800/https://www.feliperodas.co.uk",
   },
   {
     name: "GI Training",
@@ -82,6 +83,7 @@ const caseStudies = [
     domain: "leaf-it-out.co.uk",
     accent: "#4ade80",
     bg: `radial-gradient(ellipse at 40% 20%, rgba(74,222,128,0.22) 0%, transparent 60%), radial-gradient(ellipse at 80% 80%, rgba(16,185,129,0.1) 0%, transparent 60%), #0a1009`,
+    imageSrc: "https://image.thum.io/get/width/1280/crop/800/https://www.leaf-it-out.co.uk",
   },
   {
     name: "A Cut Above Hair Salon",
@@ -91,6 +93,7 @@ const caseStudies = [
     domain: "acutabovehairsalon.co.uk",
     accent: "#f472b6",
     bg: `radial-gradient(ellipse at 50% 20%, rgba(244,114,182,0.22) 0%, transparent 60%), radial-gradient(ellipse at 20% 80%, rgba(168,85,247,0.1) 0%, transparent 60%), #110a10`,
+    imageSrc: "https://image.thum.io/get/width/1280/crop/800/https://www.acutabovehairsalon.co.uk",
   },
 ];
 
