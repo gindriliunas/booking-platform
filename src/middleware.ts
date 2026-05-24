@@ -3,6 +3,12 @@ import { SESSION_COOKIE } from "@/lib/auth-constants";
 
 const PUBLIC_ROUTES = [
   /^\/$/,
+  /^\/get-a-website(\/.*)?$/,
+  /^\/contact(\/.*)?$/,
+  /^\/services(\/.*)?$/,
+  /^\/business-management-saas(\/.*)?$/,
+  /^\/internal-systems(\/.*)?$/,
+  /^\/marketing-advertising(\/.*)?$/,
   /^\/terms(\/.*)?$/,
   /^\/privacy(\/.*)?$/,
   /^\/portal(\/.*)?$/,
@@ -17,6 +23,8 @@ const PUBLIC_ROUTES = [
   /^\/api\/auth(\/.*)?$/,
   /^\/api\/track$/,
   /^\/api\/ads(\/.*)?$/,
+  /^\/api\/lead$/,
+  /^\/api\/website-service(\/.*)?$/,
 ];
 
 function isPublicRoute(pathname: string) {

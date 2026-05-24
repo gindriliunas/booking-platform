@@ -60,17 +60,28 @@ export default function ContactPage() {
             </p>
           </div>
 
-          {/* Right — marketing form embed */}
-          <div className="rounded-2xl border p-2 shadow-sm" style={{ borderColor: BORDER, background: "rgba(255,255,255,0.03)" }}>
+          {/* Right — contact form embed */}
+          <div className="rounded-2xl border" style={{ borderColor: BORDER, background: "rgba(255,255,255,0.03)" }}>
             <iframe
-              src="https://api.leadconnectorhq.com/widget/form/IkXVLs3eN8Jq3tDl7CtH"
-              style={{ width: "100%", border: "none", minHeight: "600px" }}
-              id="IkXVLs3eN8Jq3tDl7CtH"
-              title="Contact VIV-Z"
+              src="https://api.leadconnectorhq.com/widget/form/NGzCry35ZnXg0sYz1BcD"
+              style={{ width: "100%", height: 665, border: "none", display: "block" }}
+              id="inline-NGzCry35ZnXg0sYz1BcD"
+              data-layout={`{"id":"INLINE"}`}
+              data-trigger-type="alwaysShow"
+              data-trigger-value=""
+              data-activation-type="alwaysActivated"
+              data-activation-value=""
+              data-deactivation-type="neverDeactivate"
+              data-deactivation-value=""
+              data-form-name="VIV-Z Contact"
+              data-height="665"
+              data-layout-iframe-id="inline-NGzCry35ZnXg0sYz1BcD"
+              data-form-id="NGzCry35ZnXg0sYz1BcD"
+              title="VIV-Z Contact"
               scrolling="no"
             />
-            <Script src="https://link.msgsndr.com/js/form_embed.js" strategy="lazyOnload" />
           </div>
+          <Script src="https://link.msgsndr.com/js/form_embed.js" strategy="lazyOnload" />
         </div>
       </section>
 
