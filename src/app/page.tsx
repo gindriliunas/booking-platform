@@ -18,7 +18,7 @@ const BORDER = "rgba(255,255,255,0.08)";
 const features = [
   { num: "01", title: "Mobile-first", desc: "Tested on real devices — every pixel perfect on any screen size." },
   { num: "02", title: "Brand-accurate design", desc: "Your colours, fonts, tone. Not a theme — a real site built for you." },
-  { num: "03", title: "SEO from day one", desc: "Structured data, Core Web Vitals, sitemap — baked in on every build." },
+  { num: "03", title: "SEO & AI search ready", desc: "Structured data, Core Web Vitals, sitemap — built to rank on Google and get cited by ChatGPT, Perplexity, and AI search." },
   { num: "04", title: "Contact form included", desc: "Leads straight to your inbox. No third-party tools, no monthly add-ons." },
   { num: "05", title: "Edge-hosted globally", desc: "CDN-deployed. Sub-second loads worldwide, every time." },
   { num: "06", title: "Your domain, connected", desc: "Use your existing domain or we'll help you get one. Done in minutes." },
@@ -948,6 +948,7 @@ export default function LandingPage() {
                     "Global CDN hosting",
                     "SSL certificate included",
                     "Your domain connected",
+                    "SEO &amp; AI search optimised — ranks on Google, cited by ChatGPT",
                     "Client booking portal included — no add-on fee",
                   ].map((item) => (
                     <li key={item} className="flex items-center gap-3 text-sm" style={{ color: "rgba(245,245,247,0.65)" }}>
