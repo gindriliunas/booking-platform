@@ -11,10 +11,10 @@ export const marketingSiteNavLinks = [
   { href: "/", label: "Home" },
   {
     href: "/business-management-saas",
-    label: "CRM",
-    title: "CRM, automation & revenue operations on VIV-Z",
+    label: "AI CRM",
+    title: "AI CRM, automation & revenue operations on VIV-Z",
   },
-  { href: "/internal-systems", label: "Ops & AI" },
+  { href: "/internal-systems", label: "Custom Software" },
   {
     href: "/marketing-advertising",
     label: "Marketing & ads",

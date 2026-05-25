@@ -74,6 +74,112 @@ export default function BusinessManagementSaasPage() {
           ))}
         </div>
 
+        {/* ── AI SECTION ───────────────────────────────────── */}
+        <section className="mt-20">
+          <div className="mb-10">
+            <p className="mb-3 text-xs font-bold uppercase tracking-[0.4em]" style={{ color: ACCENT }}>
+              AI-powered
+            </p>
+            <h2
+              style={{
+                fontSize: "clamp(1.8rem, 4vw, 3rem)",
+                fontWeight: 900,
+                letterSpacing: "-0.035em",
+                lineHeight: 1.05,
+                color: PAPER,
+              }}
+            >
+              Works while you sleep.
+              <br />
+              <span style={{ color: "rgba(245,245,247,0.25)" }}>Powered by AI.</span>
+            </h2>
+            <p className="mt-4 max-w-2xl text-base leading-relaxed" style={{ color: MUTED }}>
+              Every touchpoint — from the first website chat to the post-appointment review request — handled automatically so you focus on delivering the work.
+            </p>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[
+              {
+                icon: "🤖",
+                title: "AI Receptionist",
+                desc: "Answers calls, qualifies leads, books appointments, and handles FAQs 24/7 — exactly like a human receptionist, without the salary.",
+              },
+              {
+                icon: "💬",
+                title: "AI Web Chat",
+                desc: "Engages every website visitor instantly. Answers questions, captures contact details, and books calls — even at 2am.",
+              },
+              {
+                icon: "⭐",
+                title: "Automated Review Collection",
+                desc: "Sends personalised SMS or email review requests after every appointment. More 5-star reviews on Google, hands-free.",
+              },
+              {
+                icon: "📱",
+                title: "WhatsApp Automation",
+                desc: "Send confirmations, reminders, follow-ups, and campaigns via WhatsApp. Higher open rates than email, fully automated.",
+              },
+              {
+                icon: "📣",
+                title: "AI Outreach",
+                desc: "Automated multi-channel outreach sequences — email, SMS, and social DMs — that nurture cold leads into paying clients.",
+              },
+              {
+                icon: "🔄",
+                title: "Missed Call Text-Back",
+                desc: "Every missed call triggers an instant personalised SMS. Recover leads that would have gone straight to a competitor.",
+              },
+            ].map((feature) => (
+              <div
+                key={feature.title}
+                className="rounded-2xl p-7 transition-colors duration-300 hover:bg-white/[0.03]"
+                style={{
+                  border: `1px solid ${BORDER}`,
+                  background: "rgba(255,255,255,0.02)",
+                }}
+              >
+                <span className="mb-4 block text-3xl">{feature.icon}</span>
+                <h3
+                  className="mb-2 font-bold"
+                  style={{ fontSize: "1rem", letterSpacing: "-0.02em", color: PAPER }}
+                >
+                  {feature.title}
+                </h3>
+                <p className="text-sm leading-relaxed" style={{ color: MUTED }}>
+                  {feature.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div
+            className="mt-6 rounded-2xl p-7"
+            style={{
+              border: `1px solid ${ACCENT}33`,
+              background: `linear-gradient(135deg, rgba(255,91,4,0.06) 0%, rgba(10,10,11,0.95) 60%)`,
+            }}
+          >
+            <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="font-bold" style={{ color: PAPER }}>
+                  All AI features are included in your VIV-Z setup
+                </p>
+                <p className="mt-1 text-sm" style={{ color: MUTED }}>
+                  Configured, trained on your business, and live within days — not months.
+                </p>
+              </div>
+              <Link
+                href="/contact"
+                className="shrink-0 rounded-full px-8 py-3.5 text-sm font-bold text-white transition-all hover:brightness-110"
+                style={{ background: ACCENT }}
+              >
+                Get AI set up →
+              </Link>
+            </div>
+          </div>
+        </section>
+
         <aside
           className="mt-16 rounded-2xl p-8 md:p-10"
           style={{ border: `1px solid ${ACCENT}33`, background: `linear-gradient(135deg, rgba(255,91,4,0.08) 0%, rgba(10,10,11,0.92) 45%)` }}

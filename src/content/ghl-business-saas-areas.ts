@@ -47,6 +47,7 @@ export const ghlBusinessSaasAreas = [
     title: "Reputation & social",
     items: [
       "Review requests, monitoring & response playbooks",
+      "Automated review collection — SMS & email sequences post-appointment",
       "Social planner — scheduling & publishing",
     ],
   },
