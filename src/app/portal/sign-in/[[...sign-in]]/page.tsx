@@ -1,9 +1,5 @@
-import { SignInForm } from "@/components/sign-in-form";
+import { redirect } from "next/navigation";
 
-export default function PortalSignInPage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <SignInForm redirectTo="/portal" />
-    </div>
-  );
+export default function PortalSignInRedirect() {
+  redirect("/?callbackUrl=/portal");
 }

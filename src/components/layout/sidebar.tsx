@@ -55,7 +55,12 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 }
 
 function Logo() {
-  return <CalendarDays className="h-6 w-6 text-indigo-400" />;
+  return (
+    <div className="flex items-center gap-2">
+      <CalendarDays className="h-6 w-6 text-indigo-400 shrink-0" />
+      <span className="text-sm font-semibold text-white">Booking Platform</span>
+    </div>
+  );
 }
 
 export function Sidebar({ mobileOpen, onClose }: SidebarProps) {

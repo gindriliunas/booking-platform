@@ -270,7 +270,7 @@ export function PlanDialog({ open, onOpenChange, providerId, defaultCurrency = "
 
           {!isEdit && (
             <p className="text-xs text-gray-500">
-              A Stripe product and recurring price will be created automatically.
+              Price is stored for invoices and display; payments are tracked manually.
             </p>
           )}
 

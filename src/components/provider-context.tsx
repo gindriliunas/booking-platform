@@ -10,7 +10,6 @@ interface ProviderData {
   timezone: string;
   sessionDurationMins: number;
   currency: string;
-  stripeConfigured: boolean;
   allowIndividualSelfBook: boolean;
   allowGroupSelfBook: boolean;
 }
@@ -40,7 +39,7 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
       if (!res.ok) {
         // Auth failed or server error — redirect to sign-in if 401, setup otherwise
         if (res.status === 401) {
-          router.push("/sign-in");
+          router.push("/");
         } else {
           router.push("/setup");
         }
@@ -53,7 +52,7 @@ export function ProviderProvider({ children }: { children: ReactNode }) {
         router.push("/setup");
       }
     } catch {
-      router.push("/sign-in");
+      router.push("/");
     } finally {
       setLoading(false);
     }

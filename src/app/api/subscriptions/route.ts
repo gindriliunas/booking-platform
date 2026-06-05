@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { subscriptionPlans } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { getStripeForProvider } from "@/lib/stripe/provider";
 import { requireAdminProvider } from "@/lib/auth-provider";
-
-const intervalMap = { weekly: "week", monthly: "month", yearly: "year" } as const;
 
 export async function GET(req: NextRequest) {
   const providerId = req.nextUrl.searchParams.get("providerId");
@@ -29,7 +26,18 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { providerId, name, description, sessionsPerPeriod, sessionDurationMins, billingPeriod, price, currency, sessionType, isPublic } = body;
+  const {
+    providerId,
+    name,
+    description,
+    sessionsPerPeriod,
+    sessionDurationMins,
+    billingPeriod,
+    price,
+    currency,
+    sessionType,
+    isPublic,
+  } = body;
 
   if (!providerId || !name || !sessionsPerPeriod || !price || !billingPeriod) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -38,36 +46,8 @@ export async function POST(req: NextRequest) {
   const authError = await requireAdminProvider(providerId);
   if (authError) return authError;
 
-  let stripePriceId: string | null = null;
-  let stripeProductId: string | null = null;
-
   try {
-    const stripe = await getStripeForProvider(providerId);
-    const product = await stripe.products.create({
-      name,
-      description,
-      metadata: { sessions_per_period: String(parseInt(sessionsPerPeriod)), type: "subscription", session_type: sessionType ?? "individual" },
-    });
-    const stripePrice = await stripe.prices.create({
-      product: product.id,
-      unit_amount: Math.round(parseFloat(price) * 100),
-      currency: currency ?? "usd",
-      recurring: { interval: intervalMap[billingPeriod as keyof typeof intervalMap] },
-    });
-    stripePriceId = stripePrice.id;
-    stripeProductId = product.id;
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    if (msg.includes("No Stripe account linked")) {
-      // proceed without Stripe IDs
-    } else {
-      return NextResponse.json({ error: `Stripe error: ${msg}` }, { status: 502 });
-    }
-  }
-
-  let plan;
-  try {
-    [plan] = await db
+    const [plan] = await db
       .insert(subscriptionPlans)
       .values({
         providerId,
@@ -80,14 +60,12 @@ export async function POST(req: NextRequest) {
         currency: currency ?? "usd",
         sessionType: sessionType ?? "individual",
         isPublic: isPublic ?? true,
-        stripePriceId,
-        stripeProductId,
       })
       .returning();
+
+    return NextResponse.json({ plan }, { status: 201 });
   } catch (err) {
     console.error("POST /api/subscriptions db error:", err);
-    return NextResponse.json({ error: "Database error — have you run drizzle-kit push?" }, { status: 500 });
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
   }
-
-  return NextResponse.json({ plan }, { status: 201 });
 }

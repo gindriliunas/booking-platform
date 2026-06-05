@@ -8,12 +8,6 @@ import {
   bookingParticipants,
 } from "@/lib/db/schema";
 import { eq, and, gte, asc, gt } from "drizzle-orm";
-import {
-  TRIGGERS,
-  fireGhlTrigger,
-  getClientTriggerContext,
-} from "@/lib/ghl/triggers";
-
 async function resolvePackageForDeduction(booking: typeof bookings.$inferSelect) {
   if (booking.clientPackageId) {
     const [pkg] = await db
@@ -277,59 +271,6 @@ export async function PATCH(
   }
 
   const updated = updatedBookings[0];
-
-  // ── GHL triggers ──────────────────────────────────────────────────────────
-  if (status === "cancelled" || status === "completed") {
-    (async () => {
-      try {
-        if (updated.clientId && updated.sessionType !== "group") {
-          const ctx = await getClientTriggerContext(updated.clientId);
-          if (ctx) {
-            const durationMins = Math.round(
-              (updated.endTime.getTime() - updated.startTime.getTime()) / 60000
-            );
-            const baseData = {
-              bookingId: updated.id,
-              sessionDate: updated.startTime.toISOString(),
-              sessionTime: updated.startTime.toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-                hour12: true,
-              }),
-              sessionDurationMins: durationMins,
-              providerName: "",
-            };
-
-            if (status === "cancelled") {
-              await fireGhlTrigger(
-                ctx.locationId,
-                ctx.contactId,
-                TRIGGERS.SESSION_CANCELLED,
-                baseData
-              );
-            } else if (status === "completed") {
-              let sessionsRemaining = 0;
-              if (updated.clientPackageId) {
-                const [pkg] = await db
-                  .select({ sessionsRemaining: clientPackages.sessionsRemaining })
-                  .from(clientPackages)
-                  .where(eq(clientPackages.id, updated.clientPackageId));
-                sessionsRemaining = pkg?.sessionsRemaining ?? 0;
-              }
-              await fireGhlTrigger(
-                ctx.locationId,
-                ctx.contactId,
-                TRIGGERS.SESSION_COMPLETED,
-                { ...baseData, sessionsRemaining }
-              );
-            }
-          }
-        }
-      } catch (err) {
-        console.error("[GHL Trigger] booking status trigger failed:", err);
-      }
-    })();
-  }
 
   return NextResponse.json({ booking: updated });
 }

@@ -89,7 +89,6 @@ export default function ClientDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const paymentSuccess = searchParams.get("payment") === "success";
 
   const [client, setClient] = useState<Client | null>(null);
   const [pkgs, setPkgs] = useState<ClientPackage[]>([]);
@@ -101,7 +100,6 @@ export default function ClientDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [responseDialogId, setResponseDialogId] = useState<string | null>(null);
-  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [deletingPkg, setDeletingPkg] = useState<string | null>(null);
   const [inviting, setInviting] = useState(false);
   const [inviteSent, setInviteSent] = useState(false);
@@ -109,8 +107,8 @@ export default function ClientDetailPage() {
   const [onboarding, setOnboarding] = useState<Onboarding | null>(null);
 
   // Available package templates and plans for selling
-  const [availablePackages, setAvailablePackages] = useState<{ id: string; name: string; price: string; currency: string; sessionCount: number; sessionType?: "individual" | "group"; stripePriceId?: string | null }[]>([]);
-  const [availablePlans, setAvailablePlans] = useState<{ id: string; name: string; price: string; currency: string; sessionsPerPeriod: number; billingPeriod: string; sessionType?: "individual" | "group"; stripePriceId?: string | null }[]>([]);
+  const [availablePackages, setAvailablePackages] = useState<{ id: string; name: string; price: string; currency: string; sessionCount: number; sessionType?: "individual" | "group" }[]>([]);
+  const [availablePlans, setAvailablePlans] = useState<{ id: string; name: string; price: string; currency: string; sessionsPerPeriod: number; billingPeriod: string; sessionType?: "individual" | "group" }[]>([]);
 
   const fetchData = useCallback(async () => {
     if (!PROVIDER_ID) return;
@@ -185,23 +183,6 @@ export default function ClientDetailPage() {
     }
   }
 
-  async function handleSellPackage(packageId: string) {
-    setCheckoutLoading(packageId);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "package", itemId: packageId, clientId: id }),
-      });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {
-      alert("Failed to create checkout session");
-    } finally {
-      setCheckoutLoading(null);
-    }
-  }
-
   async function handleSendInvite() {
     setInviting(true);
     try {
@@ -233,34 +214,11 @@ export default function ClientDetailPage() {
     }
   }
 
-  async function handleSellSubscription(planId: string) {
-    setCheckoutLoading(planId);
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "subscription", itemId: planId, clientId: id }),
-      });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-    } catch {
-      alert("Failed to create checkout session");
-    } finally {
-      setCheckoutLoading(null);
-    }
-  }
-
   if (loading) return <div className="text-sm text-gray-500 py-8 text-center">Loading…</div>;
   if (!client) return <div className="text-sm text-red-600 py-8 text-center">Client not found.</div>;
 
   return (
     <div className="space-y-6 max-w-4xl">
-      {paymentSuccess && (
-        <div className="rounded-lg bg-green-50 border border-green-200 p-4 text-sm text-green-800">
-          Payment successful! The package or subscription will be activated once the webhook is processed.
-        </div>
-      )}
-
       {/* Header */}
       <div className="flex items-start gap-3">
         <Link href="/clients" className="mt-1 text-gray-400 hover:text-gray-600 shrink-0">

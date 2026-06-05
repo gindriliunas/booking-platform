@@ -7,7 +7,7 @@ export async function GET() {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const client = await getPortalClient(session.uid);
+    const client = await getPortalClient(session.email);
     if (!client) {
       return NextResponse.json({ error: "no_account" }, { status: 404 });
     }
@@ -18,7 +18,6 @@ export async function GET() {
         name: client.name,
         email: client.email,
         phone: client.phone,
-        stripeCustomerId: client.stripeCustomerId,
         providerId: client.providerId,
       },
     });

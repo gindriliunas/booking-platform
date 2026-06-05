@@ -1,14 +1,17 @@
 "use client";
+
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-export function CheckoutButton({
+export function ClaimPackageButton({
   packageId,
-  label = "Buy",
+  label = "Claim",
 }: {
   packageId: string;
   label?: string;
 }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -16,20 +19,17 @@ export function CheckoutButton({
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/portal/checkout", {
+      const res = await fetch("/api/portal/claim-package", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "package", itemId: packageId }),
+        body: JSON.stringify({ packageId }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed");
-      const url = data.url;
-      if (typeof url !== "string" || !url) {
-        throw new Error("No checkout URL returned");
-      }
-      window.location.assign(url);
+      router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Error");
+    } finally {
       setLoading(false);
     }
   }
@@ -37,7 +37,7 @@ export function CheckoutButton({
   return (
     <div>
       <Button type="button" size="sm" onClick={handleClick} disabled={loading}>
-        {loading ? "Redirecting…" : label}
+        {loading ? "…" : label}
       </Button>
       {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
     </div>

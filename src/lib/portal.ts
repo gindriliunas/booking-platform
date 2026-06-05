@@ -1,32 +1,26 @@
-import { adminAuth } from "@/lib/firebase/admin";
 import { db } from "@/lib/db";
 import { clients } from "@/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
-export async function getPortalClient(uid: string) {
-  // Fast path: already linked by firebaseUid
-  let [client] = await db
-    .select()
-    .from(clients)
-    .where(eq(clients.firebaseUid, uid));
-  if (client) return client;
-
-  // First sign-in: try to link by email from Firebase Auth
-  const firebaseUser = await adminAuth.getUser(uid).catch(() => null);
-  const email = firebaseUser?.email;
+/** Resolve portal client by email (must match a client row for the signed-in provider). */
+export async function getPortalClient(email: string | null | undefined) {
   if (!email) return null;
-
-  const [matched] = await db
+  const [client] = await db
     .select()
     .from(clients)
-    .where(eq(clients.email, email));
-  if (!matched) return null;
+    .where(eq(clients.email, email.toLowerCase()));
+  return client ?? null;
+}
 
-  // Link the Firebase UID to the client record (one-time write)
-  const [linked] = await db
-    .update(clients)
-    .set({ firebaseUid: uid, updatedAt: new Date() })
-    .where(eq(clients.id, matched.id))
-    .returning();
-  return linked;
+/** Client for provider portal: same email and belongs to this provider. */
+export async function getPortalClientForProvider(
+  email: string | null | undefined,
+  providerId: string
+) {
+  if (!email) return null;
+  const [client] = await db
+    .select()
+    .from(clients)
+    .where(and(eq(clients.email, email.toLowerCase()), eq(clients.providerId, providerId)));
+  return client ?? null;
 }

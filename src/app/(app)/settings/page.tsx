@@ -67,15 +67,11 @@ interface Provider {
   timezone: string;
   sessionDurationMins: number;
   currency: string;
-  stripeConfigured: boolean;
-  stripeSecretKeyMasked?: string | null;
-  stripeWebhookSecretMasked?: string | null;
   allowIndividualSelfBook: boolean;
   allowGroupSelfBook: boolean;
   enableWaitlist: boolean;
   lateCancelWindowHours?: number | null;
   lateCancelAction?: string | null;
-  lateCancelChargeAmount?: string | null;
   invoiceBusinessName?: string | null;
   invoiceAddress?: string | null;
   invoiceTaxId?: string | null;
@@ -109,19 +105,9 @@ export default function SettingsPage() {
   // Cancellation policy
   const [cancelEnabled, setCancelEnabled] = useState(false);
   const [cancelWindowHours, setCancelWindowHours] = useState("24");
-  const [cancelAction, setCancelAction] = useState<"deduct_session" | "charge">("deduct_session");
-  const [cancelChargeAmount, setCancelChargeAmount] = useState("");
+  const [cancelAction] = useState<"deduct_session">("deduct_session");
   const [cancelSaving, setCancelSaving] = useState(false);
   const [cancelSaved, setCancelSaved] = useState(false);
-
-  // Stripe form
-  const [stripeSecretKey, setStripeSecretKey] = useState("");
-  const [stripeWebhookSecret, setStripeWebhookSecret] = useState("");
-  const [showSecretKey, setShowSecretKey] = useState(false);
-  const [showWebhookSecret, setShowWebhookSecret] = useState(false);
-  const [stripeSaving, setStripeSaving] = useState(false);
-  const [stripeSaved, setStripeSaved] = useState(false);
-  const [stripeError, setStripeError] = useState("");
 
   // Invoice settings
   const [invoiceBusinessName, setInvoiceBusinessName] = useState("");
@@ -139,8 +125,17 @@ export default function SettingsPage() {
   const [gcalDisconnecting, setGcalDisconnecting] = useState(false);
 
   // Embed
+  const [portalUrl, setPortalUrl] = useState("/portal");
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setPortalUrl(`${window.location.origin}/portal`);
+    }
+  }, []);
+
+  const portalEmbedSnippet = `<iframe\n  src="${portalUrl}"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border:none;border-radius:12px;min-height:70vh;"\n></iframe>`;
 
   function copyToClipboard(text: string, which: "link" | "embed") {
     navigator.clipboard.writeText(text);
@@ -181,8 +176,6 @@ export default function SettingsPage() {
       const hasPolicy = !!p.lateCancelWindowHours && !!p.lateCancelAction;
       setCancelEnabled(hasPolicy);
       setCancelWindowHours(String(p.lateCancelWindowHours ?? 24));
-      setCancelAction((p.lateCancelAction as "deduct_session" | "charge") ?? "deduct_session");
-      setCancelChargeAmount(p.lateCancelChargeAmount ?? "");
       setInvoiceBusinessName(p.invoiceBusinessName ?? "");
       setInvoiceAddress(p.invoiceAddress ?? "");
       setInvoiceTaxId(p.invoiceTaxId ?? "");
@@ -233,50 +226,6 @@ export default function SettingsPage() {
     }
   }
 
-  async function handleStripeSave(e: React.FormEvent) {
-    e.preventDefault();
-    if (!provider) return;
-    setStripeSaving(true);
-    setStripeError("");
-    setStripeSaved(false);
-    try {
-      const res = await fetch(`/api/providers/${provider.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          stripeSecretKey: stripeSecretKey || undefined,
-          stripeWebhookSecret: stripeWebhookSecret || undefined,
-        }),
-      });
-      if (!res.ok) throw new Error((await res.json()).error ?? "Save failed");
-      setStripeSaved(true);
-      setStripeSecretKey("");
-      setStripeWebhookSecret("");
-      setTimeout(() => setStripeSaved(false), 3000);
-      await fetchProvider(); // refresh masked key display
-    } catch (err) {
-      setStripeError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setStripeSaving(false);
-    }
-  }
-
-  async function handleStripeDisconnect() {
-    if (!provider) return;
-    if (!confirm("Remove Stripe credentials? Checkout links will stop working.")) return;
-    setStripeSaving(true);
-    try {
-      await fetch(`/api/providers/${provider.id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ stripeSecretKey: "", stripeWebhookSecret: "" }),
-      });
-      await fetchProvider();
-    } finally {
-      setStripeSaving(false);
-    }
-  }
-
   async function handleAvailabilitySave(e: React.FormEvent) {
     e.preventDefault();
     if (!provider) return;
@@ -316,9 +265,8 @@ export default function SettingsPage() {
         ? {
             lateCancelWindowHours: cancelWindowHours,
             lateCancelAction: cancelAction,
-            lateCancelChargeAmount: cancelAction === "charge" ? cancelChargeAmount : null,
           }
-        : { lateCancelWindowHours: null, lateCancelAction: null, lateCancelChargeAmount: null };
+        : { lateCancelWindowHours: null, lateCancelAction: null };
       const res = await fetch(`/api/providers/${provider.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -555,131 +503,6 @@ export default function SettingsPage() {
 
         {/* ── Finance ── */}
         <TabsContent value="finance" className="mt-6 space-y-6">
-          {/* Stripe */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Stripe</CardTitle>
-                <div className="flex items-center gap-2">
-                  {provider?.stripeConfigured ? (
-                    <span className="rounded-full bg-green-50 px-2.5 py-0.5 text-xs font-medium text-green-700">
-                      Connected
-                    </span>
-                  ) : (
-                    <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-medium text-gray-500">
-                      Not connected
-                    </span>
-                  )}
-                  <a
-                    href="https://dashboard.stripe.com/apikeys"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-indigo-600 hover:underline flex items-center gap-1"
-                  >
-                    Stripe Dashboard <ExternalLink className="h-3 w-3" />
-                  </a>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {provider?.stripeConfigured && (
-                <div className="mb-4 rounded-lg bg-gray-50 border border-gray-200 p-3 text-sm space-y-1">
-                  <div className="flex justify-between text-gray-700">
-                    <span className="text-gray-500">Secret key</span>
-                    <code className="font-mono">{provider.stripeSecretKeyMasked}</code>
-                  </div>
-                  {provider.stripeWebhookSecretMasked && (
-                    <div className="flex justify-between text-gray-700">
-                      <span className="text-gray-500">Webhook secret</span>
-                      <code className="font-mono">{provider.stripeWebhookSecretMasked}</code>
-                    </div>
-                  )}
-                </div>
-              )}
-              <form onSubmit={handleStripeSave} className="space-y-4">
-                <div className="space-y-1">
-                  <Label htmlFor="stripeSecretKey">
-                    {provider?.stripeConfigured ? "Replace Secret Key" : "Secret Key"}
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="stripeSecretKey"
-                      type={showSecretKey ? "text" : "password"}
-                      value={stripeSecretKey}
-                      onChange={(e) => setStripeSecretKey(e.target.value)}
-                      placeholder="sk_live_… or sk_test_…"
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowSecretKey((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showSecretKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Found in Stripe Dashboard → Developers → API keys. Use a restricted key with Products, Prices, and Checkout Sessions write access.
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <Label htmlFor="stripeWebhookSecret">
-                    {provider?.stripeWebhookSecretMasked ? "Replace Webhook Secret" : "Webhook Secret"}{" "}
-                    <span className="text-gray-400">(optional)</span>
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="stripeWebhookSecret"
-                      type={showWebhookSecret ? "text" : "password"}
-                      value={stripeWebhookSecret}
-                      onChange={(e) => setStripeWebhookSecret(e.target.value)}
-                      placeholder="whsec_…"
-                      className="pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowWebhookSecret((v) => !v)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    >
-                      {showWebhookSecret ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    Required to verify Stripe webhook events. Set your webhook endpoint to{" "}
-                    <code className="bg-gray-100 px-1 rounded text-xs">
-                      {process.env.NEXT_PUBLIC_APP_URL ?? "https://yourapp.com"}/api/stripe/webhook
-                    </code>
-                  </p>
-                </div>
-                {stripeError && <p className="text-sm text-red-600">{stripeError}</p>}
-                <div className="flex items-center gap-3">
-                  <Button
-                    type="submit"
-                    disabled={stripeSaving || (!stripeSecretKey && !stripeWebhookSecret)}
-                  >
-                    {stripeSaving ? "Saving…" : provider?.stripeConfigured ? "Update Keys" : "Connect Stripe"}
-                  </Button>
-                  {stripeSaved && (
-                    <span className="flex items-center gap-1.5 text-sm text-green-600">
-                      <Check className="h-4 w-4" /> Saved
-                    </span>
-                  )}
-                  {provider?.stripeConfigured && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={handleStripeDisconnect}
-                      disabled={stripeSaving}
-                      className="ml-auto text-red-600 border-red-200 hover:bg-red-50"
-                    >
-                      Disconnect
-                    </Button>
-                  )}
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-
           {/* Cancellation Policy */}
           <Card>
             <CardHeader>
@@ -717,32 +540,9 @@ export default function SettingsPage() {
                       />
                       <p className="text-xs text-gray-400">Cancellations within this many hours of the session start are considered late</p>
                     </div>
-                    <div className="space-y-1">
-                      <Label>Late cancellation penalty</Label>
-                      <Select value={cancelAction} onValueChange={(v) => setCancelAction(v as "deduct_session" | "charge")}>
-                        <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="deduct_session">Deduct session credit</SelectItem>
-                          <SelectItem value="charge">Charge a fee</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    {cancelAction === "charge" && (
-                      <div className="space-y-1">
-                        <Label htmlFor="cancelCharge">Charge amount ({currency.toUpperCase()})</Label>
-                        <Input
-                          id="cancelCharge"
-                          type="number"
-                          min="1"
-                          step="0.01"
-                          value={cancelChargeAmount}
-                          onChange={(e) => setCancelChargeAmount(e.target.value)}
-                          placeholder="e.g. 25.00"
-                          className="w-40"
-                        />
-                        <p className="text-xs text-gray-400">Charged to the client&apos;s saved payment method. If no payment method is on file, a manual collection notice is logged.</p>
-                      </div>
-                    )}
+                    <p className="text-sm text-gray-600">
+                      Late cancellations will deduct one session credit from the client&apos;s package.
+                    </p>
                   </div>
                 )}
                 <div className="flex items-center gap-3 pt-1">
@@ -1045,14 +845,14 @@ export default function SettingsPage() {
                 <Label>Portal link</Label>
                 <div className="flex items-center gap-2">
                   <code className="flex-1 rounded-lg bg-gray-50 border border-gray-200 px-3 py-2 text-sm font-mono text-gray-700 truncate select-all">
-                    https://book.viv-z.com/portal
+                    {portalUrl}
                   </code>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     className="shrink-0"
-                    onClick={() => copyToClipboard("https://book.viv-z.com/portal", "link")}
+                    onClick={() => copyToClipboard(portalUrl, "link")}
                   >
                     {copiedLink ? (
                       <span className="flex items-center gap-1.5 text-green-600"><Check className="h-3.5 w-3.5" /> Copied</span>
@@ -1067,17 +867,12 @@ export default function SettingsPage() {
                 <p className="text-xs text-gray-400">
                   Paste this snippet into any page on your website. The portal loads inside an inline frame. Google does not allow sign-in inside another site&apos;s frame; the button continues in the full browser tab (same tab, not a popup). Use a min-height so the iframe stays visible on small screens.
                 </p>
-                <pre className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-xs font-mono text-gray-700 overflow-x-auto whitespace-pre-wrap">{`<iframe\n  src="https://book.viv-z.com/portal"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border:none;border-radius:12px;min-height:70vh;"\n  allow="payment"\n></iframe>`}</pre>
+                <pre className="rounded-lg bg-gray-50 border border-gray-200 px-4 py-3 text-xs font-mono text-gray-700 overflow-x-auto whitespace-pre-wrap">{portalEmbedSnippet}</pre>
                 <Button
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() =>
-                    copyToClipboard(
-                      `<iframe\n  src="https://book.viv-z.com/portal"\n  width="100%"\n  height="700"\n  frameborder="0"\n  style="border:none;border-radius:12px;min-height:70vh;"\n  allow="payment"\n></iframe>`,
-                      "embed"
-                    )
-                  }
+                  onClick={() => copyToClipboard(portalEmbedSnippet, "embed")}
                 >
                   {copiedEmbed ? (
                     <span className="flex items-center gap-1.5 text-green-600"><Check className="h-3.5 w-3.5" /> Copied</span>

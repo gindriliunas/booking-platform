@@ -2,11 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { clientPackages, packages, clients, providers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import {
-  TRIGGERS,
-  fireGhlTrigger,
-  getClientTriggerContext,
-} from "@/lib/ghl/triggers";
 import { sendInvoiceEmail } from "@/lib/email/invoice";
 
 function formatCurrencyAmount(amount: string, currency: string): string {
@@ -44,21 +39,6 @@ export async function POST(req: NextRequest) {
       expiresAt,
     })
     .returning();
-
-  // Fire package_purchased trigger (non-blocking)
-  (async () => {
-    try {
-      const ctx = await getClientTriggerContext(clientId);
-      if (!ctx) return;
-      await fireGhlTrigger(ctx.locationId, ctx.contactId, TRIGGERS.PACKAGE_PURCHASED, {
-        packageName: pkg.name,
-        sessionsTotal: pkg.sessionCount,
-        expiresAt: expiresAt?.toISOString() ?? null,
-      });
-    } catch (err) {
-      console.error("[GHL Trigger] package_purchased (manual) failed:", err);
-    }
-  })();
 
   // Auto-send invoice if provider setting is enabled (non-blocking)
   (async () => {

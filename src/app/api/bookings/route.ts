@@ -1,20 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import {
-  bookings,
-  bookingSeries,
-  blockedTimes,
-  providers,
-} from "@/lib/db/schema";
-import { eq, and, gte } from "drizzle-orm";
+import { bookings, bookingSeries, blockedTimes } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 import { requireAdminProvider } from "@/lib/auth-provider";
 import { addWeeks, addMonths } from "date-fns";
-import {
-  TRIGGERS,
-  fireGhlTrigger,
-  fireSessionsUpdatedTrigger,
-  getClientTriggerContext,
-} from "@/lib/ghl/triggers";
 
 export async function GET(req: NextRequest) {
   const providerId = req.nextUrl.searchParams.get("providerId");
@@ -29,7 +18,7 @@ export async function GET(req: NextRequest) {
       with: {
         client: true,
         participants: {
-          where: (p, { eq }) => eq(p.status, "booked"),
+          where: (p, { eq: eqFn }) => eqFn(p.status, "booked"),
           with: { client: true },
         },
       },
@@ -54,7 +43,7 @@ export async function POST(req: NextRequest) {
     clientPackageId,
     sessionType,
     maxParticipants,
-    recurrence, // { frequency: "weekly" | "biweekly" | "monthly"; occurrences: number }
+    recurrence,
   } = body;
 
   if (!providerId || !startTime || !endTime) {
@@ -73,7 +62,6 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── Recurring series ────────────────────────────────────────────────────────
   if (recurrence && recurrence.occurrences >= 2) {
     const { frequency, occurrences } = recurrence as {
       frequency: "weekly" | "biweekly" | "monthly";
@@ -87,19 +75,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "occurrences must be between 2 and 52" }, { status: 400 });
     }
 
-
     const baseStart = new Date(startTime);
     const baseEnd = new Date(endTime);
     const durationMs = baseEnd.getTime() - baseStart.getTime();
 
     const createdBookings = await db.transaction(async (tx) => {
-      // Create the series record
       const [series] = await tx
         .insert(bookingSeries)
         .values({ providerId, frequency, occurrences })
         .returning();
 
-      // Insert each occurrence
       const inserted = [];
       for (let i = 0; i < occurrences; i++) {
         let occStart: Date;
@@ -109,21 +94,25 @@ export async function POST(req: NextRequest) {
 
         const occEnd = new Date(occStart.getTime() + durationMs);
 
-        const [booking] = await tx.insert(bookings).values({
-          providerId,
-          clientId: sessionType === "group" ? null : (clientId ?? null),
-          title: title ?? (sessionType === "group" ? "Group Session" : "Session"),
-          startTime: occStart,
-          endTime: occEnd,
-          status: status ?? "scheduled",
-          notes: notes ?? null,
-          clientPackageId: sessionType === "group" ? null : (clientPackageId ?? null),
-          clientSubscriptionId: sessionType === "group" ? null : (body.clientSubscriptionId ?? null),
-          sessionSource: clientPackageId && sessionType !== "group" ? "package" : "single",
-          sessionType: sessionType ?? "individual",
-          maxParticipants: sessionType === "group" ? parseInt(maxParticipants) : null,
-          bookingSeriesId: series.id,
-        }).returning();
+        const [booking] = await tx
+          .insert(bookings)
+          .values({
+            providerId,
+            clientId: sessionType === "group" ? null : (clientId ?? null),
+            title: title ?? (sessionType === "group" ? "Group Session" : "Session"),
+            startTime: occStart,
+            endTime: occEnd,
+            status: status ?? "scheduled",
+            notes: notes ?? null,
+            clientPackageId: sessionType === "group" ? null : (clientPackageId ?? null),
+            clientSubscriptionId:
+              sessionType === "group" ? null : (body.clientSubscriptionId ?? null),
+            sessionSource: clientPackageId && sessionType !== "group" ? "package" : "single",
+            sessionType: sessionType ?? "individual",
+            maxParticipants: sessionType === "group" ? parseInt(maxParticipants) : null,
+            bookingSeriesId: series.id,
+          })
+          .returning();
 
         inserted.push(booking);
       }
@@ -131,70 +120,25 @@ export async function POST(req: NextRequest) {
       return { bookings: inserted, seriesId: series.id };
     });
 
-    // Fire GHL trigger for first booking only (non-blocking)
-    const firstBooking = createdBookings.bookings[0];
-    if (clientId && sessionType !== "group" && firstBooking) {
-      (async () => {
-        try {
-          const ctx = await getClientTriggerContext(clientId);
-          if (!ctx) return;
-          const [provider] = await db.select({ name: providers.name }).from(providers).where(eq(providers.id, providerId));
-          await fireGhlTrigger(ctx.locationId, ctx.contactId, TRIGGERS.SESSION_BOOKED, {
-            bookingId: firstBooking.id,
-            sessionDate: firstBooking.startTime.toISOString(),
-            sessionTime: firstBooking.startTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }),
-            sessionDurationMins: Math.round(durationMs / 60000),
-            providerName: provider?.name ?? "",
-            recurringSeries: true,
-            occurrences,
-          });
-          if (clientPackageId) await fireSessionsUpdatedTrigger(clientPackageId);
-        } catch (err) {
-          console.error("[GHL Trigger] series session_booked failed:", err);
-        }
-      })();
-    }
-
     return NextResponse.json(createdBookings, { status: 201 });
   }
 
-  // ── Single booking (original logic) ─────────────────────────────────────────
-  const [booking] = await db.insert(bookings).values({
-    providerId,
-    clientId: sessionType === "group" ? null : (clientId ?? null),
-    title: title ?? (sessionType === "group" ? "Group Session" : "Session"),
-    startTime: new Date(startTime),
-    endTime: new Date(endTime),
-    status: status ?? "scheduled",
-    notes: notes ?? null,
-    clientPackageId: sessionType === "group" ? null : (clientPackageId ?? null),
-    sessionSource: clientPackageId && sessionType !== "group" ? "package" : "single",
-    sessionType: sessionType ?? "individual",
-    maxParticipants: sessionType === "group" ? parseInt(maxParticipants) : null,
-  }).returning();
-
-  if (clientId && sessionType !== "group") {
-    (async () => {
-      try {
-        const ctx = await getClientTriggerContext(clientId);
-        if (!ctx) return;
-        const durationMins = Math.round(
-          (new Date(endTime).getTime() - new Date(startTime).getTime()) / 60000
-        );
-        const [provider] = await db.select({ name: providers.name }).from(providers).where(eq(providers.id, providerId));
-        await fireGhlTrigger(ctx.locationId, ctx.contactId, TRIGGERS.SESSION_BOOKED, {
-          bookingId: booking.id,
-          sessionDate: booking.startTime.toISOString(),
-          sessionTime: booking.startTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true }),
-          sessionDurationMins: durationMins,
-          providerName: provider?.name ?? "",
-        });
-        if (clientPackageId) await fireSessionsUpdatedTrigger(clientPackageId);
-      } catch (err) {
-        console.error("[GHL Trigger] session_booked failed:", err);
-      }
-    })();
-  }
+  const [booking] = await db
+    .insert(bookings)
+    .values({
+      providerId,
+      clientId: sessionType === "group" ? null : (clientId ?? null),
+      title: title ?? (sessionType === "group" ? "Group Session" : "Session"),
+      startTime: new Date(startTime),
+      endTime: new Date(endTime),
+      status: status ?? "scheduled",
+      notes: notes ?? null,
+      clientPackageId: sessionType === "group" ? null : (clientPackageId ?? null),
+      sessionSource: clientPackageId && sessionType !== "group" ? "package" : "single",
+      sessionType: sessionType ?? "individual",
+      maxParticipants: sessionType === "group" ? parseInt(maxParticipants) : null,
+    })
+    .returning();
 
   return NextResponse.json({ booking }, { status: 201 });
 }

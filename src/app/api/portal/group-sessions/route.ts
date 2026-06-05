@@ -10,7 +10,7 @@ export async function GET() {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const client = await getPortalClient(session.uid);
+    const client = await getPortalClient(session.email);
     if (!client) return NextResponse.json({ sessions: [] });
 
     const now = new Date();

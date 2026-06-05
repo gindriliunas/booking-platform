@@ -11,7 +11,6 @@ import {
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
-// Enums
 export const recurrenceFrequencyEnum = pgEnum("recurrence_frequency", [
   "weekly",
   "biweekly",
@@ -25,13 +24,7 @@ export const waitlistStatusEnum = pgEnum("waitlist_status", [
   "cancelled",
 ]);
 
-export const lateCancelOutcomeEnum = pgEnum("late_cancel_outcome", [
-  "deducted",
-  "charged",
-  "charge_failed",
-  "requires_collection",
-  "waived",
-]);
+export const lateCancelOutcomeEnum = pgEnum("late_cancel_outcome", ["deducted", "waived"]);
 
 export const questionTypeEnum = pgEnum("question_type", [
   "text",
@@ -83,42 +76,20 @@ export const sessionTypeEnum = pgEnum("session_type", ["individual", "group"]);
 
 export const participantStatusEnum = pgEnum("participant_status", ["booked", "cancelled"]);
 
-// GHL installations — one row per connected GHL sub-account (location)
-export const installations = pgTable("installations", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  locationId: text("location_id").notNull().unique(),
-  companyId: text("company_id"),
-  accessToken: text("access_token").notNull(),
-  refreshToken: text("refresh_token").notNull(),
-  tokenExpiresAt: timestamp("token_expires_at").notNull(),
-  installedAt: timestamp("installed_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-// Provider profile — one per installation
 export const providers = pgTable("providers", {
   id: uuid("id").primaryKey().defaultRandom(),
-  installationId: uuid("installation_id")
-    .references(() => installations.id, { onDelete: "cascade" })
-    .unique(),
   name: text("name").notNull(),
-  email: text("email"),
+  email: text("email").unique(),
   phone: text("phone"),
-  serviceType: text("service_type"), // e.g. "Personal Trainer", "Massage Therapist"
+  serviceType: text("service_type"),
   timezone: text("timezone").notNull().default("UTC"),
   sessionDurationMins: integer("session_duration_mins").notNull().default(60),
   currency: text("currency").notNull().default("usd"),
-  stripeAccountId: text("stripe_account_id"), // Stripe Connect (future)
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSecretKey: text("stripe_secret_key"), // Provider's own Stripe secret key
-  stripeWebhookSecret: text("stripe_webhook_secret"), // Provider's webhook signing secret
   allowIndividualSelfBook: boolean("allow_individual_self_book").notNull().default(true),
   allowGroupSelfBook: boolean("allow_group_self_book").notNull().default(true),
   enableWaitlist: boolean("enable_waitlist").notNull().default(false),
   lateCancelWindowHours: integer("late_cancel_window_hours"),
-  lateCancelAction: text("late_cancel_action"), // "deduct_session" | "charge"
-  lateCancelChargeAmount: decimal("late_cancel_charge_amount", { precision: 10, scale: 2 }),
-  // Invoice settings
+  lateCancelAction: text("late_cancel_action"),
   invoiceBusinessName: text("invoice_business_name"),
   invoiceAddress: text("invoice_address"),
   invoiceTaxId: text("invoice_tax_id"),
@@ -126,18 +97,16 @@ export const providers = pgTable("providers", {
   invoiceFooterNote: text("invoice_footer_note"),
   autoSendInvoiceOnPackage: boolean("auto_send_invoice_on_package").notNull().default(false),
   autoSendInvoiceOnSubscription: boolean("auto_send_invoice_on_subscription").notNull().default(false),
-  // Google Calendar integration
   googleCalendarAccessToken: text("google_calendar_access_token"),
   googleCalendarRefreshToken: text("google_calendar_refresh_token"),
   googleCalendarTokenExpiresAt: timestamp("google_calendar_token_expires_at"),
-  googleCalendarId: text("google_calendar_id"), // selected calendar ID
+  googleCalendarId: text("google_calendar_id"),
   googleCalendarSyncEnabled: boolean("google_calendar_sync_enabled").notNull().default(false),
+  passwordHash: text("password_hash"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
-  firebaseUid: text("firebase_uid"),
 });
 
-// Session packages — e.g. "10 sessions for $500"
 export const packages = pgTable("packages", {
   id: uuid("id").primaryKey().defaultRandom(),
   providerId: uuid("provider_id")
@@ -146,12 +115,10 @@ export const packages = pgTable("packages", {
   name: text("name").notNull(),
   description: text("description"),
   sessionCount: integer("session_count").notNull(),
-  sessionDurationMins: integer("session_duration_mins"), // null = use provider default
+  sessionDurationMins: integer("session_duration_mins"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("usd"),
-  validityDays: integer("validity_days"), // null = no expiry
-  stripePriceId: text("stripe_price_id"),
-  stripeProductId: text("stripe_product_id"),
+  validityDays: integer("validity_days"),
   isActive: boolean("is_active").notNull().default(true),
   isPublic: boolean("is_public").notNull().default(true),
   isFreeTrialSession: boolean("is_free_trial_session").notNull().default(false),
@@ -160,7 +127,6 @@ export const packages = pgTable("packages", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Subscription plans — e.g. "4 sessions/month for $200"
 export const subscriptionPlans = pgTable("subscription_plans", {
   id: uuid("id").primaryKey().defaultRandom(),
   providerId: uuid("provider_id")
@@ -169,37 +135,30 @@ export const subscriptionPlans = pgTable("subscription_plans", {
   name: text("name").notNull(),
   description: text("description"),
   sessionsPerPeriod: integer("sessions_per_period").notNull(),
-  sessionDurationMins: integer("session_duration_mins"), // null = use provider default
+  sessionDurationMins: integer("session_duration_mins"),
   billingPeriod: billingPeriodEnum("billing_period").notNull().default("monthly"),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   currency: text("currency").notNull().default("usd"),
-  stripePriceId: text("stripe_price_id"),
-  stripeProductId: text("stripe_product_id"),
   isActive: boolean("is_active").notNull().default(true),
   isPublic: boolean("is_public").notNull().default(true),
   sessionType: sessionTypeEnum("session_type").notNull().default("individual"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Clients — synced from GHL contacts
 export const clients = pgTable("clients", {
   id: uuid("id").primaryKey().defaultRandom(),
   providerId: uuid("provider_id")
     .notNull()
     .references(() => providers.id, { onDelete: "cascade" }),
-  ghlContactId: text("ghl_contact_id").notNull(),
   name: text("name").notNull(),
   email: text("email"),
   phone: text("phone"),
-  stripeCustomerId: text("stripe_customer_id"),
   notes: text("notes"),
   isActive: boolean("is_active").notNull().default(true),
-  firebaseUid: text("firebase_uid"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Client package purchases
 export const clientPackages = pgTable("client_packages", {
   id: uuid("id").primaryKey().defaultRandom(),
   clientId: uuid("client_id")
@@ -212,14 +171,11 @@ export const clientPackages = pgTable("client_packages", {
   sessionsUsed: integer("sessions_used").notNull().default(0),
   sessionsRemaining: integer("sessions_remaining").notNull(),
   status: packageStatusEnum("status").notNull().default("active"),
-  paymentMethod: text("payment_method"), // "stripe" | "cash" | "bank" | "other" | null
-  stripePaymentIntentId: text("stripe_payment_intent_id"),
-  stripeCheckoutSessionId: text("stripe_checkout_session_id"),
+  paymentMethod: text("payment_method"),
   purchasedAt: timestamp("purchased_at").defaultNow().notNull(),
   expiresAt: timestamp("expires_at"),
 });
 
-// Client subscriptions
 export const clientSubscriptions = pgTable("client_subscriptions", {
   id: uuid("id").primaryKey().defaultRandom(),
   clientId: uuid("client_id")
@@ -233,14 +189,11 @@ export const clientSubscriptions = pgTable("client_subscriptions", {
   sessionsPerPeriod: integer("sessions_per_period").notNull(),
   currentPeriodStart: timestamp("current_period_start"),
   currentPeriodEnd: timestamp("current_period_end"),
-  paymentMethod: text("payment_method"), // "stripe" | "cash" | "bank" | "other"
-  stripeSubscriptionId: text("stripe_subscription_id"),
-  stripeCheckoutSessionId: text("stripe_checkout_session_id"),
+  paymentMethod: text("payment_method"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   cancelledAt: timestamp("cancelled_at"),
 });
 
-// Booking series — groups recurring bookings
 export const bookingSeries = pgTable("booking_series", {
   id: uuid("id").primaryKey().defaultRandom(),
   providerId: uuid("provider_id")
@@ -251,36 +204,29 @@ export const bookingSeries = pgTable("booking_series", {
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
-// Bookings — individual session appointments
 export const bookings = pgTable("bookings", {
   id: uuid("id").primaryKey().defaultRandom(),
   providerId: uuid("provider_id")
     .notNull()
     .references(() => providers.id, { onDelete: "cascade" }),
-  clientId: uuid("client_id").references(() => clients.id, {
-    onDelete: "set null",
-  }),
+  clientId: uuid("client_id").references(() => clients.id, { onDelete: "set null" }),
   title: text("title"),
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
   status: bookingStatusEnum("status").notNull().default("scheduled"),
   sessionSource: sessionSourceEnum("session_source"),
-  clientPackageId: uuid("client_package_id").references(
-    () => clientPackages.id
-  ),
-  clientSubscriptionId: uuid("client_subscription_id").references(
-    () => clientSubscriptions.id
-  ),
+  clientPackageId: uuid("client_package_id").references(() => clientPackages.id),
+  clientSubscriptionId: uuid("client_subscription_id").references(() => clientSubscriptions.id),
   notes: text("notes"),
-  ghlAppointmentId: text("ghl_appointment_id"),
   sessionType: sessionTypeEnum("session_type").notNull().default("individual"),
   maxParticipants: integer("max_participants"),
-  bookingSeriesId: uuid("booking_series_id").references(() => bookingSeries.id, { onDelete: "set null" }),
+  bookingSeriesId: uuid("booking_series_id").references(() => bookingSeries.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Booking participants — for group sessions
 export const bookingParticipants = pgTable("booking_participants", {
   id: uuid("id").primaryKey().defaultRandom(),
   bookingId: uuid("booking_id")
@@ -295,7 +241,6 @@ export const bookingParticipants = pgTable("booking_participants", {
   joinedAt: timestamp("joined_at").defaultNow().notNull(),
 });
 
-// Waitlist entries — for full group sessions
 export const waitlistEntries = pgTable(
   "waitlist_entries",
   {
@@ -314,7 +259,6 @@ export const waitlistEntries = pgTable(
   (t) => [unique().on(t.bookingId, t.clientId)]
 );
 
-// Late cancellation audit log
 export const lateCancellationLogs = pgTable("late_cancellation_logs", {
   id: uuid("id").primaryKey().defaultRandom(),
   bookingId: uuid("booking_id")
@@ -329,14 +273,11 @@ export const lateCancellationLogs = pgTable("late_cancellation_logs", {
   cancelledAt: timestamp("cancelled_at").defaultNow().notNull(),
   sessionStartTime: timestamp("session_start_time").notNull(),
   windowHours: integer("window_hours").notNull(),
-  action: text("action").notNull(), // "deduct_session" | "charge"
+  action: text("action").notNull(),
   outcome: lateCancelOutcomeEnum("outcome").notNull(),
-  stripePaymentIntentId: text("stripe_payment_intent_id"),
-  chargeAmountCents: integer("charge_amount_cents"),
   notes: text("notes"),
 });
 
-// Questionnaire templates
 export const questionnaires = pgTable("questionnaires", {
   id: uuid("id").primaryKey().defaultRandom(),
   providerId: uuid("provider_id")
@@ -350,7 +291,6 @@ export const questionnaires = pgTable("questionnaires", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
-// Questions within a questionnaire
 export const questionnaireQuestions = pgTable("questionnaire_questions", {
   id: uuid("id").primaryKey().defaultRandom(),
   questionnaireId: uuid("questionnaire_id")
@@ -358,12 +298,11 @@ export const questionnaireQuestions = pgTable("questionnaire_questions", {
     .references(() => questionnaires.id, { onDelete: "cascade" }),
   label: text("label").notNull(),
   type: questionTypeEnum("type").notNull().default("text"),
-  options: text("options"), // JSON array string for multiple_choice/dropdown
+  options: text("options"),
   required: boolean("required").notNull().default(false),
   sortOrder: integer("sort_order").notNull().default(0),
 });
 
-// Client questionnaire assignments
 export const clientQuestionnaires = pgTable("client_questionnaires", {
   id: uuid("id").primaryKey().defaultRandom(),
   clientId: uuid("client_id")
@@ -377,7 +316,6 @@ export const clientQuestionnaires = pgTable("client_questionnaires", {
   completedAt: timestamp("completed_at"),
 });
 
-// Client questionnaire answers
 export const clientQuestionnaireAnswers = pgTable("client_questionnaire_answers", {
   id: uuid("id").primaryKey().defaultRandom(),
   clientQuestionnaireId: uuid("client_questionnaire_id")
@@ -389,18 +327,16 @@ export const clientQuestionnaireAnswers = pgTable("client_questionnaire_answers"
   value: text("value"),
 });
 
-// Provider weekly availability schedule
 export const availability = pgTable("availability", {
   id: uuid("id").primaryKey().defaultRandom(),
   providerId: uuid("provider_id")
     .notNull()
     .references(() => providers.id, { onDelete: "cascade" }),
-  dayOfWeek: integer("day_of_week").notNull(), // 0=Sun, 1=Mon, …, 6=Sat
-  startTime: text("start_time").notNull(), // "09:00"
-  endTime: text("end_time").notNull(),     // "17:00"
+  dayOfWeek: integer("day_of_week").notNull(),
+  startTime: text("start_time").notNull(),
+  endTime: text("end_time").notNull(),
 });
 
-// Blocked times — provider unavailability
 export const blockedTimes = pgTable("blocked_times", {
   id: uuid("id").primaryKey().defaultRandom(),
   providerId: uuid("provider_id")
@@ -410,13 +346,12 @@ export const blockedTimes = pgTable("blocked_times", {
   startTime: timestamp("start_time").notNull(),
   endTime: timestamp("end_time").notNull(),
   isRecurring: boolean("is_recurring").notNull().default(false),
-  recurrenceRule: text("recurrence_rule"), // iCal RRULE string
+  recurrenceRule: text("recurrence_rule"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const reminderTypeEnum = pgEnum("reminder_type", ["24h", "1h"]);
 
-// Reminder deduplication log — prevents cron from double-firing session reminders
 export const reminderLogs = pgTable(
   "reminder_logs",
   {
@@ -430,88 +365,7 @@ export const reminderLogs = pgTable(
   (t) => [unique().on(t.bookingId, t.reminderType)]
 );
 
-export const websiteClientStatusEnum = pgEnum("website_client_status", [
-  "building",
-  "preview_live",
-  "active",
-  "suspended",
-  "cancelled",
-]);
-
-export const websiteStyleEnum = pgEnum("website_style", [
-  "clean_minimal",
-  "bold_modern",
-  "cinematic_3d",
-]);
-
-export const websiteClients = pgTable("website_clients", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  phone: text("phone"),
-  businessName: text("business_name").notNull(),
-  businessType: text("business_type").notNull(),
-  brandColours: text("brand_colours").notNull(),
-  hasLogo: boolean("has_logo").notNull().default(false),
-  logoUrl: text("logo_url"),
-  description: text("description").notNull(),
-  referralSource: text("referral_source"),
-  preferredStyle: websiteStyleEnum("preferred_style").notNull().default("clean_minimal"),
-  vercelProjectId: text("vercel_project_id"),
-  previewUrl: text("preview_url"),
-  customDomain: text("custom_domain"),
-  stripeCustomerId: text("stripe_customer_id"),
-  stripeSubscriptionId: text("stripe_subscription_id"),
-  stripeCheckoutSessionId: text("stripe_checkout_session_id"),
-  status: websiteClientStatusEnum("status").notNull().default("building"),
-  bookingAppEnabled: boolean("booking_app_enabled").notNull().default(false),
-  bookingAppStripeSubscriptionId: text("booking_app_stripe_subscription_id"),
-  seoKeywords: text("seo_keywords"),
-  notes: text("notes"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const partnerSpots = pgTable("partner_spots", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  position: integer("position").notNull().unique(),
-  businessName: text("business_name").notNull(),
-  logoUrl: text("logo_url"),
-  description: text("description").notNull(),
-  visitUrl: text("visit_url").notNull(),
-  isActive: boolean("is_active").notNull().default(true),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-  updatedAt: timestamp("updated_at").defaultNow().notNull(),
-});
-
-export const adClicks = pgTable("ad_clicks", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  partnerSpotId: uuid("partner_spot_id").references(() => partnerSpots.id, { onDelete: "cascade" }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export const pageViews = pgTable("page_views", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  websiteClientId: uuid("website_client_id").references(() => websiteClients.id, { onDelete: "cascade" }),
-  path: text("path").notNull().default("/"),
-  referrer: text("referrer"),
-  country: text("country"),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-// Relations
-export const installationsRelations = relations(installations, ({ one }) => ({
-  provider: one(providers, {
-    fields: [installations.id],
-    references: [providers.installationId],
-  }),
-}));
-
-export const providersRelations = relations(providers, ({ one, many }) => ({
-  installation: one(installations, {
-    fields: [providers.installationId],
-    references: [installations.id],
-  }),
+export const providersRelations = relations(providers, ({ many }) => ({
   packages: many(packages),
   subscriptionPlans: many(subscriptionPlans),
   clients: many(clients),
@@ -561,16 +415,19 @@ export const clientQuestionnairesRelations = relations(clientQuestionnaires, ({ 
   answers: many(clientQuestionnaireAnswers),
 }));
 
-export const clientQuestionnaireAnswersRelations = relations(clientQuestionnaireAnswers, ({ one }) => ({
-  clientQuestionnaire: one(clientQuestionnaires, {
-    fields: [clientQuestionnaireAnswers.clientQuestionnaireId],
-    references: [clientQuestionnaires.id],
-  }),
-  question: one(questionnaireQuestions, {
-    fields: [clientQuestionnaireAnswers.questionId],
-    references: [questionnaireQuestions.id],
-  }),
-}));
+export const clientQuestionnaireAnswersRelations = relations(
+  clientQuestionnaireAnswers,
+  ({ one }) => ({
+    clientQuestionnaire: one(clientQuestionnaires, {
+      fields: [clientQuestionnaireAnswers.clientQuestionnaireId],
+      references: [clientQuestionnaires.id],
+    }),
+    question: one(questionnaireQuestions, {
+      fields: [clientQuestionnaireAnswers.questionId],
+      references: [questionnaireQuestions.id],
+    }),
+  })
+);
 
 export const availabilityRelations = relations(availability, ({ one }) => ({
   provider: one(providers, {
@@ -683,12 +540,5 @@ export const reminderLogsRelations = relations(reminderLogs, ({ one }) => ({
   booking: one(bookings, {
     fields: [reminderLogs.bookingId],
     references: [bookings.id],
-  }),
-}));
-
-export const pageViewsRelations = relations(pageViews, ({ one }) => ({
-  websiteClient: one(websiteClients, {
-    fields: [pageViews.websiteClientId],
-    references: [websiteClients.id],
   }),
 }));

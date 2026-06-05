@@ -22,7 +22,7 @@ export async function POST(
     const authSession = await getSession();
     if (!authSession) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const client = await getPortalClient(authSession.uid);
+    const client = await getPortalClient(authSession.email);
     if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
     const { id: bookingId } = await params;
@@ -54,8 +54,6 @@ export async function POST(
       .select({
         lateCancelWindowHours: providers.lateCancelWindowHours,
         lateCancelAction: providers.lateCancelAction,
-        lateCancelChargeAmount: providers.lateCancelChargeAmount,
-        currency: providers.currency,
       })
       .from(providers)
       .where(eq(providers.id, groupSession.providerId));
@@ -71,11 +69,6 @@ export async function POST(
       let warningMessage = `This session starts in less than ${provider!.lateCancelWindowHours} hours.`;
       if (action === "deduct_session") {
         warningMessage += " Your session credit will not be refunded.";
-      } else if (action === "charge") {
-        const amount = provider?.lateCancelChargeAmount
-          ? parseFloat(provider.lateCancelChargeAmount).toFixed(2)
-          : "0.00";
-        warningMessage += ` A late cancellation fee of ${(provider?.currency ?? "").toUpperCase()} ${amount} will be charged.`;
       }
       return NextResponse.json({ requiresConfirmation: true, warningMessage, isLate: true });
     }

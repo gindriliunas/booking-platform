@@ -1,7 +1,7 @@
 import { readFileSync } from "fs";
 import { resolve } from "path";
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { inArray } from "drizzle-orm";
 import * as schema from "../src/lib/db/schema";
 
@@ -20,7 +20,8 @@ function loadEnv() {
 
 loadEnv();
 
-const db = drizzle(neon(process.env.DATABASE_URL!), { schema });
+const client = postgres(process.env.DATABASE_URL!);
+const db = drizzle(client, { schema });
 
 const SEEDED_EMAILS = [
   "sarah.mitchell@gmail.com",

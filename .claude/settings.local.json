@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(xargs -I {} basename {})",
-      "Bash(find c:Usersgindrghl-sessions-app -maxdepth 1 -name tailwind* -o -name *.css)"
-    ]
-  }
-}

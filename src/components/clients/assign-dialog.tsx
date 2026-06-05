@@ -17,7 +17,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
-import { Check, Copy } from "lucide-react";
 
 interface PackageOption {
   id: string;
@@ -26,7 +25,6 @@ interface PackageOption {
   currency: string;
   sessionCount: number;
   sessionType?: "individual" | "group";
-  stripePriceId?: string | null;
 }
 
 interface PlanOption {
@@ -37,7 +35,6 @@ interface PlanOption {
   sessionsPerPeriod: number;
   billingPeriod: string;
   sessionType?: "individual" | "group";
-  stripePriceId?: string | null;
 }
 
 interface Props {
@@ -56,54 +53,22 @@ export function AssignDialog({ open, onOpenChange, clientId, packages, plans, on
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [generatedLink, setGeneratedLink] = useState("");
-  const [copied, setCopied] = useState(false);
-
   function reset() {
     setSelectedPackageId("");
     setSelectedPlanId("");
     setPaymentMethod("cash");
     setError("");
-    setGeneratedLink("");
-    setCopied(false);
   }
 
-  const selectedPkg = packages.find((p) => p.id === selectedPackageId);
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId);
-  const currentHasStripe =
-    tab === "package" ? !!selectedPkg?.stripePriceId : !!selectedPlan?.stripePriceId;
-
   function handleItemChange(type: "package" | "plan", id: string) {
-    if (type === "package") {
-      setSelectedPackageId(id);
-      const pkg = packages.find((p) => p.id === id);
-      if (!pkg?.stripePriceId && paymentMethod === "stripe") setPaymentMethod("cash");
-    } else {
-      setSelectedPlanId(id);
-      const plan = plans.find((p) => p.id === id);
-      if (!plan?.stripePriceId && paymentMethod === "stripe") setPaymentMethod("cash");
-    }
+    if (type === "package") setSelectedPackageId(id);
+    else setSelectedPlanId(id);
   }
 
   async function handleAssign() {
     setLoading(true);
     setError("");
     try {
-      if (paymentMethod === "stripe") {
-        const itemId = tab === "package" ? selectedPackageId : selectedPlanId;
-        if (!itemId) { setError("Select a package or plan"); setLoading(false); return; }
-        const res = await fetch("/api/stripe/checkout", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ type: tab === "package" ? "package" : "subscription", itemId, clientId }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "Failed to create checkout");
-        setGeneratedLink(data.url ?? "");
-        setLoading(false);
-        return;
-      }
-
       if (tab === "package") {
         if (!selectedPackageId) { setError("Select a package"); setLoading(false); return; }
         const res = await fetch("/api/client-packages", {
@@ -190,14 +155,11 @@ export function AssignDialog({ open, onOpenChange, clientId, packages, plans, on
                   <SelectItem value="cash">Cash</SelectItem>
                   <SelectItem value="bank">Bank Transfer</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
-                  {currentHasStripe && <SelectItem value="stripe">Pay via Stripe</SelectItem>}
                 </SelectContent>
               </Select>
             </div>
             <p className="text-xs text-gray-500">
-              {paymentMethod === "stripe"
-                ? "A payment link will be generated for you to copy and send to the client."
-                : "Sessions will be added to the client's account immediately."}
+              Sessions will be added to the client&apos;s account immediately.
             </p>
           </div>
         ) : (
@@ -231,54 +193,18 @@ export function AssignDialog({ open, onOpenChange, clientId, packages, plans, on
                   <SelectItem value="cash">Cash</SelectItem>
                   <SelectItem value="bank">Bank Transfer</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
-                  {currentHasStripe && <SelectItem value="stripe">Pay via Stripe</SelectItem>}
                 </SelectContent>
               </Select>
             </div>
-            <p className="text-xs text-gray-500">
-              {paymentMethod === "stripe"
-                ? "Client will be redirected to a Stripe checkout page to complete payment."
-                : "Subscription starts today."}
-            </p>
-          </div>
-        )}
-
-        {generatedLink && (
-          <div className="rounded-lg border border-green-200 bg-green-50 p-3 space-y-2 overflow-hidden">
-            <p className="text-xs font-medium text-green-800">Payment link generated — copy and send to client:</p>
-            <div className="flex items-center gap-2 min-w-0">
-              <code className="flex-1 min-w-0 text-xs text-green-900 bg-white border border-green-200 rounded px-2 py-1.5 block overflow-hidden text-ellipsis whitespace-nowrap">
-                {generatedLink}
-              </code>
-              <Button
-                size="sm"
-                variant="outline"
-                className="shrink-0"
-                onClick={() => {
-                  navigator.clipboard.writeText(generatedLink);
-                  setCopied(true);
-                  setTimeout(() => setCopied(false), 2000);
-                }}
-              >
-                {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-              </Button>
-            </div>
-            <p className="text-xs text-green-700">Once the client pays, their account will update automatically.</p>
+            <p className="text-xs text-gray-500">Subscription starts today.</p>
           </div>
         )}
 
         {error && <p className="text-sm text-red-600">{error}</p>}
 
-        {!generatedLink && (
-          <Button onClick={handleAssign} disabled={loading} className="w-full">
-            {loading ? "Generating…" : paymentMethod === "stripe" ? "Generate Payment Link" : "Assign"}
-          </Button>
-        )}
-        {generatedLink && (
-          <Button variant="outline" onClick={reset} className="w-full">
-            Generate new link
-          </Button>
-        )}
+        <Button onClick={handleAssign} disabled={loading} className="w-full">
+          {loading ? "Assigning…" : "Assign"}
+        </Button>
       </DialogContent>
     </Dialog>
   );

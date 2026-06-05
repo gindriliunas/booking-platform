@@ -1,15 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { signOut } from "firebase/auth";
-import { useRouter } from "next/navigation";
-import { auth } from "@/lib/firebase/client";
+import { signOut, useSession } from "next-auth/react";
 import { UserCircle } from "lucide-react";
 
 export function UserMenu({ redirectTo = "/" }: { redirectTo?: string }) {
+  const { data: session } = useSession();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -20,10 +18,16 @@ export function UserMenu({ redirectTo = "/" }: { redirectTo?: string }) {
   }, []);
 
   async function handleSignOut() {
-    await signOut(auth);
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push(redirectTo);
-    router.refresh();
+    const base = typeof window !== "undefined" ? window.location.origin : "";
+    const target = redirectTo.startsWith("http") ? redirectTo : `${base}${redirectTo}`;
+
+    if (session?.authProvider === "cognito") {
+      await signOut({ redirect: false });
+      window.location.href = `/api/auth/cognito-logout?redirect_uri=${encodeURIComponent(target)}`;
+      return;
+    }
+
+    await signOut({ callbackUrl: redirectTo });
   }
 
   return (

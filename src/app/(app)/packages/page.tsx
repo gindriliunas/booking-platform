@@ -8,7 +8,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PackageDialog } from "@/components/packages/package-dialog";
 import { PlanDialog } from "@/components/subscriptions/plan-dialog";
-import { CopyLinkButton } from "@/components/ui/copy-link-button";
 import { formatCurrency } from "@/lib/utils";
 import { useProvider } from "@/components/provider-context";
 
@@ -21,8 +20,6 @@ interface Package {
   price: string;
   currency: string;
   validityDays?: number | null;
-  stripePriceId?: string | null;
-  stripeProductId?: string | null;
   isActive: boolean;
   isPublic?: boolean;
   isFreeTrialSession?: boolean;
@@ -40,8 +37,6 @@ interface Plan {
   billingPeriod: string;
   price: string;
   currency: string;
-  stripePriceId?: string | null;
-  stripeProductId?: string | null;
   isActive: boolean;
   isPublic?: boolean;
   sessionType?: "individual" | "group";
@@ -149,11 +144,6 @@ export default function PackagesPage() {
                         {!pkg.isPublic && (
                           <Badge variant="secondary" className="text-gray-600 bg-gray-100">Private</Badge>
                         )}
-                        {!pkg.stripePriceId && (
-                          <Badge variant="secondary" className="text-orange-600 bg-orange-50">
-                            No Stripe price
-                          </Badge>
-                        )}
                       </div>
                       {pkg.description && (
                         <p className="text-sm text-gray-500 mt-0.5 truncate">{pkg.description}</p>
@@ -166,12 +156,6 @@ export default function PackagesPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <CopyLinkButton
-                        providerId={PROVIDER_ID}
-                        type="package"
-                        itemId={pkg.id}
-                        hasStripePrice={!!pkg.stripePriceId}
-                      />
                       <Button
                         variant="outline"
                         size="sm"
@@ -225,11 +209,6 @@ export default function PackagesPage() {
                         {!plan.isPublic && (
                           <Badge variant="secondary" className="text-gray-600 bg-gray-100">Private</Badge>
                         )}
-                        {!plan.stripePriceId && (
-                          <Badge variant="secondary" className="text-orange-600 bg-orange-50">
-                            No Stripe price
-                          </Badge>
-                        )}
                       </div>
                       {plan.description && (
                         <p className="text-sm text-gray-500 mt-0.5 truncate">{plan.description}</p>
@@ -243,12 +222,6 @@ export default function PackagesPage() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <CopyLinkButton
-                        providerId={PROVIDER_ID}
-                        type="subscription"
-                        itemId={plan.id}
-                        hasStripePrice={!!plan.stripePriceId}
-                      />
                       <Button
                         variant="outline"
                         size="sm"

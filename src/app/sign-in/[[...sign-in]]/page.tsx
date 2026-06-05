@@ -1,9 +1,13 @@
-import { SignInForm } from "@/components/sign-in-form";
+import { redirect } from "next/navigation";
 
-export default function BusinessSignInPage() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50">
-      <SignInForm redirectTo="/dashboard" signUpHref="/sign-up" />
-    </div>
-  );
+export default async function SignInRedirect({
+  searchParams,
+}: {
+  searchParams: Promise<{ callbackUrl?: string }>;
+}) {
+  const { callbackUrl } = await searchParams;
+  if (callbackUrl) {
+    redirect(`/?callbackUrl=${encodeURIComponent(callbackUrl)}`);
+  }
+  redirect("/");
 }

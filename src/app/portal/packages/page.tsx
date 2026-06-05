@@ -8,7 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Package as PackageIcon, Repeat } from "lucide-react";
 import { formatDateOnly, formatCurrency } from "@/lib/utils";
-import { CheckoutButton } from "./checkout-button";
+import { ClaimPackageButton } from "./checkout-button";
 import Link from "next/link";
 
 const PAGE_SIZE = 10;
@@ -19,13 +19,13 @@ export default async function PortalPackagesPage({
   searchParams: Promise<{ pkgPage?: string; subPage?: string; payment?: string }>;
 }) {
   const session = await getSession();
-  if (!session) redirect("/portal/sign-in");
+  if (!session) redirect("/?callbackUrl=/portal");
 
   const sp = await searchParams;
   const pkgPage = Math.max(1, parseInt(sp.pkgPage ?? "1"));
   const subPage = Math.max(1, parseInt(sp.subPage ?? "1"));
 
-  const client = await getPortalClient(session.uid);
+  const client = await getPortalClient(session.email);
   if (!client) {
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-8 max-w-md">
@@ -71,18 +71,14 @@ export default async function PortalPackagesPage({
 
   const ownedPackageIds = new Set(myPkgRows.map(({ cp }) => cp.packageId));
   const purchasablePkgs = availablePkgs.filter(
-    (p) => (p.stripePriceId || parseFloat(p.price) === 0) && !ownedPackageIds.has(p.id)
+    (p) =>
+      (p.isFreeTrialSession || parseFloat(p.price) === 0) && !ownedPackageIds.has(p.id)
   );
 
   return (
     <div className="space-y-8 max-w-3xl">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">My Plan</h1>
-        {payment === "success" && (
-          <div className="mt-2 rounded-lg bg-green-50 border border-green-200 px-4 py-2 text-sm text-green-700">
-            Payment successful! Your new package is listed below (newest first).
-          </div>
-        )}
       </div>
 
       {/* Packages */}
@@ -175,7 +171,7 @@ export default async function PortalPackagesPage({
         {/* Available packages to buy */}
         {purchasablePkgs.length > 0 && (
           <div className="pt-4 space-y-2">
-            <p className="text-sm font-medium text-gray-600">Available to purchase</p>
+            <p className="text-sm font-medium text-gray-600">Available to claim (free packages)</p>
             {purchasablePkgs.map((pkg) => (
                 <Card key={pkg.id}>
                   <CardContent className="p-4 flex items-center justify-between gap-4">
@@ -188,7 +184,7 @@ export default async function PortalPackagesPage({
                         <p className="text-xs text-gray-400 mt-0.5">{pkg.description}</p>
                       )}
                     </div>
-                    <CheckoutButton packageId={pkg.id} label="Buy" />
+                    <ClaimPackageButton packageId={pkg.id} label="Claim" />
                   </CardContent>
                 </Card>
               ))}

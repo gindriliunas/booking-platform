@@ -5,14 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CreditCard, User } from "lucide-react";
+import { User } from "lucide-react";
 
 interface ClientProfile {
   id: string;
   name: string;
   email?: string | null;
   phone?: string | null;
-  stripeCustomerId?: string | null;
 }
 
 export default function PortalProfilePage() {
@@ -24,9 +23,6 @@ export default function PortalProfilePage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
-  const [stripeLoading, setStripeLoading] = useState(false);
-  const [stripeError, setStripeError] = useState("");
-
   useEffect(() => {
     fetch("/api/portal/me")
       .then(async (r) => {
@@ -63,21 +59,6 @@ export default function PortalProfilePage() {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
       setSaving(false);
-    }
-  }
-
-  async function handleStripePortal() {
-    setStripeLoading(true);
-    setStripeError("");
-    try {
-      const res = await fetch("/api/portal/stripe-portal", { method: "POST" });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed");
-      window.location.href = data.url;
-    } catch (err) {
-      setStripeError(err instanceof Error ? err.message : "Something went wrong");
-    } finally {
-      setStripeLoading(false);
     }
   }
 
@@ -147,34 +128,6 @@ export default function PortalProfilePage() {
         </CardContent>
       </Card>
 
-      {/* Payment methods */}
-      <Card>
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <CreditCard className="h-4 w-4" />
-            Payment Methods
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <p className="text-sm text-gray-500">
-            Manage your saved payment methods, view invoices, and update billing details via the secure Stripe portal.
-          </p>
-          {stripeError && <p className="text-sm text-red-600">{stripeError}</p>}
-          <Button
-            variant="outline"
-            onClick={handleStripePortal}
-            disabled={stripeLoading || !profile.stripeCustomerId}
-          >
-            <CreditCard className="h-4 w-4 mr-2" />
-            {stripeLoading ? "Opening…" : "Manage payment methods"}
-          </Button>
-          {!profile.stripeCustomerId && (
-            <p className="text-xs text-gray-400">
-              Available after your first Stripe payment.
-            </p>
-          )}
-        </CardContent>
-      </Card>
     </div>
   );
 }

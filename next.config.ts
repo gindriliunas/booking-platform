@@ -7,11 +7,6 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: projectRoot,
   },
-  images: {
-    remotePatterns: [
-      { protocol: "https", hostname: "image.thum.io" },
-    ],
-  },
   webpack(config) {
     config.resolve.modules = [
       path.join(projectRoot, "node_modules"),

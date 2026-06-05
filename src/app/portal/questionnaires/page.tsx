@@ -11,9 +11,9 @@ import Link from "next/link";
 
 export default async function PortalQuestionnairesPage() {
   const session = await getSession();
-  if (!session) redirect("/portal/sign-in");
+  if (!session) redirect("/?callbackUrl=/portal");
 
-  const client = await getPortalClient(session.uid);
+  const client = await getPortalClient(session.email);
   if (!client) {
     return (
       <div className="rounded-xl border border-amber-200 bg-amber-50 p-8 max-w-md">

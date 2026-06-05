@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const authError = await requireAdminProvider(providerId);
   if (authError) return authError;
 
-  const status = req.nextUrl.searchParams.get("status"); // "active" | "inactive" | null = all
+  const status = req.nextUrl.searchParams.get("status");
 
   const conditions = [eq(clients.providerId, providerId)];
   if (status === "active") conditions.push(eq(clients.isActive, true));
@@ -23,14 +23,16 @@ export async function GET(req: NextRequest) {
     .where(and(...conditions))
     .orderBy(clients.name);
 
-  // Find which clients have pending questionnaires (needs attention badge)
   const pendingForms = rows.length
     ? await db
         .select({ clientId: clientQuestionnaires.clientId })
         .from(clientQuestionnaires)
         .where(
           and(
-            inArray(clientQuestionnaires.clientId, rows.map((r) => r.id)),
+            inArray(
+              clientQuestionnaires.clientId,
+              rows.map((r) => r.id)
+            ),
             eq(clientQuestionnaires.status, "pending")
           )
         )
@@ -48,7 +50,7 @@ export async function POST(req: NextRequest) {
   if (!providerId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { name, email, phone, notes, ghlContactId } = body;
+  const { name, email, phone, notes } = body;
 
   if (!name) {
     return NextResponse.json({ error: "name required" }, { status: 400 });
@@ -59,18 +61,22 @@ export async function POST(req: NextRequest) {
     .values({
       providerId,
       name,
-      email: email ?? null,
+      email: email?.toLowerCase() ?? null,
       phone: phone ?? null,
       notes: notes ?? null,
-      ghlContactId: ghlContactId ?? `manual_${Date.now()}`,
     })
     .returning();
 
-  // Auto-assign any questionnaires marked "assign on join"
   const autoAssign = await db
     .select()
     .from(questionnaires)
-    .where(and(eq(questionnaires.providerId, providerId), eq(questionnaires.assignOnJoin, true), eq(questionnaires.isActive, true)));
+    .where(
+      and(
+        eq(questionnaires.providerId, providerId),
+        eq(questionnaires.assignOnJoin, true),
+        eq(questionnaires.isActive, true)
+      )
+    );
 
   if (autoAssign.length) {
     await db.insert(clientQuestionnaires).values(

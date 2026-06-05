@@ -2,8 +2,6 @@ import { db } from "@/lib/db";
 import { bookings, clientPackages, clients, packages, providers } from "@/lib/db/schema";
 import { eq, count, gte, and, lt, sql } from "drizzle-orm";
 import { getAdminProviderId } from "@/lib/auth-provider";
-import { getSession } from "@/lib/session";
-import { adminAuth } from "@/lib/firebase/admin";
 import { redirect } from "next/navigation";
 import { formatCurrency } from "@/lib/utils";
 import { MiniCalendar } from "./mini-calendar";
@@ -208,17 +206,21 @@ export default async function DashboardPage() {
   const providerId = await getAdminProviderId();
   if (!providerId) redirect("/setup");
 
-  const session = await getSession();
-  const [stats, firebaseUser] = await Promise.all([
+  const [stats, provider] = await Promise.all([
     getDashboardStats(providerId),
-    session ? adminAuth.getUser(session.uid).catch(() => null) : null,
+    db
+      .select({ name: providers.name })
+      .from(providers)
+      .where(eq(providers.id, providerId))
+      .then((r) => r[0]),
   ]);
 
-  const displayName = firebaseUser?.displayName ?? "";
-  const parts = displayName.trim().split(" ");
-  const initials = parts.length >= 2
-    ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-    : (displayName[0] ?? "U").toUpperCase();
+  const displayName = provider?.name ?? "";
+  const parts = displayName.trim().split(/\s+/).filter(Boolean);
+  const initials =
+    parts.length >= 2
+      ? (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      : (displayName[0] ?? "U").toUpperCase();
 
   return (
     <div className="space-y-6">

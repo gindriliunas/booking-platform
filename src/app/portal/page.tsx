@@ -33,13 +33,13 @@ export default async function PortalDashboardPage({
   searchParams: Promise<{ upcomingPage?: string; pastPage?: string }>;
 }) {
   const session = await getSession();
-  if (!session) redirect("/portal/sign-in");
+  if (!session) redirect("/?callbackUrl=/portal");
 
   const sp = await searchParams;
   const upcomingPage = Math.max(1, parseInt(sp.upcomingPage ?? "1"));
   const pastPage = Math.max(1, parseInt(sp.pastPage ?? "1"));
 
-  const client = await getPortalClient(session.uid);
+  const client = await getPortalClient(session.email);
 
   if (!client) {
     return (

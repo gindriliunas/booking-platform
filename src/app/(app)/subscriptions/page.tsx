@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { PlanDialog } from "@/components/subscriptions/plan-dialog";
-import { CopyLinkButton } from "@/components/ui/copy-link-button";
 import { formatCurrency } from "@/lib/utils";
 import { useProvider } from "@/components/provider-context";
 
@@ -19,8 +18,6 @@ interface Plan {
   billingPeriod: string;
   price: string;
   currency: string;
-  stripePriceId?: string | null;
-  stripeProductId?: string | null;
   isActive: boolean;
   sessionType?: "individual" | "group";
   createdAt: string;
@@ -95,11 +92,6 @@ export default function SubscriptionsPage() {
                     {plan.sessionType === "group" && (
                       <Badge className="bg-teal-100 text-teal-700 border-teal-200">Group</Badge>
                     )}
-                    {!plan.stripePriceId && (
-                      <Badge variant="secondary" className="text-orange-600 bg-orange-50">
-                        No Stripe price
-                      </Badge>
-                    )}
                   </div>
                   {plan.description && (
                     <p className="text-sm text-gray-500 mt-0.5 truncate">{plan.description}</p>
@@ -113,12 +105,6 @@ export default function SubscriptionsPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <CopyLinkButton
-                    providerId={PROVIDER_ID}
-                    type="subscription"
-                    itemId={plan.id}
-                    hasStripePrice={!!plan.stripePriceId}
-                  />
                   <Button
                     variant="outline"
                     size="sm"

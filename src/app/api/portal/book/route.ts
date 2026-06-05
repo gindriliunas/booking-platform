@@ -4,13 +4,6 @@ import { db } from "@/lib/db";
 import { bookings, clientPackages, packages, providers } from "@/lib/db/schema";
 import { eq, and, asc, count, or, isNull, gte } from "drizzle-orm";
 import { getPortalClient } from "@/lib/portal";
-import {
-  TRIGGERS,
-  fireGhlTrigger,
-  fireSessionsUpdatedTrigger,
-  getClientTriggerContext,
-  getLocationIdForProvider,
-} from "@/lib/ghl/triggers";
 
 /** Credits are deducted when sessions complete; scheduled bookings still reserve credits. */
 async function countScheduledIndividualForPackage(clientPackageId: string) {
@@ -32,7 +25,7 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const client = await getPortalClient(session.uid);
+    const client = await getPortalClient(session.email);
     if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
     const { startTime, endTime } = await req.json();
@@ -125,39 +118,6 @@ export async function POST(req: NextRequest) {
         clientPackageId: activePkg.id,
       })
       .returning();
-
-    // Fire GHL triggers (non-blocking)
-    (async () => {
-      try {
-        const ctx = await getClientTriggerContext(client.id);
-        if (!ctx) return;
-
-        const locationId = ctx.locationId ?? await getLocationIdForProvider(client.providerId);
-        if (!locationId) return;
-
-        const durationMins = Math.round(
-          (new Date(endTime).getTime() - new Date(startTime).getTime()) / 60000
-        );
-
-        await fireGhlTrigger(locationId, ctx.contactId, TRIGGERS.SESSION_BOOKED, {
-          bookingId: booking.id,
-          sessionDate: booking.startTime.toISOString(),
-          sessionTime: booking.startTime.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          }),
-          sessionDurationMins: durationMins,
-          providerName: "",
-        });
-
-        if (activePkg) {
-          await fireSessionsUpdatedTrigger(activePkg.id);
-        }
-      } catch (err) {
-        console.error("[GHL Trigger] portal session_booked failed:", err);
-      }
-    })();
 
     return NextResponse.json({ booking }, { status: 201 });
   } catch (err) {

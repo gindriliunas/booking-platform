@@ -1,34 +1,18 @@
-/**
- * Late cancellation policy helper.
- *
- * When a client cancels a booking within the provider's configured window,
- * either their session credit is forfeited or a Stripe charge is attempted.
- *
- * Provider-side cancellations are always exempt (isPortalCancel = false).
- */
-
 import { differenceInHours } from "date-fns";
 import { db } from "@/lib/db";
 import {
   providers,
-  clients,
   clientPackages,
   clientSubscriptions,
   lateCancellationLogs,
 } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { getStripeForProvider } from "@/lib/stripe/provider";
 
-export type LateCancelOutcome =
-  | "deducted"
-  | "charged"
-  | "charge_failed"
-  | "requires_collection"
-  | "waived";
+export type LateCancelOutcome = "deducted" | "waived";
 
 export interface LateCancelResult {
   isLate: boolean;
-  action: "deduct_session" | "charge" | null;
+  action: "deduct_session" | null;
   outcome: LateCancelOutcome | null;
   shouldRestoreSession: boolean;
 }
@@ -40,7 +24,6 @@ interface Params {
   sessionStartTime: Date;
   clientPackageId: string | null | undefined;
   clientSubscriptionId: string | null | undefined;
-  /** false = provider-initiated cancel → always exempt from penalty */
   isPortalCancel: boolean;
 }
 
@@ -49,7 +32,6 @@ export async function checkAndApplyLateCancelPolicy(
 ): Promise<LateCancelResult> {
   const { bookingId, clientId, providerId, sessionStartTime, isPortalCancel } = params;
 
-  // Provider-initiated cancels are always exempt
   if (!isPortalCancel) {
     return { isLate: false, action: null, outcome: null, shouldRestoreSession: true };
   }
@@ -58,13 +40,11 @@ export async function checkAndApplyLateCancelPolicy(
     .select({
       lateCancelWindowHours: providers.lateCancelWindowHours,
       lateCancelAction: providers.lateCancelAction,
-      lateCancelChargeAmount: providers.lateCancelChargeAmount,
-      currency: providers.currency,
     })
     .from(providers)
     .where(eq(providers.id, providerId));
 
-  if (!provider?.lateCancelWindowHours || !provider.lateCancelAction) {
+  if (!provider?.lateCancelWindowHours || provider.lateCancelAction !== "deduct_session") {
     return { isLate: false, action: null, outcome: null, shouldRestoreSession: true };
   }
 
@@ -73,87 +53,33 @@ export async function checkAndApplyLateCancelPolicy(
     return { isLate: false, action: null, outcome: null, shouldRestoreSession: true };
   }
 
-  // It's a late cancel
-  const action = provider.lateCancelAction as "deduct_session" | "charge";
-
-  if (action === "deduct_session") {
-    // Deduct the session credit now (was never deducted at booking creation)
-    if (params.clientPackageId) {
-      const [pkg] = await db.select().from(clientPackages).where(eq(clientPackages.id, params.clientPackageId));
-      if (pkg) {
-        const newRemaining = Math.max(0, pkg.sessionsRemaining - 1);
-        await db.update(clientPackages).set({
+  if (params.clientPackageId) {
+    const [pkg] = await db
+      .select()
+      .from(clientPackages)
+      .where(eq(clientPackages.id, params.clientPackageId));
+    if (pkg) {
+      const newRemaining = Math.max(0, pkg.sessionsRemaining - 1);
+      await db
+        .update(clientPackages)
+        .set({
           sessionsUsed: pkg.sessionsUsed + 1,
           sessionsRemaining: newRemaining,
           status: newRemaining <= 0 ? "exhausted" : "active",
-        }).where(eq(clientPackages.id, pkg.id));
-      }
+        })
+        .where(eq(clientPackages.id, pkg.id));
     }
-    if (params.clientSubscriptionId) {
-      const [sub] = await db.select().from(clientSubscriptions).where(eq(clientSubscriptions.id, params.clientSubscriptionId));
-      if (sub) {
-        await db.update(clientSubscriptions).set({
-          sessionsUsedThisPeriod: sub.sessionsUsedThisPeriod + 1,
-        }).where(eq(clientSubscriptions.id, sub.id));
-      }
-    }
-    await db.insert(lateCancellationLogs).values({
-      bookingId,
-      clientId,
-      providerId,
-      sessionStartTime,
-      windowHours: provider.lateCancelWindowHours,
-      action,
-      outcome: "deducted",
-    });
-    return { isLate: true, action, outcome: "deducted", shouldRestoreSession: false };
   }
-
-  // action === "charge"
-  let outcome: LateCancelOutcome = "requires_collection";
-  let stripePaymentIntentId: string | undefined;
-  const chargeAmountCents = provider.lateCancelChargeAmount
-    ? Math.round(parseFloat(provider.lateCancelChargeAmount) * 100)
-    : 0;
-
-  if (chargeAmountCents > 0) {
-    try {
-      const stripe = await getStripeForProvider(providerId);
-
-      const [clientRow] = await db
-        .select({ stripeCustomerId: clients.stripeCustomerId })
-        .from(clients)
-        .where(eq(clients.id, clientId));
-
-      if (clientRow?.stripeCustomerId) {
-        // Fetch default payment method
-        const customer = await stripe.customers.retrieve(clientRow.stripeCustomerId) as import("stripe").Stripe.Customer;
-        const paymentMethod =
-          typeof customer.invoice_settings?.default_payment_method === "string"
-            ? customer.invoice_settings.default_payment_method
-            : null;
-
-        if (paymentMethod) {
-          const pi = await stripe.paymentIntents.create({
-            amount: chargeAmountCents,
-            currency: provider.currency,
-            customer: clientRow.stripeCustomerId,
-            payment_method: paymentMethod,
-            confirm: true,
-            off_session: true,
-            description: "Late cancellation fee",
-            metadata: { bookingId, clientId },
-          });
-          stripePaymentIntentId = pi.id;
-          outcome = pi.status === "succeeded" ? "charged" : "charge_failed";
-        } else {
-          outcome = "requires_collection";
-        }
-      } else {
-        outcome = "requires_collection";
-      }
-    } catch {
-      outcome = "charge_failed";
+  if (params.clientSubscriptionId) {
+    const [sub] = await db
+      .select()
+      .from(clientSubscriptions)
+      .where(eq(clientSubscriptions.id, params.clientSubscriptionId));
+    if (sub) {
+      await db
+        .update(clientSubscriptions)
+        .set({ sessionsUsedThisPeriod: sub.sessionsUsedThisPeriod + 1 })
+        .where(eq(clientSubscriptions.id, sub.id));
     }
   }
 
@@ -163,16 +89,14 @@ export async function checkAndApplyLateCancelPolicy(
     providerId,
     sessionStartTime,
     windowHours: provider.lateCancelWindowHours,
-    action,
-    outcome,
-    stripePaymentIntentId,
-    chargeAmountCents: chargeAmountCents || null,
-    notes:
-      outcome === "requires_collection"
-        ? "No Stripe payment method on file — manual collection required"
-        : undefined,
+    action: "deduct_session",
+    outcome: "deducted",
   });
 
-  // For charge action: always restore session (the charge is the penalty)
-  return { isLate: true, action, outcome, shouldRestoreSession: true };
+  return {
+    isLate: true,
+    action: "deduct_session",
+    outcome: "deducted",
+    shouldRestoreSession: false,
+  };
 }

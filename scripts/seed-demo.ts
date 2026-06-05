@@ -1,12 +1,12 @@
 /**
- * Demo seed script — populates realistic clients, packages, bookings
- * for trainer g.indriliunas@gmail.com
+ * Demo seed script — populates sample clients, packages, and bookings.
+ * Requires DEMO_PROVIDER_EMAIL to match an existing provider.
  *
- * Run: npx tsx scripts/seed-demo.ts
+ * Run: DEMO_PROVIDER_EMAIL=you@example.com npx tsx scripts/seed-demo.ts
  */
 
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 import { eq } from "drizzle-orm";
 import * as schema from "../src/lib/db/schema";
 
@@ -35,8 +35,8 @@ function loadEnv() {
 
 loadEnv();
 
-const sql = neon(process.env.DATABASE_URL!);
-const db = drizzle(sql, { schema });
+const client = postgres(process.env.DATABASE_URL!);
+const db = drizzle(client, { schema });
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -79,14 +79,20 @@ const CLIENTS = [
 
 async function main() {
   // 1. Find provider
+  const demoEmail = process.env.DEMO_PROVIDER_EMAIL?.toLowerCase();
+  if (!demoEmail) {
+    console.error("Set DEMO_PROVIDER_EMAIL to an existing provider email.");
+    process.exit(1);
+  }
+
   const [provider] = await db
     .select()
     .from(schema.providers)
-    .where(eq(schema.providers.email, "g.indriliunas@gmail.com"))
+    .where(eq(schema.providers.email, demoEmail))
     .limit(1);
 
   if (!provider) {
-    console.error("❌  Provider g.indriliunas@gmail.com not found in database.");
+    console.error(`Provider ${demoEmail} not found. Run scripts/create-provider.ts first.`);
     console.error("    Make sure you have logged in and created your provider profile.");
     process.exit(1);
   }
@@ -221,7 +227,6 @@ async function main() {
       .insert(schema.clients)
       .values({
         providerId: provider.id,
-        ghlContactId: `demo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
         name: c.name,
         email: c.email,
         phone: c.phone,
@@ -230,9 +235,6 @@ async function main() {
 
     clientIds.push(inserted.id);
     console.log(`    Created: ${c.name}`);
-
-    // tiny delay to ensure unique ghlContactId timestamps
-    await new Promise((r) => setTimeout(r, 5));
   }
 
   // 5. Client packages
@@ -261,7 +263,7 @@ async function main() {
         sessionsUsed: pa.sessionsUsed,
         sessionsRemaining: pa.sessionsTotal - pa.sessionsUsed,
         status: pa.status,
-        paymentMethod: "stripe",
+        paymentMethod: "cash",
         purchasedAt: daysAgo(Math.floor(Math.random() * 60) + 10),
       })
       .returning();
@@ -289,7 +291,7 @@ async function main() {
         sessionsPerPeriod: plan4.sessionsPerPeriod,
         currentPeriodStart: periodStart,
         currentPeriodEnd: periodEnd,
-        paymentMethod: "stripe",
+        paymentMethod: "cash",
       })
       .returning();
 

@@ -61,7 +61,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
             ))}
           </nav>
           <div className="flex items-center gap-3 border-t border-gray-200 p-4">
-            <UserMenu redirectTo="/portal/sign-in" />
+            <UserMenu redirectTo="/?callbackUrl=/portal" />
             <span className="text-xs text-gray-500">Account</span>
           </div>
         </aside>
@@ -113,7 +113,7 @@ export function PortalShell({ children }: { children: React.ReactNode }) {
           </nav>
           <div className="border-t border-gray-200 p-4">
             <div className="flex items-center gap-3">
-              <UserMenu redirectTo="/portal/sign-in" />
+              <UserMenu redirectTo="/?callbackUrl=/portal" />
               <span className="text-xs text-gray-500">Account</span>
             </div>
           </div>

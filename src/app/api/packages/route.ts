@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { packages } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { getStripeForProvider } from "@/lib/stripe/provider";
 import { requireAdminProvider } from "@/lib/auth-provider";
 
 export async function GET(req: NextRequest) {
@@ -28,45 +27,30 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { providerId, name, description, sessionCount, sessionDurationMins, price, currency, validityDays, sessionType, isPublic, isFreeTrialSession, allowSelfBook } = body;
+  const {
+    providerId,
+    name,
+    description,
+    sessionCount,
+    sessionDurationMins,
+    price,
+    currency,
+    validityDays,
+    sessionType,
+    isPublic,
+    isFreeTrialSession,
+    allowSelfBook,
+  } = body;
 
-  if (!providerId || !name || !sessionCount || !price) {
+  if (!providerId || !name || !sessionCount || price === undefined) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
   const authError = await requireAdminProvider(providerId);
   if (authError) return authError;
 
-  let stripePriceId: string | null = null;
-  let stripeProductId: string | null = null;
-
   try {
-    const stripe = await getStripeForProvider(providerId);
-    const product = await stripe.products.create({
-      name,
-      description,
-      metadata: { session_count: String(parseInt(sessionCount)), type: "package", session_type: sessionType ?? "individual" },
-    });
-    const stripePrice = await stripe.prices.create({
-      product: product.id,
-      unit_amount: Math.round(parseFloat(price) * 100),
-      currency: currency ?? "usd",
-    });
-    stripePriceId = stripePrice.id;
-    stripeProductId = product.id;
-  } catch (err) {
-    const msg = err instanceof Error ? err.message : String(err);
-    // If Stripe is not configured, save without it
-    if (msg.includes("No Stripe account linked")) {
-      // proceed without Stripe IDs
-    } else {
-      return NextResponse.json({ error: `Stripe error: ${msg}` }, { status: 502 });
-    }
-  }
-
-  let pkg;
-  try {
-    [pkg] = await db
+    const [pkg] = await db
       .insert(packages)
       .values({
         providerId,
@@ -81,14 +65,12 @@ export async function POST(req: NextRequest) {
         isPublic: isPublic ?? true,
         isFreeTrialSession: isFreeTrialSession ?? false,
         allowSelfBook: allowSelfBook ?? true,
-        stripePriceId,
-        stripeProductId,
       })
       .returning();
+
+    return NextResponse.json({ package: pkg }, { status: 201 });
   } catch (err) {
     console.error("POST /api/packages db error:", err);
-    return NextResponse.json({ error: "Database error — have you run drizzle-kit push?" }, { status: 500 });
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
   }
-
-  return NextResponse.json({ package: pkg }, { status: 201 });
 }

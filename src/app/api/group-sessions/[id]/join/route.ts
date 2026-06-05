@@ -53,7 +53,7 @@ export async function POST(
     if (!client) {
       [client] = await tx
         .insert(clients)
-        .values({ providerId, name: clientName, email: clientEmail, ghlContactId: `manual_${Date.now()}` })
+        .values({ providerId, name: clientName, email: clientEmail?.toLowerCase() })
         .returning();
     }
 

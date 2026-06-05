@@ -1,5 +1,5 @@
-import { neon } from "@neondatabase/serverless";
-import { drizzle } from "drizzle-orm/neon-http";
+import postgres from "postgres";
+import { drizzle } from "drizzle-orm/postgres-js";
 import * as schema from "./schema";
 
 type DbInstance = ReturnType<typeof drizzle<typeof schema>>;
@@ -8,12 +8,12 @@ let _instance: DbInstance | null = null;
 
 function getInstance(): DbInstance {
   if (!_instance) {
-    _instance = drizzle(neon(process.env.DATABASE_URL!), { schema });
+    const client = postgres(process.env.DATABASE_URL!);
+    _instance = drizzle(client, { schema });
   }
   return _instance;
 }
 
-// Proxy defers neon() until the first actual DB call (request time, not build time)
 export const db = new Proxy({} as DbInstance, {
   get(_, prop: string | symbol) {
     const inst = getInstance();

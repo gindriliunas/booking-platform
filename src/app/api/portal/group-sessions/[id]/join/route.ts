@@ -20,7 +20,7 @@ export async function POST(
     const authSession = await getSession();
     if (!authSession) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const client = await getPortalClient(authSession.uid);
+    const client = await getPortalClient(authSession.email);
     if (!client) return NextResponse.json({ error: "Client not found" }, { status: 404 });
 
     const { id: bookingId } = await params;
