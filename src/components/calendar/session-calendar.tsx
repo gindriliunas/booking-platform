@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { Calendar, dateFnsLocalizer, Views, type View } from "react-big-calendar";
 import {
   format,
@@ -199,13 +199,12 @@ export function SessionCalendar({
   const calMax = availability.length
     ? parseTime(availability.reduce((a, b) => (a.endTime > b.endTime ? a : b)).endTime)
     : parseTime("22:00");
-  const [isMobile, setIsMobile] = useState(false);
-  const [view, setView] = useState<View>(Views.WEEK);
-  useEffect(() => {
-    const mobile = window.innerWidth < 768;
-    setIsMobile(mobile);
-    if (mobile) setView(Views.DAY);
-  }, []);
+  const [isMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 768
+  );
+  const [view, setView] = useState<View>(() =>
+    typeof window !== "undefined" && window.innerWidth < 768 ? Views.DAY : Views.WEEK
+  );
   const [date, setDate] = useState(new Date());
   const [selectedSlot, setSelectedSlot] = useState<{
     start: Date;

@@ -88,7 +88,7 @@ export function GroupSessionDialog({
     setEndTime(formatForInput(event.end));
     setMaxParticipants(String(event.maxParticipants ?? 10));
     setStatus(event.status ?? "scheduled");
-    setNotes((event as any).notes ?? "");
+    setNotes(event.notes ?? "");
     setSaveError("");
     setAddError("");
     setAddClientId("none");

@@ -18,6 +18,8 @@ export const db = new Proxy({} as DbInstance, {
   get(_, prop: string | symbol) {
     const inst = getInstance();
     const val = (inst as unknown as Record<string | symbol, unknown>)[prop];
-    return typeof val === "function" ? (val as Function).bind(inst) : val;
+    return typeof val === "function"
+      ? (val as (...args: unknown[]) => unknown).bind(inst)
+      : val;
   },
 });

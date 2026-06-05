@@ -15,29 +15,6 @@ permissions:
   contents: read
 
 jobs:
-  codeql:
-    name: CodeQL
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-      contents: read
-      security-events: write
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: github/codeql-action/init@v3
-        with:
-          languages: javascript-typescript
-
-      - uses: github/codeql-action/autobuild@v3
-        env:
-          # Placeholders for Next.js production build during analysis only.
-          AUTH_SECRET: ci-codeql-build-placeholder-secret-32chars
-          DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-          RESEND_API_KEY: re_ci_codeql_build_placeholder
-
-      - uses: github/codeql-action/analyze@v3
-
   npm-audit:
     name: npm audit
     runs-on: ubuntu-latest

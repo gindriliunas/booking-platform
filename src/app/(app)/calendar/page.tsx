@@ -4,56 +4,115 @@ import { useState, useEffect, useCallback } from "react";
 import { SessionCalendar, type CalendarEvent } from "@/components/calendar/session-calendar";
 import { useProvider } from "@/components/provider-context";
 
-export default function CalendarPage() {
-  const { providerId: PROVIDER_ID } = useProvider();
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [clients, setClients] = useState<{ id: string; name: string; email?: string | null }[]>([]);
-  const [availability, setAvailability] = useState<{ dayOfWeek: number; startTime: string; endTime: string }[]>([]);
+type BookingApiRow = {
+  id: string;
+  title?: string | null;
+  startTime: string;
+  endTime: string;
+  status?: string;
+  clientId?: string;
+  clientPackageId?: string | null;
+  clientSubscriptionId?: string | null;
+  sessionSource?: CalendarEvent["sessionSource"];
+  notes?: string | null;
+  sessionType?: CalendarEvent["sessionType"];
+  maxParticipants?: number | null;
+  bookingSeriesId?: string | null;
+  client?: { name?: string | null } | null;
+  participants?: unknown[];
+};
 
-  const loadData = useCallback(async () => {
-    if (!PROVIDER_ID) return;
-    const [evtRes, clientRes, availRes] = await Promise.all([
-      fetch(`/api/bookings?providerId=${PROVIDER_ID}`),
-      fetch(`/api/clients?providerId=${PROVIDER_ID}`),
-      fetch(`/api/availability?providerId=${PROVIDER_ID}`),
-    ]);
-    const evtData = await evtRes.json();
-    const clientData = await clientRes.json();
-    const availData = await availRes.json();
-    setAvailability(availData.availability ?? []);
+type BlockedTimeApiRow = {
+  id: string;
+  title: string;
+  startTime: string;
+  endTime: string;
+};
 
-    const bookingEvents: CalendarEvent[] = (evtData.bookings ?? []).map((b: any) => ({
-      id: b.id,
-      title: b.title ?? "Session",
-      start: new Date(b.startTime),
-      end: new Date(b.endTime),
-      type: "booking" as const,
-      status: b.status,
-      clientName: b.client?.name,
-      clientId: b.clientId,
-      clientPackageId: b.clientPackageId ?? null,
-      clientSubscriptionId: b.clientSubscriptionId ?? null,
-      sessionSource: b.sessionSource ?? null,
-      notes: b.notes,
-      sessionType: b.sessionType ?? "individual",
-      participantCount: b.participants?.length ?? 0,
-      maxParticipants: b.maxParticipants ?? null,
-      bookingSeriesId: b.bookingSeriesId ?? null,
-    }));
+type CalendarPageData = {
+  events: CalendarEvent[];
+  clients: { id: string; name: string; email?: string | null }[];
+  availability: { dayOfWeek: number; startTime: string; endTime: string }[];
+};
 
-    const blockedEvents: CalendarEvent[] = (evtData.blockedTimes ?? []).map((bt: any) => ({
+async function fetchCalendarPageData(providerId: string): Promise<CalendarPageData> {
+  const [evtRes, clientRes, availRes] = await Promise.all([
+    fetch(`/api/bookings?providerId=${providerId}`),
+    fetch(`/api/clients?providerId=${providerId}`),
+    fetch(`/api/availability?providerId=${providerId}`),
+  ]);
+  const evtData = await evtRes.json();
+  const clientData = await clientRes.json();
+  const availData = await availRes.json();
+
+  const bookingEvents: CalendarEvent[] = (evtData.bookings ?? []).map((b: BookingApiRow) => ({
+    id: b.id,
+    title: b.title ?? "Session",
+    start: new Date(b.startTime),
+    end: new Date(b.endTime),
+    type: "booking" as const,
+    status: b.status,
+    clientName: b.client?.name ?? undefined,
+    clientId: b.clientId,
+    clientPackageId: b.clientPackageId ?? null,
+    clientSubscriptionId: b.clientSubscriptionId ?? null,
+    sessionSource: b.sessionSource ?? null,
+    notes: b.notes ?? undefined,
+    sessionType: b.sessionType ?? "individual",
+    participantCount: b.participants?.length ?? 0,
+    maxParticipants: b.maxParticipants ?? null,
+    bookingSeriesId: b.bookingSeriesId ?? null,
+  }));
+
+  const blockedEvents: CalendarEvent[] = (evtData.blockedTimes ?? []).map(
+    (bt: BlockedTimeApiRow) => ({
       id: bt.id,
       title: bt.title,
       start: new Date(bt.startTime),
       end: new Date(bt.endTime),
       type: "blocked" as const,
-    }));
+    })
+  );
 
-    setEvents([...bookingEvents, ...blockedEvents]);
-    setClients(clientData.clients ?? []);
-  }, [PROVIDER_ID]);
+  return {
+    events: [...bookingEvents, ...blockedEvents],
+    clients: clientData.clients ?? [],
+    availability: availData.availability ?? [],
+  };
+}
 
-  useEffect(() => { loadData(); }, [loadData]);
+export default function CalendarPage() {
+  const { providerId: PROVIDER_ID } = useProvider();
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [clients, setClients] = useState<{ id: string; name: string; email?: string | null }[]>([]);
+  const [availability, setAvailability] = useState<
+    { dayOfWeek: number; startTime: string; endTime: string }[]
+  >([]);
+
+  const applyPageData = useCallback((data: CalendarPageData) => {
+    setEvents(data.events);
+    setClients(data.clients);
+    setAvailability(data.availability);
+  }, []);
+
+  const loadData = useCallback(async () => {
+    if (!PROVIDER_ID) return;
+    const data = await fetchCalendarPageData(PROVIDER_ID);
+    applyPageData(data);
+  }, [PROVIDER_ID, applyPageData]);
+
+  useEffect(() => {
+    if (!PROVIDER_ID) return;
+    let cancelled = false;
+
+    void fetchCalendarPageData(PROVIDER_ID).then((data) => {
+      if (!cancelled) applyPageData(data);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [PROVIDER_ID, applyPageData]);
 
   return (
     <div className="space-y-4">

@@ -134,12 +134,13 @@ See [SECURITY.md](SECURITY.md).
 
 GitHub Actions run on every push and pull request to `main`:
 
-| Workflow | What it checks |
-|----------|----------------|
-| [`.github/workflows/sast.yml`](.github/workflows/sast.yml) | CodeQL (TypeScript/JavaScript), `npm audit` (high+), ESLint, Gitleaks (secrets in git history) |
+| Workflow / setting | What it checks |
+|------------------|----------------|
+| **CodeQL default setup** (repo **Security** settings) | Static analysis for TypeScript/JavaScript |
+| [`.github/workflows/sast.yml`](.github/workflows/sast.yml) | `npm audit` (high+), ESLint, Gitleaks (secrets in git history) |
 | [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml) | New dependencies on pull requests (high+ advisories) |
 
-CodeQL results appear under the repository **Security** tab. On private repos, CodeQL requires [GitHub Advanced Security](https://docs.github.com/en/get-started/learning-about-github/about-github-advanced-security).
+Do not add a custom CodeQL job to `sast.yml` while default setup is enabled — GitHub rejects duplicate advanced configurations.
 
 ## License
 
