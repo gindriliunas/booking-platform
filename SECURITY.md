@@ -18,7 +18,7 @@ Please **do not** open public GitHub issues for security problems. Email the mai
 
 ## Dependencies
 
-Run `npm audit` regularly and update dependencies. CI fails on high-severity issues via [`.github/workflows/sast.yml`](.github/workflows/sast.yml) and [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml) on pull requests.
+Run `npm audit` regularly and update dependencies. CI fails on high-severity issues via [`.github/workflows/sast.yml`](.github/workflows/sast.yml). Dependabot opens update PRs; see [README — Branch protection](README.md#branch-protection-main) for required merge checks (`npm audit`, `ESLint`, `Gitleaks`, CodeQL).
 
 ## Uploads
 

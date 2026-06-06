@@ -140,7 +140,37 @@ GitHub Actions run on every push and pull request to `main`:
 | [`.github/workflows/sast.yml`](.github/workflows/sast.yml) | `npm audit` (high+), ESLint, Gitleaks (secrets in git history) |
 | [`.github/workflows/dependency-review.yml`](.github/workflows/dependency-review.yml) | New dependencies on pull requests (high+ advisories) |
 
+**When CI runs:** [sast.yml](.github/workflows/sast.yml) on every push and pull request to `main`; [dependency-review.yml](.github/workflows/dependency-review.yml) on pull requests only.
+
+**Local checks (not in CI yet):** run before deploying or opening a PR:
+
+```bash
+npm ci && npm run lint && npm test && npm audit --audit-level=high && npm run build
+```
+
+Lint and audit are covered in CI; tests and production build are developer responsibility until added to a workflow.
+
 Do not add a custom CodeQL job to `sast.yml` while default setup is enabled — GitHub rejects duplicate advanced configurations.
+
+### Branch protection (`main`)
+
+A GitHub ruleset on `main` enforces:
+
+- Restrict deletion and block force pushes
+- Pull requests required (no direct pushes)
+- Review from a [code owner](.github/CODEOWNERS) (`@gindriliunas`)
+
+**Require status checks to pass** (add under the ruleset after [sast.yml](.github/workflows/sast.yml) has run once on a PR):
+
+- `npm audit`
+- `ESLint`
+- `Gitleaks`
+
+**Require code scanning results:**
+
+- CodeQL (high or higher)
+
+Dependabot handles dependency update PRs. [dependency-review.yml](.github/workflows/dependency-review.yml) may still run on PRs but is not required for merge.
 
 ## License
 
