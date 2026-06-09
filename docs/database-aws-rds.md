@@ -43,4 +43,4 @@ Allow your IP in the RDS security group, set `DATABASE_URL` in `.env.local`, res
 
 ## Production
 
-Store `DATABASE_URL` in **Secrets Manager** or **SSM Parameter Store** and inject into ECS/Amplify/Beanstalk. Use a private subnet + security group so only the app can reach RDS on 5432.
+Store `DATABASE_URL` in **Secrets Manager** or **SSM Parameter Store** and inject into your compute layer (ECS, Amplify, Beanstalk, etc.). Use a **private subnet** and security group so only the app can reach RDS on port 5432; set `Publicly accessible` to **No** on the RDS instance.

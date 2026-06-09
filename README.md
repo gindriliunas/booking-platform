@@ -172,6 +172,10 @@ A GitHub ruleset on `main` enforces:
 
 Dependabot handles dependency update PRs. [dependency-review.yml](.github/workflows/dependency-review.yml) may still run on PRs but is not required for merge.
 
+### Pull request review
+
+[Cursor Bugbot](https://cursor.com/bugbot) is connected to this repository and automatically reviews pull requests for potential bugs and issues, alongside human review from the [code owner](.github/CODEOWNERS).
+
 ## License
 
 MIT — see [LICENSE](LICENSE) if present; add one before publishing if needed.
