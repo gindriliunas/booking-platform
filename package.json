@@ -39,7 +39,10 @@
   },
   "overrides": {
     "esbuild": "^0.25.4",
-    "postcss": "^8.5.15"
+    "postcss": "^8.5.15",
+    "@emnapi/core": "1.11.0",
+    "@emnapi/runtime": "1.11.0",
+    "@emnapi/wasi-threads": "1.2.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
