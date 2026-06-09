@@ -179,5 +179,3 @@ Dependabot handles dependency update PRs. [dependency-review.yml](.github/workfl
 ## License
 
 MIT — see [LICENSE](LICENSE) if present; add one before publishing if needed.
-
-AUTH_COGNITO_ID=1243hj3l4l2l34j21l1l
