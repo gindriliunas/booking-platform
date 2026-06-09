@@ -16,3 +16,5 @@ jobs:
       - uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high
+          # Default is runtime-only; devDependencies (e.g. test tooling) are ignored without this.
+          fail-on-scopes: runtime, development
