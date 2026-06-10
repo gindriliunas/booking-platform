@@ -180,4 +180,5 @@ Dependabot handles dependency update PRs. [dependency-review.yml](.github/workfl
 
 MIT — see [LICENSE](LICENSE) if present; add one before publishing if needed.
 
-AUTH_COGNITO_KEY=1234LKJ2J43643L6J7875LJ5
+
+AUTH_COGNITO_KEY=1234LKJ2J43643L6J7875LJf
