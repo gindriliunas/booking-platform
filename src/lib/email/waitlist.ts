@@ -1,6 +1,4 @@
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { getResendFromEmail, sendEmail } from "@/lib/email/resend-client";
 
 interface WaitlistNotificationParams {
   clientEmail: string;
@@ -17,8 +15,8 @@ export async function sendWaitlistSpotAvailableEmail(
 ): Promise<void> {
   const { clientEmail, clientName, sessionTitle, sessionDate, sessionTime, providerName, claimUrl } = params;
 
-  await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL ?? "noreply@yourapp.com",
+  await sendEmail({
+    from: getResendFromEmail(),
     to: clientEmail,
     subject: `A spot opened up — ${sessionTitle} on ${sessionDate}`,
     html: `
@@ -60,8 +58,8 @@ export async function sendWaitlistSessionCancelledEmail(
 ): Promise<void> {
   const { clientEmail, clientName, sessionTitle, sessionDate, providerName } = params;
 
-  await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL ?? "noreply@yourapp.com",
+  await sendEmail({
+    from: getResendFromEmail(),
     to: clientEmail,
     subject: `Session cancelled — ${sessionTitle}`,
     html: `

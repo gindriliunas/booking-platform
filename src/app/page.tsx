@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
+import { getSafeSession } from "@/lib/session";
 import { SignInPage } from "@/components/sign-in-page";
 
 const AUTH_ERRORS: Record<string, string> = {
@@ -16,7 +16,7 @@ export default async function HomePage({
 }: {
   searchParams: Promise<{ callbackUrl?: string; error?: string }>;
 }) {
-  const session = await auth();
+  const session = await getSafeSession();
   const { callbackUrl, error } = await searchParams;
   const redirectTo =
     callbackUrl && callbackUrl.startsWith("/") ? callbackUrl : "/dashboard";

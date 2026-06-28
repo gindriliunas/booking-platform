@@ -1,6 +1,4 @@
-import { Resend } from "resend";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { getResendFromEmail, sendEmail } from "@/lib/email/resend-client";
 
 export interface InvoiceParams {
   clientEmail: string;
@@ -46,8 +44,8 @@ export async function sendInvoiceEmail(params: InvoiceParams): Promise<void> {
     ? `<p style="color:#888;font-size:13px;margin-top:24px;border-top:1px solid #eee;padding-top:16px">${invoiceFooterNote}</p>`
     : "";
 
-  await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL ?? "noreply@yourapp.com",
+  const result = await sendEmail({
+    from: getResendFromEmail(),
     to: clientEmail,
     replyTo: providerEmail ?? undefined,
     subject: `Invoice ${invNum} from ${businessDisplayName}`,

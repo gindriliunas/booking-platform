@@ -9,27 +9,37 @@ import bcrypt from "bcryptjs";
 import { authConfig } from "@/auth.config";
 import { getCognitoEnv, getMissingCognitoEnv, isCognitoEnabled } from "@/lib/cognito-env";
 
+function createCognitoProvider(options: { id: string; signup?: boolean }): Provider {
+  const { clientId, clientSecret, issuer, domain } = getCognitoEnv();
+  const scopeParams = { scope: "openid email" };
+
+  const authorization =
+    options.signup && domain
+      ? {
+          url: `${domain.replace(/\/$/, "")}/signup`,
+          params: scopeParams,
+        }
+      : { params: scopeParams };
+
+  return Cognito({
+    id: options.id,
+    name: options.signup ? "Cognito Sign Up" : "Cognito",
+    clientId: clientId!,
+    clientSecret: clientSecret!,
+    issuer: issuer!,
+    client: {
+      token_endpoint_auth_method: "client_secret_post",
+    },
+    authorization,
+  });
+}
+
 function buildProviders(): Provider[] {
   const list: Provider[] = [];
 
   if (isCognitoEnabled()) {
-    const { clientId, clientSecret, issuer } = getCognitoEnv();
-    list.push(
-      Cognito({
-        clientId: clientId!,
-        clientSecret: clientSecret!,
-        issuer: issuer!,
-        client: {
-          token_endpoint_auth_method: "client_secret_post",
-        },
-        authorization: {
-          params: {
-            // Must match scopes enabled on the Cognito app client (openid + email only is safest)
-            scope: "openid email",
-          },
-        },
-      }),
-    );
+    list.push(createCognitoProvider({ id: "cognito" }));
+    list.push(createCognitoProvider({ id: "cognito-signup", signup: true }));
   } else if (process.env.NODE_ENV === "development") {
     const missing = getMissingCognitoEnv();
     if (missing.length > 0 && missing.length < 3) {
@@ -89,7 +99,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     ...authConfig.callbacks,
     async signIn({ user, account, profile }) {
-      if (account?.provider !== "cognito") return true;
+      const cognitoProvider =
+        account?.provider === "cognito" || account?.provider === "cognito-signup";
+      if (!cognitoProvider) return true;
 
       const email = (user.email ?? profile?.email)?.toString().toLowerCase();
       if (!email) return false;

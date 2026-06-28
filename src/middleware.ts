@@ -7,6 +7,7 @@ const { auth } = NextAuth(authConfig);
 const PUBLIC_ROUTES = [
   /^\/$/,
   /^\/sign-in(\/.*)?$/,
+  /^\/sign-up(\/.*)?$/,
   /^\/auth\/error$/,
   /^\/portal(\/.*)?$/,
   /^\/api\/portal(\/.*)?$/,
