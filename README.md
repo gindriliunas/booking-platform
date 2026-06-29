@@ -113,7 +113,7 @@ Free packages can be claimed from `/portal/packages`.
 
 ## Database (AWS RDS)
 
-The app targets **Amazon RDS PostgreSQL**, not Neon. Set `DATABASE_URL` in `.env.local`, then run `npx drizzle-kit push` to create tables.
+The app targets **Amazon RDS PostgreSQL**. Set `DATABASE_URL` in `.env.local`, then run `npx drizzle-kit push` to create tables.
 
 See **[docs/database-aws-rds.md](docs/database-aws-rds.md)** for RDS connection strings, security groups, and migrating from Neon.
 
@@ -265,5 +265,3 @@ Dependabot handles dependency update PRs. [dependency-review.yml](.github/workfl
 
 MIT — see [LICENSE](LICENSE) if present; add one before publishing if needed.
 
-
-AUTH_COGNITO_KEY=1234LKJ2J43643L6J7875LJf
