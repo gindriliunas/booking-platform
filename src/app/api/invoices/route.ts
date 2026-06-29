@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Client has no email address" }, { status: 422 });
   }
 
-  await sendInvoiceEmail({
+  const result = await sendInvoiceEmail({
     clientEmail: clientRecord.email,
     clientName: clientRecord.name,
     providerName: provider.name,
@@ -93,6 +93,13 @@ export async function POST(req: NextRequest) {
     issuedAt: formatDate(new Date()),
     invoiceNumber: `INV-${Date.now()}`,
   });
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: "Email is not configured. Add RESEND_API_KEY to .env.local." },
+      { status: 503 },
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

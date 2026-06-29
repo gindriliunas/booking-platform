@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Resend } from "resend";
 import { db } from "@/lib/db";
 import { clients, providers } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getAdminProviderId } from "@/lib/auth-provider";
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { getResendFromEmail, sendEmail } from "@/lib/email/resend-client";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -19,11 +17,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const [provider] = await db.select().from(providers).where(eq(providers.id, providerId));
   const providerName = provider?.name ?? "Your provider";
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://yourapp.com";
-  const portalUrl = `${appUrl}/portal/sign-up`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const portalUrl = `${appUrl.replace(/\/$/, "")}/sign-up?callbackUrl=${encodeURIComponent("/portal")}`;
 
-  await resend.emails.send({
-    from: process.env.RESEND_FROM_EMAIL ?? "noreply@yourapp.com",
+  const result = await sendEmail({
+    from: getResendFromEmail(),
     to: client.email,
     subject: `You've been invited to ${providerName}'s client portal`,
     html: `
@@ -47,6 +45,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       </div>
     `,
   });
+
+  if (!result.ok) {
+    return NextResponse.json(
+      { error: "Email is not configured. Add RESEND_API_KEY to .env.local." },
+      { status: 503 },
+    );
+  }
 
   return NextResponse.json({ ok: true });
 }

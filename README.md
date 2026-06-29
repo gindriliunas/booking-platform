@@ -55,16 +55,18 @@ Set these in `.env.local` (from the Cognito app client and user pool):
 
 In the Cognito app client (must match the authorize URL your app sends):
 
-**Allowed callback URLs** — add this **exact** line (no trailing slash):
+**Allowed callback URLs** — add these **exact** lines (no trailing slash):
 
 ```
 http://localhost:3000/api/auth/callback/cognito
+http://localhost:3000/api/auth/callback/cognito-signup
 ```
 
-Production example:
+Production example (`booking.gindri.com`):
 
 ```
-https://<your-host>/api/auth/callback/cognito
+https://booking.gindri.com/api/auth/callback/cognito
+https://booking.gindri.com/api/auth/callback/cognito-signup
 ```
 
 **Allowed sign-out URLs:**
@@ -77,6 +79,7 @@ http://localhost:3000
 
 - Enable **Authorization code grant**
 - OpenID scopes: enable **openid** and **email** (required). The app requests `openid email` only — if you enable **profile** or **phone** in Cognito, update `scope` in `src/auth.ts` to match.
+- Under **Sign-up experience**, enable **Self-registration** if you want users to create accounts via **Sign up with Amazon Cognito**.
 
 **App integration → Domain** — hosted UI domain must exist (e.g. `us-east-1ajtqbs10a.auth.us-east-1.amazoncognito.com`).
 
@@ -125,6 +128,88 @@ Typical layout:
 - **ALB** with HTTPS in front of the app
 
 Set `AUTH_URL` and `NEXT_PUBLIC_APP_URL` to your public hostname.
+
+### Docker image (ECR)
+
+The repo includes a production `Dockerfile` (Next.js standalone on port **3000**).
+
+```bash
+npm run build          # verify locally first
+docker build -t booking-platform .
+```
+
+Push to ECR (Docker Desktop + AWS CLI required):
+
+```powershell
+.\scripts\push-ecr.ps1
+```
+
+Image URI for ECS:
+
+```
+631026310596.dkr.ecr.us-east-1.amazonaws.com/booking-platform:latest
+```
+
+## AWS network & security groups
+
+Production uses a **three-tier security group** model in a VPC. Security groups are stateful firewalls — each tier only accepts traffic from the tier above it.
+
+```
+Internet
+   │
+   ▼
+┌─────────────────────────────────────┐
+│  Application Load Balancer (ALB)    │  booking-alb-sg
+│  Public subnets · HTTPS :443        │
+└─────────────────┬───────────────────┘
+                  │ TCP :3000 (from sg-alb only)
+                  ▼
+┌─────────────────────────────────────┐
+│  ECS Fargate (Next.js app)          │  booking-ecs-sg
+│  Private app subnets · port 3000    │
+└─────────────────┬───────────────────┘
+                  │ PostgreSQL :5432 (from sg-ecs only)
+                  ▼
+┌─────────────────────────────────────┐
+│  RDS PostgreSQL                     │  booking-rds-sg
+│  Private data subnets · no public IP│
+└─────────────────────────────────────┘
+
+External APIs (Cognito, Resend, Google) ← ECS via NAT Gateway :443
+Secrets (DATABASE_URL, AUTH_SECRET)     ← AWS Secrets Manager
+Auth                                     ← AWS Cognito (OIDC)
+```
+
+### Security group rules
+
+| Security group | Attached to | Inbound | Purpose |
+|----------------|-------------|---------|---------|
+| **booking-alb-sg** | Application Load Balancer | `443` from `0.0.0.0/0` | Public HTTPS entry point |
+| **booking-ecs-sg** | ECS Fargate tasks | `3000` from **booking-alb-sg** only | App not exposed to internet |
+| **booking-rds-sg** | RDS PostgreSQL | `5432` from **booking-ecs-sg** only | Database reachable only by app |
+
+**Outbound:** default allow-all on each group (ECS needs `443` via NAT for Cognito/email APIs; `5432` to RDS).
+
+### Design decisions (DevSecOps)
+
+- **No public RDS** in production — `Publicly accessible = No`, database in private subnets.
+- **Reference security groups by ID**, not IP ranges — rules stay correct when ECS scales across AZs.
+- **Secrets in Secrets Manager**, not in the container image or git.
+- **NACLs** are optional defense-in-depth; security groups are the primary control.
+- **No VPN / Virtual Private Gateway** required — cloud-native SaaS layout, not on-prem hybrid.
+
+### Related services
+
+| Concern | AWS service |
+|---------|-------------|
+| Compute | ECS Fargate + ECR |
+| Database | RDS PostgreSQL (Multi-AZ, encrypted) |
+| Auth | Cognito User Pool |
+| Secrets | Secrets Manager |
+| Edge | Route 53, ACM, ALB (+ optional WAF) |
+| CI/CD | GitHub Actions → ECR → ECS (OIDC, no long-lived keys) |
+
+Full deployment runbook: [docs/devsecops-aws-deployment.md](docs/devsecops-aws-deployment.md) · Diagrams: [docs/architecture-diagrams.md](docs/architecture-diagrams.md)
 
 ## Security
 

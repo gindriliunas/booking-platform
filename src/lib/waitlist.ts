@@ -24,11 +24,6 @@ export async function notifyNextWaitlistEntry(
 
     if (!nextEntry) return;
 
-    await db
-      .update(waitlistEntries)
-      .set({ status: "notified", notifiedAt: new Date() })
-      .where(eq(waitlistEntries.id, nextEntry.id));
-
     const [sessionRow] = session
       ? [session]
       : await db.select().from(bookings).where(eq(bookings.id, bookingId));
@@ -43,7 +38,7 @@ export async function notifyNextWaitlistEntry(
 
       const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
-      await sendWaitlistSpotAvailableEmail({
+      const emailResult = await sendWaitlistSpotAvailableEmail({
         clientEmail: clientRow.email,
         clientName: clientRow.name,
         sessionTitle: sessionRow.title ?? "Group Session",
@@ -60,7 +55,17 @@ export async function notifyNextWaitlistEntry(
         providerName: providerRow?.name ?? "",
         claimUrl: `${appUrl}/portal`,
       });
+
+      if (!emailResult.ok) {
+        console.warn("[Waitlist] Notification email skipped:", emailResult.reason);
+        return;
+      }
     }
+
+    await db
+      .update(waitlistEntries)
+      .set({ status: "notified", notifiedAt: new Date() })
+      .where(eq(waitlistEntries.id, nextEntry.id));
   } catch (err) {
     console.error("[Waitlist] notifyNextWaitlistEntry failed:", err);
   }
