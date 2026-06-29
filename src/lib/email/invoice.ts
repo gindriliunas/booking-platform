@@ -1,4 +1,4 @@
-import { getResendFromEmail, sendEmail } from "@/lib/email/resend-client";
+import { getResendFromEmail, sendEmail, type SendEmailResult } from "@/lib/email/resend-client";
 
 export interface InvoiceParams {
   clientEmail: string;
@@ -18,7 +18,7 @@ export interface InvoiceParams {
   invoiceNumber?: string | null;
 }
 
-export async function sendInvoiceEmail(params: InvoiceParams): Promise<void> {
+export async function sendInvoiceEmail(params: InvoiceParams): Promise<SendEmailResult> {
   const {
     clientEmail, clientName, providerName, providerEmail,
     invoiceBusinessName, invoiceAddress, invoiceTaxId, invoiceLogoUrl,
@@ -44,7 +44,7 @@ export async function sendInvoiceEmail(params: InvoiceParams): Promise<void> {
     ? `<p style="color:#888;font-size:13px;margin-top:24px;border-top:1px solid #eee;padding-top:16px">${invoiceFooterNote}</p>`
     : "";
 
-  const result = await sendEmail({
+  return sendEmail({
     from: getResendFromEmail(),
     to: clientEmail,
     replyTo: providerEmail ?? undefined,

@@ -1,5 +1,6 @@
 "use client";
 
+import { signOut } from "next-auth/react";
 import { useEffect, useRef } from "react";
 
 function hasSessionCookie() {
@@ -25,7 +26,7 @@ export function ClearStaleSession() {
   useEffect(() => {
     if (cleared.current || !hasSessionCookie()) return;
     cleared.current = true;
-    void fetch("/api/auth/signout", { method: "POST" });
+    void signOut({ redirect: false });
   }, []);
 
   return null;

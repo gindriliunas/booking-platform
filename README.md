@@ -62,11 +62,11 @@ http://localhost:3000/api/auth/callback/cognito
 http://localhost:3000/api/auth/callback/cognito-signup
 ```
 
-Production example:
+Production example (`booking.gindri.com`):
 
 ```
-https://<your-host>/api/auth/callback/cognito
-https://<your-host>/api/auth/callback/cognito-signup
+https://booking.gindri.com/api/auth/callback/cognito
+https://booking.gindri.com/api/auth/callback/cognito-signup
 ```
 
 **Allowed sign-out URLs:**

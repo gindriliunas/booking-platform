@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       const [provider] = await db.select().from(providers).where(eq(providers.id, pkg.providerId));
       if (!provider?.autoSendInvoiceOnPackage) return;
 
-      await sendInvoiceEmail({
+      const result = await sendInvoiceEmail({
         clientEmail: client.email,
         clientName: client.name,
         providerName: provider.name,
@@ -65,6 +65,9 @@ export async function POST(req: NextRequest) {
         issuedAt: new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }),
         invoiceNumber: `INV-${Date.now()}`,
       });
+      if (!result.ok) {
+        console.warn("[Invoice] Auto-send on package skipped:", result.reason);
+      }
     } catch (err) {
       console.error("[Invoice] Auto-send on package failed:", err);
     }

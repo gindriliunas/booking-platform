@@ -1,4 +1,4 @@
-import { getResendFromEmail, sendEmail } from "@/lib/email/resend-client";
+import { getResendFromEmail, sendEmail, type SendEmailResult } from "@/lib/email/resend-client";
 
 interface WaitlistNotificationParams {
   clientEmail: string;
@@ -12,10 +12,10 @@ interface WaitlistNotificationParams {
 
 export async function sendWaitlistSpotAvailableEmail(
   params: WaitlistNotificationParams
-): Promise<void> {
+): Promise<SendEmailResult> {
   const { clientEmail, clientName, sessionTitle, sessionDate, sessionTime, providerName, claimUrl } = params;
 
-  await sendEmail({
+  return sendEmail({
     from: getResendFromEmail(),
     to: clientEmail,
     subject: `A spot opened up — ${sessionTitle} on ${sessionDate}`,
@@ -55,10 +55,10 @@ interface WaitlistCancelledEmailParams {
 
 export async function sendWaitlistSessionCancelledEmail(
   params: WaitlistCancelledEmailParams
-): Promise<void> {
+): Promise<SendEmailResult> {
   const { clientEmail, clientName, sessionTitle, sessionDate, providerName } = params;
 
-  await sendEmail({
+  return sendEmail({
     from: getResendFromEmail(),
     to: clientEmail,
     subject: `Session cancelled — ${sessionTitle}`,

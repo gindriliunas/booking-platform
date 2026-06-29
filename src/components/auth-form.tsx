@@ -72,7 +72,7 @@ export function AuthForm({ mode, redirectTo, cognitoEnabled = false }: AuthFormP
         return;
       }
 
-      router.push(isSignUp ? "/dashboard" : redirectTo);
+      router.push(redirectTo);
       router.refresh();
     } catch {
       setError(isSignUp ? "Sign up failed. Please try again." : "Sign in failed. Please try again.");
