@@ -1,0 +1,82 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-aws-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  ECR_REPOSITORY: ${{ vars.ECR_REPOSITORY || 'booking-platform' }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER || 'booking-platform' }}
+  ECS_SERVICE: ${{ vars.ECS_SERVICE || 'booking-platform' }}
+  ECS_TASK_FAMILY: ${{ vars.ECS_TASK_FAMILY || 'booking-platform' }}
+  CONTAINER_NAME: ${{ vars.CONTAINER_NAME || 'booking-platform' }}
+  APP_URL: ${{ vars.APP_URL || 'https://booking.gindri.com' }}
+
+jobs:
+  deploy:
+    name: Build, push, and deploy
+    runs-on: ubuntu-latest
+    if: vars.AWS_DEPLOY_ROLE_ARN != ''
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.ecr-login.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          IMAGE_URI="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+          docker build \
+            --build-arg NEXT_PUBLIC_APP_URL="$APP_URL" \
+            -t "$IMAGE_URI" \
+            -t "$ECR_REGISTRY/$ECR_REPOSITORY:latest" \
+            .
+          docker push "$IMAGE_URI"
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:latest"
+          echo "IMAGE_URI=$IMAGE_URI" >> "$GITHUB_ENV"
+
+      - name: Deploy to ECS
+        run: |
+          chmod +x scripts/ecs-deploy.sh
+          ECS_CLUSTER="$ECS_CLUSTER" \
+          ECS_SERVICE="$ECS_SERVICE" \
+          ECS_TASK_FAMILY="$ECS_TASK_FAMILY" \
+          CONTAINER_NAME="$CONTAINER_NAME" \
+          IMAGE_URI="$IMAGE_URI" \
+          ./scripts/ecs-deploy.sh
+
+      - name: Smoke test
+        run: |
+          curl -fsSI "$APP_URL" | head -n 1
+
+  deploy-skipped:
+    name: Deploy skipped (configure GitHub variables)
+    runs-on: ubuntu-latest
+    if: vars.AWS_DEPLOY_ROLE_ARN == ''
+    steps:
+      - name: Notice
+        run: |
+          echo "::warning::Set repository variable AWS_DEPLOY_ROLE_ARN after terraform apply."
+          echo "See terraform/README.md for setup steps."

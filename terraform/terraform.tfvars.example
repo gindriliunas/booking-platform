@@ -1,0 +1,25 @@
+aws_region   = "us-east-1"
+project_name = "booking-platform"
+environment  = "prod"
+
+domain_name = "booking.gindri.com"
+app_url     = "https://booking.gindri.com"
+
+# Matches the current manual deployment (default VPC in us-east-1).
+use_default_vpc = true
+
+# Set false if RDS already exists — then update DATABASE_URL in Secrets Manager manually.
+create_rds = true
+
+db_name     = "booking_platform"
+db_username = "booking_admin"
+
+ecs_desired_count = 1
+container_port    = 3000
+
+github_repository      = "gindriliunas/booking-platform"
+github_deploy_branches = ["refs/heads/main"]
+
+# Set false if GitHub OIDC provider already exists in the AWS account.
+create_github_oidc_provider = true
+# github_oidc_provider_arn  = "arn:aws:iam::631026310596:oidc-provider/token.actions.githubusercontent.com"

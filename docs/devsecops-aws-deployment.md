@@ -434,7 +434,15 @@ Enable **enhanced scanning** (Inspector) for CVE detection on push.
 
 ## Phase 9 — CI/CD deploy pipeline
 
-Example GitHub Actions job (add `.github/workflows/deploy-prod.yml`):
+**Implemented in this repo:**
+
+- **Terraform** — [`terraform/`](../terraform/) provisions ECR, ALB, ECS, RDS, ACM, security groups, Secrets Manager, and the GitHub OIDC deploy role.
+- **GitHub Actions** — [`.github/workflows/deploy-aws.yml`](../.github/workflows/deploy-aws.yml) builds the Docker image, pushes to ECR, and rolls ECS on push to `main`.
+- **Deploy script** — [`scripts/ecs-deploy.sh`](../scripts/ecs-deploy.sh) registers a new task definition with the image tag from CI.
+
+After `terraform apply`, set GitHub repository variable `AWS_DEPLOY_ROLE_ARN` from `terraform output github_deploy_role_arn`. See [`terraform/README.md`](../terraform/README.md).
+
+Example GitHub Actions job (reference — use the workflow file above):
 
 ```yaml
 name: Deploy production

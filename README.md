@@ -209,6 +209,14 @@ Auth                                     ← AWS Cognito (OIDC)
 | Edge | Route 53, ACM, ALB (+ optional WAF) |
 | CI/CD | GitHub Actions → ECR → ECS (OIDC, no long-lived keys) |
 
+### Terraform & automated deploy
+
+Infrastructure is defined in [`terraform/`](terraform/) (ALB, ECS, ECR, RDS, ACM, security groups, Secrets Manager, GitHub OIDC role).
+
+After `terraform apply`, configure GitHub repository variables and push to `main` — [`.github/workflows/deploy-aws.yml`](.github/workflows/deploy-aws.yml) builds the Docker image, pushes to ECR, and rolls the ECS service.
+
+See **[terraform/README.md](terraform/README.md)** for setup, import of existing resources, and DNS steps.
+
 Full deployment runbook: [docs/devsecops-aws-deployment.md](docs/devsecops-aws-deployment.md) · Diagrams: [docs/architecture-diagrams.md](docs/architecture-diagrams.md)
 
 ## Security
